@@ -1,0 +1,412 @@
+{
+  "name": "Rocket.Chat - Send Giphy",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1380,
+        0
+      ],
+      "id": "c70110d3-a950-478f-8e3c-fbce0aff763c",
+      "name": "Trigger at 07:00"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get preview.items array from $input\nconst previews = $input.first().json.preview.items;\n\nif (!Array.isArray(previews) || previews.length === 0) {\n  throw new Error(\"No preview items returned.\");\n}\n\n// Pick random index from all available items\nconst randomIndex = Math.floor(Math.random() * previews.length);\n\n// Pick the item\nconst selected = previews[randomIndex];\n\n// Return as new item\nreturn [\n  {\n    json: {\n      id: selected.id,\n      type: selected.type,\n      value: selected.value\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "b60a8783-51e1-4cb9-9cf9-960dcb556748",
+      "name": "Pick random preview"
+    },
+    {
+      "parameters": {
+        "url": "https://chat.3x3cut0r.de/api/v1/commands.preview",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "rocketchatApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "command",
+              "value": "giphy"
+            },
+            {
+              "name": "roomId",
+              "value": "={{ $json.roomId }}"
+            },
+            {
+              "name": "params",
+              "value": "={{ $('Get a keyword or phrase').item.json.message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        420,
+        0
+      ],
+      "id": "3b864507-81b2-407a-b81f-e32c7cd942bc",
+      "name": "Get Giphy preview",
+      "credentials": {
+        "rocketchatApi": {
+          "id": "5E8uA5UkTeshfTmv",
+          "name": "Rocket account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.3x3cut0r.de/api/v1/commands.preview",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "rocketchatApi",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({\n  command: \"giphy\",\n  roomId: $node[\"Set roomId\"].json.roomId,\n  params: $node[\"Get a keyword or phrase\"].json.message.content,\n  triggerId: \"auto-\" + Date.now(),\n  previewItem: {\n    id: $node[\"Pick random preview\"].json.id,\n    type: $node[\"Pick random preview\"].json.type,\n    value: $node[\"Pick random preview\"].json.value\n  }\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        860,
+        0
+      ],
+      "id": "66622565-d196-4134-b8a9-0049aeece625",
+      "name": "Send picked preview",
+      "executeOnce": false,
+      "credentials": {
+        "rocketchatApi": {
+          "id": "5E8uA5UkTeshfTmv",
+          "name": "Rocket account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "05fed64f-a3aa-4602-b044-20a10c5e79b3",
+              "name": "roomId",
+              "value": "eQTPRwGLAaPaCBkJz",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "e26d6f75-e33c-4da1-86cc-4dacf2db127b",
+      "name": "Set roomId"
+    },
+    {
+      "parameters": {
+        "cityName": "Dornstadt"
+      },
+      "type": "n8n-nodes-base.openWeatherMap",
+      "typeVersion": 1,
+      "position": [
+        -740,
+        0
+      ],
+      "id": "06aeea93-490b-4a2d-aee3-b681b8820f8d",
+      "name": "OpenWeatherMap",
+      "credentials": {
+        "openWeatherMapApi": {
+          "id": "szH3jtW4YUsLRVe9",
+          "name": "OpenWeatherMap account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const date = new Date();\nconst weekday = date.toLocaleDateString('de-DE', { weekday: 'long' }); // z. B. \"Montag\"\n\nconst iso = date.toISOString().slice(0, 10); // \"2025-07-12\"\n\nconst month = date.getMonth(); // 0 = Januar\nconst season =\n  month < 2 || month === 11 ? 'Winter' :\n  month < 5              ? 'Frühling' :\n  month < 8              ? 'Sommer'  :\n                           'Herbst';\n\nreturn {\n  json: {\n    weekday,\n    date_iso: iso,\n    season\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -540,
+        0
+      ],
+      "id": "12f92f72-7246-4df4-80d6-3ab42e1a3d57",
+      "name": "Get weekday, date and season"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are **GifKeywordBot**.\nTask:\n1. Generate 1–3 short keywords (max 3 words total) for the `/giphy` command in Rocket.Chat.\n2. Base your choice on:\n   • the current weekday,\n   • German public holidays (if today is one),\n   • moods at work, like: \"i need coffee\", \"boring meeting\", \"i am tired\" ...\n   • the current weather in Germany,\n3. Keep it workplace-safe.\n\nOutput format:\n• English keywords.\n• One single line, no bullet points.\n• Only the keyword phrase(s), separated by a single space if multiple.\n• No quotation marks, hashtags or other punctuation.\n\nExample outputs:\n• sunshine coffee\n• rainy monday\n• beach vibes\n• Merry Christmas\n\nContext variables:\n  • Weekday: {{ $json[\"weekday\"] }}\n  • Date-ISO: {{ $json[\"date_iso\"] }}\n  • Season: {{ $json[\"season\"] }}\n  • Weather: ({{ $('OpenWeatherMap').item.json.weather[0].main }}, Temp: {{ $('OpenWeatherMap').item.json.main.temp }} °C, Feels lile: {{ $('OpenWeatherMap').item.json.main.feels_like }} °C, Windspeed: {{ $('OpenWeatherMap').item.json.wind.speed }} m/s, Windgust: {{ $('OpenWeatherMap').item.json.wind.gust }} m/s)\n\nNow think briefly and return the keywords only.\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -280,
+        0
+      ],
+      "id": "2a30e415-12ae-4345-b932-fa59046696b1",
+      "name": "Get a keyword or phrase",
+      "credentials": {
+        "openAiApi": {
+          "id": "h8aqUXdBJMsOg0ZE",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const delayMinutes = Math.floor(Math.random() * 30); // 0–29 Minuten\n\nreturn {\n  json: {\n    delayMinutes\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1180,
+        0
+      ],
+      "id": "35692799-9ed9-40c3-aa77-72be148e0246",
+      "name": "Get a random minute (0-9)"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delayMinutes }}",
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -980,
+        0
+      ],
+      "id": "d5be28e4-25c2-4b2b-8915-3c9f7252436f",
+      "name": "Wait minutes",
+      "webhookId": "c1955a8a-6e21-411b-a970-daaa5d2ec135"
+    },
+    {
+      "parameters": {
+        "content": "# Trigger at 07:00, wait 0-29 mins to look more human",
+        "height": 320,
+        "width": 580
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1400,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "4ee8082a-3de6-492d-85c1-a2cfcd7554a5",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# Get weather and date for gpt context",
+        "height": 320,
+        "width": 440
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -800,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "089ed0d8-246d-4a5a-a6d3-b885e0ecb0f8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Get 1-3 keywords from gpt api with given context",
+        "height": 320,
+        "width": 480
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -340,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "e8269745-108c-4983-b7f5-5032430796b4",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "# Get 10 giphy previews",
+        "height": 320,
+        "width": 420
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        160,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "593b0264-251d-4fe3-a652-8e05adef8caf",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# Pick and send a random gif from given previews",
+        "height": 320,
+        "width": 460
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        600,
+        -120
+      ],
+      "typeVersion": 1,
+      "id": "bd23708e-aee1-4bae-be36-b321772d92cd",
+      "name": "Sticky Note4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger at 07:00": {
+      "main": [
+        [
+          {
+            "node": "Get a random minute (0-9)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Giphy preview": {
+      "main": [
+        [
+          {
+            "node": "Pick random preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send picked preview": {
+      "main": [
+        []
+      ]
+    },
+    "Pick random preview": {
+      "main": [
+        [
+          {
+            "node": "Send picked preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set roomId": {
+      "main": [
+        [
+          {
+            "node": "Get Giphy preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "main": [
+        [
+          {
+            "node": "Get weekday, date and season",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get weekday, date and season": {
+      "main": [
+        [
+          {
+            "node": "Get a keyword or phrase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a keyword or phrase": {
+      "main": [
+        [
+          {
+            "node": "Set roomId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a random minute (0-9)": {
+      "main": [
+        [
+          {
+            "node": "Wait minutes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait minutes": {
+      "main": [
+        [
+          {
+            "node": "OpenWeatherMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2e8dedb1-ebb8-432a-855a-dbc52a081b0e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
+  },
+  "id": "ursULvJr104g84AD",
+  "tags": []
+}
