@@ -1,0 +1,24 @@
+# https://docs.n8n.io/hosting/installation/docker
+services:
+  # https://hub.docker.com/r/n8nio/n8n
+  n8n:
+    container_name: n8n
+    image: docker.n8n.io/n8nio/n8n
+    restart: unless-stopped
+    ports:
+      - '5678:5678'
+    environment:
+      GENERIC_TIMEZONE: 'Europe/Berlin'
+      NODE_ENV: 'production'
+      N8N_DEFAULT_LOCALE: 'de'
+      N8N_PROXY_HOPS: 1
+      N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: true
+      N8N_RUNNERS_ENABLED: true
+      WEBHOOK_URL: 'https://n8n.3x3cut0r.de/'
+      VUE_APP_URL_BASE_API: 'https://n8n.3x3cut0r.de/'
+    volumes:
+      - n8n-data:/home/node/.n8n
+
+volumes:
+  n8n-data:
+    name: n8n-data
