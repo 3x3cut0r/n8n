@@ -1,5 +1,5 @@
 {
-  "name": "Gmail - Delete GMX Mailer Daemon",
+  "name": "Gmail - Delete GMX Mailer Daemon (polling)",
   "nodes": [
     {
       "parameters": {
@@ -38,10 +38,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -240,
-        48
+        288,
+        -208
       ],
-      "id": "c33342a9-e96b-4925-95e4-75992edeec2d",
+      "id": "44a7853c-9fe5-4dfb-acac-94a461d52028",
       "name": "If from = GMX Mailer Daemon"
     },
     {
@@ -52,10 +52,10 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        -16,
-        32
+        528,
+        -224
       ],
-      "id": "66d18e85-6de6-4d38-8f16-37a98d28e0ef",
+      "id": "044d9893-72b8-42fd-8dad-82d32dfba0db",
       "name": "Delete message",
       "webhookId": "9614168a-007a-4e57-90fd-8f2f1fd3ae57",
       "credentials": {
@@ -67,16 +67,29 @@
     },
     {
       "parameters": {
-        "inputSource": "passthrough"
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {}
       },
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1.1,
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
       "position": [
-        -448,
-        48
+        64,
+        -208
       ],
-      "id": "408fae11-d39e-4ab3-8e59-5d22c84dfffb",
-      "name": "New Gmail"
+      "id": "d21328e7-ffe2-470e-b943-8cf7ef6758d5",
+      "name": "Gmail message received",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "da3gQaeFiPi7jzjm",
+          "name": "Gmail account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -89,10 +102,11 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
-    "New Gmail": {
+    "Gmail message received": {
       "main": [
         [
           {
@@ -108,10 +122,11 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "670c14df-6ae5-49f9-bca6-82fa4ca20382",
+  "versionId": "98f01ffe-9853-4743-bac3-215e6bc96bea",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
   },
-  "id": "fe2ovvKxL6UCgv0Z",
+  "id": "rQ5iA7ZsfwO1qikq",
   "tags": []
 }

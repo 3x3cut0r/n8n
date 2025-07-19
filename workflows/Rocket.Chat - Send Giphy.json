@@ -14,7 +14,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -1380,
+        -1376,
         0
       ],
       "id": "c70110d3-a950-478f-8e3c-fbce0aff763c",
@@ -27,7 +27,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        660,
+        672,
         0
       ],
       "id": "b60a8783-51e1-4cb9-9cf9-960dcb556748",
@@ -60,7 +60,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        420,
+        432,
         0
       ],
       "id": "3b864507-81b2-407a-b81f-e32c7cd942bc",
@@ -87,7 +87,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        860,
+        864,
         0
       ],
       "id": "66622565-d196-4134-b8a9-0049aeece625",
@@ -117,7 +117,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        220,
+        224,
         0
       ],
       "id": "e26d6f75-e33c-4da1-86cc-4dacf2db127b",
@@ -130,7 +130,7 @@
       "type": "n8n-nodes-base.openWeatherMap",
       "typeVersion": 1,
       "position": [
-        -740,
+        -736,
         0
       ],
       "id": "06aeea93-490b-4a2d-aee3-b681b8820f8d",
@@ -149,7 +149,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -540,
+        -544,
         0
       ],
       "id": "12f92f72-7246-4df4-80d6-3ab42e1a3d57",
@@ -175,7 +175,7 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -280,
+        -288,
         0
       ],
       "id": "2a30e415-12ae-4345-b932-fa59046696b1",
@@ -194,7 +194,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1180,
+        -1184,
         0
       ],
       "id": "35692799-9ed9-40c3-aa77-72be148e0246",
@@ -208,7 +208,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        -980,
+        -976,
         0
       ],
       "id": "d5be28e4-25c2-4b2b-8915-3c9f7252436f",
@@ -223,8 +223,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -1400,
-        -120
+        -1408,
+        -128
       ],
       "typeVersion": 1,
       "id": "4ee8082a-3de6-492d-85c1-a2cfcd7554a5",
@@ -239,7 +239,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -800,
-        -120
+        -128
       ],
       "typeVersion": 1,
       "id": "089ed0d8-246d-4a5a-a6d3-b885e0ecb0f8",
@@ -253,8 +253,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -340,
-        -120
+        -336,
+        -128
       ],
       "typeVersion": 1,
       "id": "e8269745-108c-4983-b7f5-5032430796b4",
@@ -269,7 +269,7 @@
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         160,
-        -120
+        -128
       ],
       "typeVersion": 1,
       "id": "593b0264-251d-4fe3-a652-8e05adef8caf",
@@ -283,8 +283,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        600,
-        -120
+        608,
+        -128
       ],
       "typeVersion": 1,
       "id": "bd23708e-aee1-4bae-be36-b321772d92cd",
