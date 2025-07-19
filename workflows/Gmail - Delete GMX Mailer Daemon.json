@@ -47,7 +47,7 @@
     {
       "parameters": {
         "operation": "delete",
-        "messageId": "={{ $('Gmail Trigger - Message Received').item.json.id }}"
+        "messageId": "={{ $('New Gmail').item.json.id }}"
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -108,7 +108,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "670c14df-6ae5-49f9-bca6-82fa4ca20382",
+  "versionId": "d716b008-4aaa-4858-a35a-a55b791ec9b1",
   "meta": {
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
   },
