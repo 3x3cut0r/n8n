@@ -41,18 +41,18 @@ gcloud pubsub topics add-iam-policy-binding <topic name> \
     - Respond `Immediately`
       -> Activate your webhook
 
-This workflow is quite complex. You need to:
+-> This workflow is quite complex. You need to:
 
-    - Get historyId from body.message.data (code node)
-    - Get last historyId from a StaticData field (code node)
-    (ensure you have one stored on the first run)
-    - get history from lastHistoryId (request node)
-    - Get messageIds from history (code node)
-    - If you have messageIds, than:
-    - Loop over messageIds (loop over node)
-    - Get message from messageId (Gmail node)
-    - Execute a sub-workflow with the message as input
-      (so as not to overload the workflow)
+- Get historyId from body.message.data (code node)
+- Get last historyId from a StaticData field (code node)
+  (ensure you have one stored on the first run)
+- get history from lastHistoryId (request node)
+- Get messageIds from history (code node)
+- If you have messageIds, than:
+- Loop over messageIds (loop over node)
+- Get message from messageId (Gmail node)
+- Execute a sub-workflow with the message as input
+  (so as not to overload the workflow)
 
 10. Send watch() call to Gmail to start watching
 
