@@ -8,7 +8,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        224,
+        208,
         0
       ],
       "id": "1c2e2dba-6187-45d9-8616-ee79209c2482",
@@ -23,7 +23,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        16,
+        0,
         0
       ],
       "id": "9e20fc16-89ef-4316-876b-e7d7805ceb55",
@@ -37,7 +37,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        432,
+        416,
         0
       ],
       "id": "84d6b0f4-9606-4068-a231-d9f6a44d11c5",
@@ -50,11 +50,12 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1536,
-        -224
+        832,
+        -176
       ],
       "id": "1382a379-6817-4448-be44-7c11ed751f6e",
-      "name": "Store new historyId in StaticData"
+      "name": "Store new historyId in StaticData",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -83,7 +84,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        640,
+        624,
         0
       ],
       "id": "7f37f1ae-0f2b-4b33-bc8b-b964832166b3",
@@ -103,7 +104,7 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
       "position": [
-        1536,
+        1616,
         0
       ],
       "id": "966c038c-db3a-457e-8c7f-34223baefc55",
@@ -137,7 +138,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        848,
+        832,
         0
       ],
       "id": "043cd820-7158-497d-8dce-d22950039fcf",
@@ -205,8 +206,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1728,
-        0
+        1936,
+        -16
       ],
       "id": "a8dcbc7f-113c-44ba-b42d-005adf00950e",
       "name": "If message exists",
@@ -233,8 +234,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1952,
-        -16
+        2256,
+        -32
       ],
       "id": "2d664422-6f5f-49b1-91e6-d3879fa23832",
       "name": "Process message",
@@ -250,9 +251,9 @@
             "host": "n8n.3x3cut0r.de",
             "x-forwarded-scheme": "https",
             "x-forwarded-proto": "https",
-            "x-forwarded-for": "34.116.21.5",
-            "x-real-ip": "34.116.21.5",
-            "content-length": "322",
+            "x-forwarded-for": "34.116.21.4",
+            "x-real-ip": "34.116.21.4",
+            "content-length": "324",
             "content-type": "application/json",
             "accept": "application/json",
             "from": "noreply@google.com",
@@ -263,11 +264,11 @@
           "query": {},
           "body": {
             "message": {
-              "data": "eyJlbWFpbEFkZHJlc3MiOiJqdWxpYW5yZWl0aDIyNEBnbWFpbC5jb20iLCJoaXN0b3J5SWQiOjU2NDkyMDd9",
-              "messageId": "15043592798488139",
-              "message_id": "15043592798488139",
-              "publishTime": "2025-07-20T07:47:04.53Z",
-              "publish_time": "2025-07-20T07:47:04.53Z"
+              "data": "eyJlbWFpbEFkZHJlc3MiOiJqdWxpYW5yZWl0aDIyNEBnbWFpbC5jb20iLCJoaXN0b3J5SWQiOjU2NTA0NDd9",
+              "messageId": "15045138058253394",
+              "message_id": "15045138058253394",
+              "publishTime": "2025-07-20T15:44:44.078Z",
+              "publish_time": "2025-07-20T15:44:44.078Z"
             },
             "subscription": "projects/nodemation-465018/subscriptions/gmail-sub"
           },
@@ -323,6 +324,11 @@
             "node": "Get messageIds from history",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Store new historyId in StaticData",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -340,13 +346,7 @@
     },
     "Loop Over messageIds": {
       "main": [
-        [
-          {
-            "node": "Store new historyId in StaticData",
-            "type": "main",
-            "index": 0
-          }
-        ],
+        [],
         [
           {
             "node": "Get message from messageId",
@@ -376,13 +376,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Store new historyId in StaticData",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "If message exists": {
@@ -419,7 +413,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "bb68e8d5-5e11-4d33-bab3-60f277a6c147",
+  "versionId": "18e41225-1d45-4a2a-80cc-e2b1e2e1ed05",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
