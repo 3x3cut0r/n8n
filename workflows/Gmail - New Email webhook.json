@@ -209,7 +209,8 @@
         0
       ],
       "id": "a8dcbc7f-113c-44ba-b42d-005adf00950e",
-      "name": "If message exists"
+      "name": "If message exists",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -418,7 +419,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "5e7856ff-1fb6-4650-8d20-97dcccea102e",
+  "versionId": "bb68e8d5-5e11-4d33-bab3-60f277a6c147",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
