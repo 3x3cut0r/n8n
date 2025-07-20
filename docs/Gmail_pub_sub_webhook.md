@@ -43,7 +43,7 @@ gcloud pubsub topics add-iam-policy-binding <topic name> \
 
 -> This workflow is quite complex. You need to:
 
-<img width="1994" height="499" alt="gmail_webhook" src="https://github.com/user-attachments/assets/10421ec2-fbdb-4301-a691-64c075c09071" />
+<img width="1962" height="466" alt="Bildschirmfoto 2025-07-20 um 10 55 20" src="https://github.com/user-attachments/assets/3689728b-f645-4e90-83ec-b8d6aaa83ff0" />
 
 - Get historyId from body.message.data (code node)
 - Get last historyId from a StaticData field (code node)
