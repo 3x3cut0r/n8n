@@ -118,34 +118,6 @@
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "fe2ovvKxL6UCgv0Z",
-          "mode": "list",
-          "cachedResultName": "Gmail - Delete GMX Mailer Daemon"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
-      "position": [
-        1744,
-        0
-      ],
-      "id": "2d664422-6f5f-49b1-91e6-d3879fa23832",
-      "name": "Process messages",
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
         "options": {}
       },
       "type": "n8n-nodes-base.splitInBatches",
@@ -203,6 +175,68 @@
       ],
       "id": "3de056a8-cbf5-4b6f-be4a-ba3ef3d6a280",
       "name": "If messageIds > 0"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "989eefa6-622b-4d72-8e44-e5db39616598",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1728,
+        0
+      ],
+      "id": "a8dcbc7f-113c-44ba-b42d-005adf00950e",
+      "name": "If message exists"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "fe2ovvKxL6UCgv0Z",
+          "mode": "list",
+          "cachedResultName": "Gmail - Delete GMX Mailer Daemon"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1952,
+        -16
+      ],
+      "id": "2d664422-6f5f-49b1-91e6-d3879fa23832",
+      "name": "Process message",
+      "alwaysOutputData": true
     }
   ],
   "pinData": {
@@ -214,9 +248,9 @@
             "host": "n8n.3x3cut0r.de",
             "x-forwarded-scheme": "https",
             "x-forwarded-proto": "https",
-            "x-forwarded-for": "34.116.21.4",
-            "x-real-ip": "34.116.21.4",
-            "content-length": "324",
+            "x-forwarded-for": "34.116.21.5",
+            "x-real-ip": "34.116.21.5",
+            "content-length": "322",
             "content-type": "application/json",
             "accept": "application/json",
             "from": "noreply@google.com",
@@ -227,11 +261,11 @@
           "query": {},
           "body": {
             "message": {
-              "data": "eyJlbWFpbEFkZHJlc3MiOiJqdWxpYW5yZWl0aDIyNEBnbWFpbC5jb20iLCJoaXN0b3J5SWQiOjU2NDYxMjB9",
-              "messageId": "15040155790809234",
-              "message_id": "15040155790809234",
-              "publishTime": "2025-07-19T14:25:11.232Z",
-              "publish_time": "2025-07-19T14:25:11.232Z"
+              "data": "eyJlbWFpbEFkZHJlc3MiOiJqdWxpYW5yZWl0aDIyNEBnbWFpbC5jb20iLCJoaXN0b3J5SWQiOjU2NDkyMDd9",
+              "messageId": "15043592798488139",
+              "message_id": "15043592798488139",
+              "publishTime": "2025-07-20T07:47:04.53Z",
+              "publish_time": "2025-07-20T07:47:04.53Z"
             },
             "subscription": "projects/nodemation-465018/subscriptions/gmail-sub"
           },
@@ -295,18 +329,7 @@
       "main": [
         [
           {
-            "node": "Process messages",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Process messages": {
-      "main": [
-        [
-          {
-            "node": "Loop Over messageIds",
+            "node": "If message exists",
             "type": "main",
             "index": 0
           }
@@ -359,13 +382,42 @@
           }
         ]
       ]
+    },
+    "If message exists": {
+      "main": [
+        [
+          {
+            "node": "Process message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over messageIds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process message": {
+      "main": [
+        [
+          {
+            "node": "Loop Over messageIds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "1d25f313-deae-49c7-b69b-054624ceabd3",
+  "versionId": "e7786bec-d4d1-47e9-8672-e2d91b97eef9",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"

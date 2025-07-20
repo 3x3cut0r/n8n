@@ -50,11 +50,13 @@ gcloud pubsub topics add-iam-policy-binding <topic name> \
   (ensure you have one stored on the first run)
 - get history from lastHistoryId (request node)
 - Get messageIds from history (code node)
-- If you have messageIds, than:
-- Loop over messageIds (loop over node)
+- If you have messageIds, than: (false -> Store new historyId in StaticData)
+- Loop over messageIds (loop over node) -> Done: Store new historyId in StaticData
 - Get message from messageId (Gmail node)
+- If message exists, than: (false -> back to Loop)
 - Execute a sub-workflow with the message as input
   (so as not to overload the workflow)
+- Back to Loop
 
 10. Send watch() call to Gmail to start watching
 
