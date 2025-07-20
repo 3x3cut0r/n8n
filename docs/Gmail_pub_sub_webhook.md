@@ -45,14 +45,13 @@ gcloud pubsub topics add-iam-policy-binding <topic name> \
 
 <img width="2381" height="394" alt="Bildschirmfoto 2025-07-20 um 23 17 27" src="https://github.com/user-attachments/assets/bff2a6e6-a140-4241-864c-984cdb3d56a0" />
 
-
-- Get historyId from body.message.data (code node)
-- Get last historyId from a StaticData field (code node)
+- Get historyId from body.message.data (Code node)
+- Get last historyId from a StaticData field (Code node)
   (ensure you have one stored on the first run)
-- get history from lastHistoryId (request node)
-- Get messageIds from history (code node)
-- If you have messageIds, than: (false -> Store new historyId in StaticData)
-- Loop over messageIds (loop over node) -> Done: Store new historyId in StaticData
+- Get history from lastHistoryId (Request node)
+- Get messageIds from history (Code node) and Store new historyId in StaticData (Code node)
+- If you have messageIds, than:
+- Loop over messageIds (Loop over node)
 - Get message from messageId (Gmail node)
 - If message exists, than: (false -> back to Loop)
 - Execute a sub-workflow with the message as input
