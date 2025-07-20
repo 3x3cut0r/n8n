@@ -114,7 +114,8 @@
           "id": "da3gQaeFiPi7jzjm",
           "name": "Gmail account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -417,7 +418,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "e7786bec-d4d1-47e9-8672-e2d91b97eef9",
+  "versionId": "5e7856ff-1fb6-4650-8d20-97dcccea102e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
