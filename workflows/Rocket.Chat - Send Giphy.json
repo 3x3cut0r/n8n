@@ -338,7 +338,7 @@
       ],
       "id": "de6ccacb-8a79-4a47-b43a-41559d9b3f76",
       "name": "Has preview?",
-      "alwaysOutputData": true,
+      "alwaysOutputData": false,
       "retryOnFail": false
     },
     {
@@ -591,7 +591,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "59890780-7e29-4b2a-89de-42b1af5ebca3",
+  "versionId": "e3161da4-1368-4aa4-85e3-ef0c5b1e3bad",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
