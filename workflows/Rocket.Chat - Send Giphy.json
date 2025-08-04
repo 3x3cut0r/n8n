@@ -14,7 +14,7 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -1376,
+        -1344,
         0
       ],
       "id": "c70110d3-a950-478f-8e3c-fbce0aff763c",
@@ -27,7 +27,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        672,
+        1600,
         0
       ],
       "id": "b60a8783-51e1-4cb9-9cf9-960dcb556748",
@@ -47,7 +47,7 @@
             },
             {
               "name": "roomId",
-              "value": "={{ $json.roomId }}"
+              "value": "={{ $('Set roomId').item.json.roomId }}"
             },
             {
               "name": "params",
@@ -60,8 +60,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        432,
-        0
+        896,
+        16
       ],
       "id": "3b864507-81b2-407a-b81f-e32c7cd942bc",
       "name": "Get Giphy preview",
@@ -87,7 +87,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        864,
+        1792,
         0
       ],
       "id": "66622565-d196-4134-b8a9-0049aeece625",
@@ -130,7 +130,7 @@
       "type": "n8n-nodes-base.openWeatherMap",
       "typeVersion": 1,
       "position": [
-        -736,
+        -720,
         0
       ],
       "id": "06aeea93-490b-4a2d-aee3-b681b8820f8d",
@@ -149,7 +149,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -544,
+        -528,
         0
       ],
       "id": "12f92f72-7246-4df4-80d6-3ab42e1a3d57",
@@ -194,7 +194,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1184,
+        -1152,
         0
       ],
       "id": "35692799-9ed9-40c3-aa77-72be148e0246",
@@ -208,7 +208,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        -976,
+        -944,
         0
       ],
       "id": "d5be28e4-25c2-4b2b-8915-3c9f7252436f",
@@ -218,13 +218,13 @@
     {
       "parameters": {
         "content": "# Trigger at 07:00, wait 0-29 mins to look more human",
-        "height": 320,
+        "height": 544,
         "width": 580
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -1408,
-        -128
+        -1376,
+        -224
       ],
       "typeVersion": 1,
       "id": "4ee8082a-3de6-492d-85c1-a2cfcd7554a5",
@@ -233,13 +233,13 @@
     {
       "parameters": {
         "content": "# Get weather and date for gpt context",
-        "height": 320,
+        "height": 544,
         "width": 440
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -800,
-        -128
+        -784,
+        -224
       ],
       "typeVersion": 1,
       "id": "089ed0d8-246d-4a5a-a6d3-b885e0ecb0f8",
@@ -248,13 +248,13 @@
     {
       "parameters": {
         "content": "# Get 1-3 keywords from gpt api with given context",
-        "height": 320,
+        "height": 544,
         "width": 480
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         -336,
-        -128
+        -224
       ],
       "typeVersion": 1,
       "id": "e8269745-108c-4983-b7f5-5032430796b4",
@@ -262,14 +262,14 @@
     },
     {
       "parameters": {
-        "content": "# Get 10 giphy previews",
-        "height": 320,
-        "width": 420
+        "content": "# Get 10 giphy previews (retry 3 times)",
+        "height": 544,
+        "width": 1364
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         160,
-        -128
+        -224
       ],
       "typeVersion": 1,
       "id": "593b0264-251d-4fe3-a652-8e05adef8caf",
@@ -278,20 +278,140 @@
     {
       "parameters": {
         "content": "# Pick and send a random gif from given previews",
-        "height": 320,
+        "height": 544,
         "width": 460
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        608,
-        -128
+        1536,
+        -224
       ],
       "typeVersion": 1,
       "id": "bd23708e-aee1-4bae-be36-b321772d92cd",
       "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        656,
+        0
+      ],
+      "id": "bf23016f-f369-4741-8c12-c214b4913147",
+      "name": "Loop up to 3 times on failure",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f74feefa-cb17-4714-b54a-4c670141de44",
+              "leftValue": "={{ ($json.preview?.items?.length || 0) }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1104,
+        16
+      ],
+      "id": "de6ccacb-8a79-4a47-b43a-41559d9b3f76",
+      "name": "Has preview?",
+      "alwaysOutputData": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        80
+      ],
+      "id": "055634d3-3b2c-4d1c-bcb8-179312f82363",
+      "name": "Wait 2s",
+      "webhookId": "e2f5fa83-fceb-492e-a066-fd224571ca9a"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error('No Giphy preview after 3 attempts');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -128
+      ],
+      "id": "b71afbf1-c689-490c-9649-f57bf38f2400",
+      "name": "Error Message"
+    },
+    {
+      "parameters": {
+        "jsCode": "// outputs 3 items: { try: 1 }, { try: 2 }, { try: 3 }\nreturn Array.from({ length: 3 }, (_, i) => ({ json: { try: i + 1 } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "2764089c-ec9f-471d-9fde-3154a5b63ef4",
+      "name": "Generate 3 json objects"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        160
+      ],
+      "id": "6ed3fc20-e9e7-4c0d-8057-7c3589d95f86",
+      "name": "Manual Trigger"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Trigger at 07:00": [
+      {
+        "json": {
+          "timestamp": "2025-08-04T07:00:13.019+02:00",
+          "Readable date": "August 4th 2025, 7:00:13 am",
+          "Readable time": "7:00:13 am",
+          "Day of week": "Monday",
+          "Year": "2025",
+          "Month": "August",
+          "Day of month": "04",
+          "Hour": "07",
+          "Minute": "00",
+          "Second": "13",
+          "Timezone": "Europe/Berlin (UTC+02:00)"
+        }
+      }
+    ]
+  },
   "connections": {
     "Trigger at 07:00": {
       "main": [
@@ -308,7 +428,7 @@
       "main": [
         [
           {
-            "node": "Pick random preview",
+            "node": "Has preview?",
             "type": "main",
             "index": 0
           }
@@ -335,7 +455,7 @@
       "main": [
         [
           {
-            "node": "Get Giphy preview",
+            "node": "Generate 3 json objects",
             "type": "main",
             "index": 0
           }
@@ -396,13 +516,82 @@
           }
         ]
       ]
+    },
+    "Loop up to 3 times on failure": {
+      "main": [
+        [
+          {
+            "node": "Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Giphy preview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has preview?": {
+      "main": [
+        [
+          {
+            "node": "Pick random preview",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 2s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2s": {
+      "main": [
+        [
+          {
+            "node": "Loop up to 3 times on failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate 3 json objects": {
+      "main": [
+        [
+          {
+            "node": "Loop up to 3 times on failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "OpenWeatherMap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "2e8dedb1-ebb8-432a-855a-dbc52a081b0e",
+  "versionId": "59890780-7e29-4b2a-89de-42b1af5ebca3",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
