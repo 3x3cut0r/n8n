@@ -3,25 +3,6 @@
   "nodes": [
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "triggerAtHour": 7
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.2,
-      "position": [
-        -1344,
-        0
-      ],
-      "id": "c70110d3-a950-478f-8e3c-fbce0aff763c",
-      "name": "Trigger at 07:00"
-    },
-    {
-      "parameters": {
         "jsCode": "// Get preview.items array from $input\nconst previews = $input.first().json.preview.items;\n\nif (!Array.isArray(previews) || previews.length === 0) {\n  throw new Error(\"No preview items returned.\");\n}\n\n// Pick random index from all available items\nconst randomIndex = Math.floor(Math.random() * previews.length);\n\n// Pick the item\nconst selected = previews[randomIndex];\n\n// Return as new item\nreturn [\n  {\n    json: {\n      id: selected.id,\n      type: selected.type,\n      value: selected.value\n    }\n  }\n];"
       },
       "type": "n8n-nodes-base.code",
@@ -166,7 +147,7 @@
         "messages": {
           "values": [
             {
-              "content": "=You are **GifKeywordBot**.\nTask:\n1. Generate 1–3 short keywords (max 3 words total) for the `/giphy` command in Rocket.Chat.\n2. Base your choice on:\n   • the current weekday,\n   • German public holidays (if today is one),\n   • moods at work, like: \"i need coffee\", \"boring meeting\", \"i am tired\" ...\n   • the current weather in Germany,\n3. Keep it workplace-safe.\n\nOutput format:\n• English keywords.\n• One single line, no bullet points.\n• Only the keyword phrase(s), separated by a single space if multiple.\n• No quotation marks, hashtags or other punctuation.\n\nExample outputs:\n• sunshine coffee\n• rainy monday\n• beach vibes\n• Merry Christmas\n\nContext variables:\n  • Weekday: {{ $json[\"weekday\"] }}\n  • Date-ISO: {{ $json[\"date_iso\"] }}\n  • Season: {{ $json[\"season\"] }}\n  • Weather: ({{ $('OpenWeatherMap').item.json.weather[0].main }}, Temp: {{ $('OpenWeatherMap').item.json.main.temp }} °C, Feels lile: {{ $('OpenWeatherMap').item.json.main.feels_like }} °C, Windspeed: {{ $('OpenWeatherMap').item.json.wind.speed }} m/s, Windgust: {{ $('OpenWeatherMap').item.json.wind.gust }} m/s)\n\nNow think briefly and return the keywords only.\n"
+              "content": "=You are **GifKeywordBot**.\nTask:\n1. Generate 1–3 short keywords (at least 1, but max 3 words total) for the `/giphy` command in Rocket.Chat. Try to use less than more words.\n2. Base your choice on:\n   • the current weekday,\n   • German public holidays (if today is one),\n   • moods at work, like: \"i need coffee\", \"boring meeting\", \"i am stressed\" ...\n   • moods at waking up, like: \"i am tired\", \"today i feel fit\"\n   • the current weather in Germany,\n3. Keep it workplace-safe.\n\nOutput format:\n• English keywords.\n• One single line, no bullet points.\n• Only the keyword phrase(s), separated by a single space if multiple.\n• No quotation marks, hashtags or other punctuation.\n\nExample outputs:\n• sunshine coffee\n• rainy monday\n• beach vibes\n• Merry Christmas\n\nContext variables:\n  • Weekday: {{ $json[\"weekday\"] }}\n  • Date-ISO: {{ $json[\"date_iso\"] }}\n  • Season: {{ $json[\"season\"] }}\n  • Weather: ({{ $('OpenWeatherMap').item.json.weather[0].main }}, Temp: {{ $('OpenWeatherMap').item.json.main.temp }} °C, Feels lile: {{ $('OpenWeatherMap').item.json.main.feels_like }} °C, Windspeed: {{ $('OpenWeatherMap').item.json.wind.speed }} m/s, Windgust: {{ $('OpenWeatherMap').item.json.wind.gust }} m/s)\n\nNow think briefly and return the keywords only.\n"
             }
           ]
         },
@@ -217,7 +198,7 @@
     },
     {
       "parameters": {
-        "content": "# Trigger at 07:00, wait 0-29 mins to look more human",
+        "content": "# Trigger at 09:00, wait 0-29 mins to look more human",
         "height": 544,
         "width": 580
       },
@@ -391,10 +372,29 @@
       ],
       "id": "6ed3fc20-e9e7-4c0d-8057-7c3589d95f86",
       "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1344,
+        0
+      ],
+      "id": "c70110d3-a950-478f-8e3c-fbce0aff763c",
+      "name": "Trigger at 09:00"
     }
   ],
   "pinData": {
-    "Trigger at 07:00": [
+    "Trigger at 09:00": [
       {
         "json": {
           "timestamp": "2025-08-04T07:00:13.019+02:00",
@@ -413,17 +413,6 @@
     ]
   },
   "connections": {
-    "Trigger at 07:00": {
-      "main": [
-        [
-          {
-            "node": "Get a random minute (0-9)",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Get Giphy preview": {
       "main": [
         [
@@ -585,13 +574,24 @@
           }
         ]
       ]
+    },
+    "Trigger at 09:00": {
+      "main": [
+        [
+          {
+            "node": "Get a random minute (0-9)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "e3161da4-1368-4aa4-85e3-ef0c5b1e3bad",
+  "versionId": "b4d968a2-04e2-4c7f-8cdf-32e5e64923b7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
