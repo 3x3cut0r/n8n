@@ -140,9 +140,9 @@
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "gpt-4.1-nano",
+          "value": "gpt-5-nano",
           "mode": "list",
-          "cachedResultName": "GPT-4.1-NANO"
+          "cachedResultName": "GPT-5-NANO"
         },
         "messages": {
           "values": [
@@ -591,7 +591,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "b4d968a2-04e2-4c7f-8cdf-32e5e64923b7",
+  "versionId": "488e3f54-72d6-4f34-beaa-0aab484bda8a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
