@@ -1,0 +1,126 @@
+{
+  "name": "Market drop alert via Signal",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8,
+              "minute": 0,
+              "mode": "everyDay"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ],
+      "id": "3cfa8a40-d737-4492-ad1b-6723c78edcf8",
+      "name": "Daily check"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "symbols",
+              "value": "AAPL,MSFT,SPY,QQQ,BTC-USD,ETH-USD"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ],
+      "id": "7f32f734-5365-48b1-80ec-c7c74f0d3a7b",
+      "name": "Set symbols"
+    },
+    {
+      "parameters": {
+        "functionCode": "const symbols=$json.symbols.split(',').map(s=>s.trim());\nconst dropped=[];\nfor (const symbol of symbols){\n  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=2d&interval=1d`;\n  const data=await this.helpers.httpRequest({method:'GET',url});\n  const closes=data.chart?.result?.[0]?.indicators?.quote?.[0]?.close;\n  if (closes && closes.length>=2){\n    const prev=closes[0];\n    const curr=closes[1];\n    if (prev>0){\n      const change=((curr-prev)/prev)*100;\n      if (change<=-5){\n        dropped.push(`${symbol}: ${change.toFixed(2)}%`);\n      }\n    }\n  }\n}\nreturn [{dropped}];"
+      },
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        720,
+        300
+      ],
+      "id": "03774bbd-dbdb-40fc-afe2-81e1ea925a84",
+      "name": "Check drop"
+    },
+    {
+      "parameters": {
+        "message": "={{$json.dropped.length ? 'Drop >=5%: ' + $json.dropped.join(', ') : 'No significant drops'}}"
+      },
+      "type": "n8n-nodes-base.signal",
+      "typeVersion": 1,
+      "position": [
+        960,
+        300
+      ],
+      "id": "f3847896-e244-4094-a580-7f819abd488e",
+      "name": "Send Signal message",
+      "credentials": {
+        "signalApi": {
+          "id": "",
+          "name": "Signal account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily check": {
+      "main": [
+        [
+          {
+            "node": "Set symbols",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set symbols": {
+      "main": [
+        [
+          {
+            "node": "Check drop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check drop": {
+      "main": [
+        [
+          {
+            "node": "Send Signal message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "id": "691b4ece-b02f-4054-bf69-e377324582c6",
+  "versionId": "05ab6eea-7aae-4b12-9123-e2e26d83b497",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
