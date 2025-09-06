@@ -2,6 +2,17 @@
   "name": "Market drop alert via Signal",
   "nodes": [
     {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        120
+      ],
+      "id": "490c6d0e-3cfc-475a-a200-d399981609f8",
+      "name": "Manual Trigger"
+    },
+    {
       "parameters": {
         "triggerTimes": {
           "item": [
@@ -28,7 +39,30 @@
           "string": [
             {
               "name": "symbols",
-              "value": "AAPL,MSFT,SPY,QQQ,BTC-USD,ETH-USD"
+              "value": "AAPL,MSFT,GOOGL,AMZN,TSLA,IBM,ORCL,GE"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        480,
+        60
+      ],
+      "id": "ad7c560b-9562-4bed-b1dc-94805a3b3580",
+      "name": "Set stock symbols"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "symbols",
+              "value": "SPY,QQQ,DIA,IWM,VOO,EEM,XLK"
             }
           ]
         },
@@ -42,8 +76,44 @@
         480,
         300
       ],
-      "id": "7f32f734-5365-48b1-80ec-c7c74f0d3a7b",
-      "name": "Set symbols"
+      "id": "19e22c45-a420-4e34-ba02-e9dc589694d1",
+      "name": "Set ETF symbols"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "symbols",
+              "value": "BTC-USD,ETH-USD,BNB-USD,SOL-USD,XRP-USD,ADA-USD,DOGE-USD"
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        480,
+        540
+      ],
+      "id": "ce9f7a7f-736e-4069-bcf0-bfd889041cfe",
+      "name": "Set crypto symbols"
+    },
+    {
+      "parameters": {
+        "functionCode": "let all=[];\nfor (const item of items){\n  if (item.json.symbols){\n    all.push(...item.json.symbols.split(',').map(s=>s.trim()));\n  }\n}\nreturn [{symbols: all.join(',')}];"
+      },
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        720,
+        300
+      ],
+      "id": "89041fb0-45e8-4c0d-931c-870918e46826",
+      "name": "Combine symbols"
     },
     {
       "parameters": {
@@ -52,7 +122,7 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        720,
+        960,
         300
       ],
       "id": "03774bbd-dbdb-40fc-afe2-81e1ea925a84",
@@ -65,7 +135,7 @@
       "type": "n8n-nodes-base.signal",
       "typeVersion": 1,
       "position": [
-        960,
+        1200,
         300
       ],
       "id": "f3847896-e244-4094-a580-7f819abd488e",
@@ -79,18 +149,82 @@
     }
   ],
   "connections": {
-    "Daily check": {
+    "Manual Trigger": {
       "main": [
         [
           {
-            "node": "Set symbols",
+            "node": "Set stock symbols",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set ETF symbols",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set crypto symbols",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Set symbols": {
+    "Daily check": {
+      "main": [
+        [
+          {
+            "node": "Set stock symbols",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set ETF symbols",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Set crypto symbols",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set stock symbols": {
+      "main": [
+        [
+          {
+            "node": "Combine symbols",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set ETF symbols": {
+      "main": [
+        [
+          {
+            "node": "Combine symbols",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set crypto symbols": {
+      "main": [
+        [
+          {
+            "node": "Combine symbols",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine symbols": {
       "main": [
         [
           {
@@ -118,7 +252,7 @@
     "executionOrder": "v1"
   },
   "id": "691b4ece-b02f-4054-bf69-e377324582c6",
-  "versionId": "05ab6eea-7aae-4b12-9123-e2e26d83b497",
+  "versionId": "833ec0d0-218d-4450-9a42-009bc2205e61",
   "meta": {
     "templateCredsSetupCompleted": true
   },
