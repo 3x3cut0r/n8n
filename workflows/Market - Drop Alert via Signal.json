@@ -117,7 +117,7 @@
     },
     {
       "parameters": {
-        "functionCode": "const symbols=$json.symbols.split(',').map(s=>s.trim());\nconst dropped=[];\nfor (const symbol of symbols){\n  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=2d&interval=1d`;\n  const data=await this.helpers.httpRequest({method:'GET',url});\n  const closes=data.chart?.result?.[0]?.indicators?.quote?.[0]?.close;\n  if (closes && closes.length>=2){\n    const prev=closes[0];\n    const curr=closes[1];\n    if (prev>0){\n      const change=((curr-prev)/prev)*100;\n      if (change<=-5){\n        dropped.push(`${symbol}: ${change.toFixed(2)}%`);\n      }\n    }\n  }\n}\nreturn [{dropped}];"
+        "functionCode": "const symbols=$json.symbols.split(',').map(s=>s.trim());\nconst threshold=$json.threshold;\nconst dropped=[];\nfor (const symbol of symbols){\n  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=2d&interval=1d`;\n  const data=await this.helpers.httpRequest({method:'GET',url});\n  const closes=data.chart?.result?.[0]?.indicators?.quote?.[0]?.close;\n  if (closes && closes.length>=2){\n    const prev=closes[0];\n    const curr=closes[1];\n    if (prev>0){\n      const change=((curr-prev)/prev)*100;\n      if (change<=-threshold){\n        dropped.push(`${symbol}: ${change.toFixed(2)}%`);\n      }\n    }\n  }\n}\nreturn [{dropped, threshold}];"
       },
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
@@ -130,22 +130,45 @@
     },
     {
       "parameters": {
-        "message": "={{$json.dropped.length ? 'Drop >=5%: ' + $json.dropped.join(', ') : 'No significant drops'}}"
+        "method": "POST",
+        "url": "http://n8n-signal-cli-rest-api:8080/v2/send",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ number: $env.SIGNAL_CLI_NUMBER, recipients: [$env.SIGNAL_CLI_RECIPIENT], message: $json.dropped.length ? `Drop >=${$json.threshold}%: ${$json.dropped.join(', ')}` : \"No significant drops\" }) }}",
+        "options": {}
       },
-      "type": "n8n-nodes-base.signal",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         1200,
         300
       ],
       "id": "f3847896-e244-4094-a580-7f819abd488e",
-      "name": "Send Signal message",
-      "credentials": {
-        "signalApi": {
-          "id": "",
-          "name": "Signal account"
+      "name": "Send Signal message"
+    },
+    {
+      "parameters": {
+        "values": {
+          "number": [
+            {
+              "name": "threshold",
+              "value": 5
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
         }
-      }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        960,
+        300
+      ],
+      "id": "50561501-5eb9-4c96-aff6-d775665c4a21",
+      "name": "Set drop threshold"
     }
   ],
   "connections": {
@@ -228,7 +251,7 @@
       "main": [
         [
           {
-            "node": "Check drop",
+            "node": "Set drop threshold",
             "type": "main",
             "index": 0
           }
@@ -240,6 +263,17 @@
         [
           {
             "node": "Send Signal message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set drop threshold": {
+      "main": [
+        [
+          {
+            "node": "Check drop",
             "type": "main",
             "index": 0
           }
