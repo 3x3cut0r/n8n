@@ -1,15 +1,15 @@
 {
-  "name": "Market - Drop Alert",
+  "name": "Market - Drop Alert via Signal",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        848,
-        480
+        -288,
+        64
       ],
-      "id": "08befee4-b4b1-4735-b992-75fb30b84583",
+      "id": "a630c10c-f0e0-4d70-84d7-d2849d1bfd77",
       "name": "Manual Trigger"
     },
     {
@@ -25,10 +25,10 @@
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
       "position": [
-        848,
-        656
+        -288,
+        240
       ],
-      "id": "52eba96d-400c-4356-8120-896c630e42e3",
+      "id": "96ef6172-637f-4cbd-a3f8-f36b5f70b2ab",
       "name": "Daily check"
     },
     {
@@ -62,10 +62,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        1120,
-        416
+        -16,
+        64
       ],
-      "id": "9be8ff42-e357-4af1-bfa9-cf701ccfd037",
+      "id": "ed279d99-fdca-4b2d-99e1-9dd76c9a3280",
       "name": "Set stock symbols"
     },
     {
@@ -99,10 +99,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        1120,
-        656
+        -16,
+        240
       ],
-      "id": "81ab3553-2dda-4d3d-97ff-0319cb175996",
+      "id": "3a42de7e-d6fe-4200-8f98-15a36f1aecbd",
       "name": "Set ETF symbols"
     },
     {
@@ -136,10 +136,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        1120,
-        896
+        -16,
+        432
       ],
-      "id": "1720324d-82e7-4fae-8ced-52ce57e3133e",
+      "id": "796dd4ea-59de-42cf-8295-f48369a625a7",
       "name": "Set crypto symbols"
     },
     {
@@ -149,10 +149,10 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        1808,
-        656
+        672,
+        240
       ],
-      "id": "2bb54338-3ffe-4487-930a-56109e04a9f8",
+      "id": "b56015be-8df1-4a36-ad43-514a0e242bc0",
       "name": "Combine symbols"
     },
     {
@@ -162,40 +162,63 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        2016,
-        656
+        880,
+        240
       ],
-      "id": "41d2629a-5148-404b-8d45-669e540576b8",
+      "id": "e075aaf9-6ea5-414f-aad6-709d2c472cde",
       "name": "Check drop"
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "http://signal-cli-rest-api:8080/v2/send",
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ number: $env.SIGNAL_CLI_NUMBER, recipients: [$env.SIGNAL_CLI_RECIPIENT], message: $json.dropped.length ? `Market drops detected:\n${$json.dropped.map(d => `- ${d}`).join('\\n')}` : \"No significant drops\" }) }}",
+        "jsCode": "const dropped = Array.isArray($json.dropped) ? $json.dropped : [];\nconst message = dropped.length\n  ? `Market drops detected:\n${dropped.map((d) => `- ${d}`).join('\\n')}`\n  : 'No significant drops';\n\nreturn [{\n  json: {\n    message,\n    recipient: ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        240
+      ],
+      "id": "03269f3d-9888-4912-996e-5af3f349172e",
+      "name": "Prepare Signal payload"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "jEC35MXsssds8HOB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/jEC35MXsssds8HOB",
+          "cachedResultName": "Signal - Send Message"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
         "options": {}
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
       "position": [
-        2224,
-        656
+        1296,
+        240
       ],
-      "id": "7492c4b6-91b9-4c62-b839-3c975e166983",
-      "name": "Send Signal message"
+      "id": "7efb50b6-1716-4489-b2aa-3547a68edf94",
+      "name": "Signal - Send Message",
+      "alwaysOutputData": true
     },
     {
       "parameters": {},
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
-        1360,
-        528
+        224,
+        224
       ],
-      "id": "b7fd5dd3-8208-47d6-b056-ef1ccae8ba2d",
+      "id": "ce3fc0ce-9bbf-4952-b6cf-d9cbfb695ef7",
       "name": "Merge stocks + ETF"
     },
     {
@@ -203,10 +226,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
-        1600,
-        656
+        464,
+        240
       ],
-      "id": "02c10c1b-f272-408b-a815-ad4c76daf5aa",
+      "id": "1d01bc9d-e888-4d6a-974a-bb978179603c",
       "name": "Merge all categories"
     }
   ],
@@ -324,7 +347,18 @@
       "main": [
         [
           {
-            "node": "Send Signal message",
+            "node": "Prepare Signal payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Signal payload": {
+      "main": [
+        [
+          {
+            "node": "Signal - Send Message",
             "type": "main",
             "index": 0
           }
@@ -332,16 +366,16 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "1e8a45bb-2094-4de2-bae5-e896b2f152cd",
+  "versionId": "7758205a-3af3-4723-83b1-dc7f6cc60824",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "9aDoxZ-LEDp115feOpMAh",
+  "id": "zwc5QLQMZHnaRefe",
   "tags": []
 }
