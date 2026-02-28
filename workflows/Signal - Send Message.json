@@ -1,0 +1,346 @@
+{
+  "name": "Signal - Send Message",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        208
+      ],
+      "id": "d74ab991-b577-4af9-ac6b-7e64c2ac863f",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        416
+      ],
+      "id": "1e4b8269-10b3-4a2e-8e9f-77bf45154ec3",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c69d471-6ab4-4254-89a4-503430486f2a",
+              "name": "message",
+              "value": "n8n: This is a test message",
+              "type": "string"
+            },
+            {
+              "id": "168a61a0-f47b-4c89-a29d-38f6e59d8797",
+              "name": "recipient",
+              "value": "=",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -368,
+        416
+      ],
+      "id": "7056807b-f70e-4921-8403-494bb1ab5a6e",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawMessage = $json.message;\nconst rawRecipient = $json.recipient;\n\nconst message = typeof rawMessage === 'string' ? rawMessage.trim() : '';\nconst recipient = typeof rawRecipient === 'string' ? rawRecipient.trim() : '';\n\nreturn [{\n  json: {\n    message,\n    recipient\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        320
+      ],
+      "id": "1125e6fc-e421-4972-b04d-898e26c2cf75",
+      "name": "Normalize input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc774b17-2e35-4f80-a9b9-594f0f6623fa",
+              "name": "number",
+              "value": "={{ $env.SIGNAL_CLI_NUMBER }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        320
+      ],
+      "id": "e16be7db-cbf4-4561-a871-511148941c93",
+      "name": "Set Signal account"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "764ec6cd-6055-41ec-93f7-6ca76a597b12",
+              "name": "defaultRecipient",
+              "value": "={{ $env.SIGNAL_CLI_RECIPIENT }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        320
+      ],
+      "id": "409331a5-ca2f-47fa-8761-f6375c99bfb7",
+      "name": "Set default recipient"
+    },
+    {
+      "parameters": {
+        "content": "# Konfiguration\n\nDu kannst in den Set-Nodes feste Standardwerte setzen (z. B. +4912345678).\nAlternativ kannst du dort ENV-Expressions nutzen:\n- number: {{ $env.SIGNAL_CLI_NUMBER }}\n- defaultRecipient: {{ $env.SIGNAL_CLI_RECIPIENT }}\n\nWenn du feste Werte eintraegst, werden keine ENV-Werte mehr benoetigt.",
+        "height": 272,
+        "width": 576
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ac3afc14-5027-4cbf-8224-a90ea2cca971",
+      "name": "Config note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst signalConfig = $('Set Signal account').item.json || {};\nconst recipientConfig = $('Set default recipient').item.json || {};\n\nconst message = typeof normalized.message === 'string' ? normalized.message.trim() : '';\nconst inputRecipient = typeof normalized.recipient === 'string' ? normalized.recipient.trim() : '';\nconst configuredNumber = typeof signalConfig.number === 'string' ? signalConfig.number.trim() : '';\nconst configuredDefaultRecipient = typeof recipientConfig.defaultRecipient === 'string' ? recipientConfig.defaultRecipient.trim() : '';\n\nconst usedNumber = configuredNumber;\nconst usedRecipient = inputRecipient || configuredDefaultRecipient;\n\nlet error = '';\nif (!message) {\n  error = 'Input field message is required and must be a non-empty string.';\n} else if (!usedNumber) {\n  error = 'No sender number configured. Set value in node Set Signal account.';\n} else if (!usedRecipient) {\n  error = 'No recipient configured. Pass recipient or set value in node Set default recipient.';\n}\n\nreturn [{\n  json: {\n    message,\n    usedRecipient,\n    usedNumber,\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        464,
+        320
+      ],
+      "id": "2e4d043f-9833-4f5f-965a-d819b71ffbfe",
+      "name": "Resolve and validate payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8afc8674-a089-4ad0-b009-6f1e909ee95f",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        672,
+        320
+      ],
+      "id": "f18aa8e5-a2da-4ff8-bb33-32185006f73d",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://signal-cli-rest-api:8080/v2/send",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ number: $json.usedNumber, recipients: [$json.usedRecipient], message: $json.message }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        208
+      ],
+      "id": "309ea921-1e3b-4b95-af57-f122ebecb985",
+      "name": "Send Signal message",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const statusCode = Number($json.statusCode || 0) || null;\nconst hasError = !!$json.error || !!$json.message;\nconst ok = !hasError && (statusCode === null || statusCode >= 200 && statusCode < 300);\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRecipient: $('Resolve and validate payload').item.json.usedRecipient,\n    usedNumber: $('Resolve and validate payload').item.json.usedNumber,\n    response: $json\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        192
+      ],
+      "id": "b97db598-19ed-4113-a139-f9327dc005bf",
+      "name": "Build send result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    statusCode: null,\n    usedRecipient: $json.usedRecipient || null,\n    usedNumber: $json.usedNumber || null,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        432
+      ],
+      "id": "8cff3d5f-12f7-46b8-86ba-a230b1e735f9",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize input": {
+      "main": [
+        [
+          {
+            "node": "Set Signal account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Signal account": {
+      "main": [
+        [
+          {
+            "node": "Set default recipient",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set default recipient": {
+      "main": [
+        [
+          {
+            "node": "Resolve and validate payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve and validate payload": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Send Signal message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Signal message": {
+      "main": [
+        [
+          {
+            "node": "Build send result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "860b708b-4ab4-4c4e-93cd-c04394c4ea27",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "EFvmFTU3zA9xVfBB",
+  "tags": []
+}
