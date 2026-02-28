@@ -1,0 +1,95 @@
+{
+  "name": "Workflow - Error",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        240
+      ],
+      "id": "0f55f47a-0a14-4ff6-93c0-c2c18a073db8",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const workflowName = $json.workflow?.name || $json.execution?.workflowData?.name || 'unknown';\nconst errorMessage = $json.error?.message || $json.execution?.error?.message || $json.message || 'unknown error';\n\nreturn [{\n  json: {\n    message: `n8n: ERROR: workflow = ${workflowName}: ${errorMessage}`,\n    recipient: ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        240
+      ],
+      "id": "9fd2fb1b-0ff8-49d9-9056-c4f8420d53d6",
+      "name": "Build Signal payload"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "jEC35MXsssds8HOB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/jEC35MXsssds8HOB",
+          "cachedResultName": "Signal - Send Message"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        144,
+        240
+      ],
+      "id": "137f2cc3-16e9-49f1-a972-b12541a973da",
+      "name": "Signal - Send Message",
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Signal payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Signal payload": {
+      "main": [
+        [
+          {
+            "node": "Signal - Send Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "99871147-90df-4f92-bab1-0f204ad0f592",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "0m6RHo3zK4IfHSeM",
+  "tags": []
+}
