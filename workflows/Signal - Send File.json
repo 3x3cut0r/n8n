@@ -1,0 +1,376 @@
+{
+  "name": "Signal - Send File",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        224
+      ],
+      "id": "7075a0ad-2013-41e0-8b53-27517ff2572e",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        416
+      ],
+      "id": "89cdb7b0-25b8-4e40-8b05-66f1dff37339",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "daff1c12-6f5f-44ba-a5bb-60260ccf2ace",
+              "name": "recipient",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "8fc4f46d-f7f5-4d2b-aea2-a8cff2ca90a5",
+              "name": "fileName",
+              "value": "n8n-test.txt",
+              "type": "string"
+            },
+            {
+              "id": "db320c6b-77a3-4cf2-9d58-d1a1dece53f7",
+              "name": "fileContent",
+              "value": "n8n: This is a test file",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        416
+      ],
+      "id": "a6a1600b-c45c-45d0-8e8f-1dd78312c0f0",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const recipient = typeof $json.recipient === 'string' ? $json.recipient.trim() : '';\nconst fileName = typeof $json.fileName === 'string' && $json.fileName.trim() ? $json.fileName.trim() : 'n8n-test.txt';\nconst fileContent = typeof $json.fileContent === 'string' ? $json.fileContent : 'n8n: This is a test file';\n\nconst base64Data = Buffer.from(fileContent, 'utf8').toString('base64');\n\nreturn [{\n  json: {\n    recipient\n  },\n  binary: {\n    data: {\n      data: base64Data,\n      fileName,\n      mimeType: 'text/plain'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        416
+      ],
+      "id": "ef4e6977-b09d-4fea-bac1-09dc90fb220e",
+      "name": "Create test file"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawRecipient = $json.recipient;\nconst recipient = typeof rawRecipient === 'string' ? rawRecipient.trim() : '';\n\nreturn [{\n  json: {\n    recipient\n  },\n  binary: $input.item.binary || {}\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        416
+      ],
+      "id": "c03fe27c-3212-4eb9-91ad-cad2da13251c",
+      "name": "Normalize input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3f0a63b0-d323-4b64-9133-c9e1701cc458",
+              "name": "number",
+              "value": "={{ $env.SIGNAL_CLI_NUMBER }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        416
+      ],
+      "id": "e0b0d2db-e8bf-4a42-a779-3822d6bb6624",
+      "name": "Set Signal account"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a57c2a14-59ae-400b-ac5f-5de88f53fd22",
+              "name": "defaultRecipient",
+              "value": "={{ $env.SIGNAL_CLI_RECIPIENT }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        416
+      ],
+      "id": "33fd2d41-6b62-48d0-8116-b26d1a1ae85d",
+      "name": "Set default recipient"
+    },
+    {
+      "parameters": {
+        "content": "# Konfiguration\n\nDu kannst in den Set-Nodes feste Standardwerte setzen (z. B. +4912345678).\nAlternativ kannst du dort ENV-Expressions nutzen:\n- number: {{ $env.SIGNAL_CLI_NUMBER }}\n- defaultRecipient: {{ $env.SIGNAL_CLI_RECIPIENT }}\n\nInput erwartet eine Binary-Datei (bevorzugt in `binary.data`).\nWenn kein `recipient` im Input gesetzt ist, wird `defaultRecipient` verwendet.",
+        "height": 272,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        112
+      ],
+      "id": "5a8f1ee9-27a3-4def-8fe1-d138b60e657d",
+      "name": "Config note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalizedItem = $('Normalize input').item;\nconst normalized = normalizedItem.json || {};\nconst inputBinary = normalizedItem.binary || {};\nconst signalConfig = $('Set Signal account').item.json || {};\nconst recipientConfig = $('Set default recipient').item.json || {};\n\nconst inputRecipient = typeof normalized.recipient === 'string' ? normalized.recipient.trim() : '';\nconst configuredNumber = typeof signalConfig.number === 'string' ? signalConfig.number.trim() : '';\nconst configuredDefaultRecipient = typeof recipientConfig.defaultRecipient === 'string' ? recipientConfig.defaultRecipient.trim() : '';\n\nconst binaryKeys = Object.keys(inputBinary);\nconst binaryFieldName = inputBinary.data ? 'data' : (binaryKeys[0] || '');\nconst file = binaryFieldName ? inputBinary[binaryFieldName] : null;\nconst attachmentBase64 = typeof file?.data === 'string' ? file.data.trim() : '';\nconst rawFileName = typeof file?.fileName === 'string' && file.fileName.trim() ? file.fileName.trim() : '';\nconst fileName = rawFileName || 'attachment.bin';\nconst mimeType = typeof file?.mimeType === 'string' && file.mimeType.trim() ? file.mimeType.trim() : 'application/octet-stream';\n\nconst usedNumber = configuredNumber;\nconst usedRecipient = inputRecipient || configuredDefaultRecipient;\n\nlet error = '';\nif (!attachmentBase64) {\n  error = 'No input file found. Provide binary data (preferred in binary.data).';\n} else if (!usedNumber) {\n  error = 'No sender number configured. Set value in node Set Signal account.';\n} else if (!usedRecipient) {\n  error = 'No recipient configured. Pass recipient or set value in node Set default recipient.';\n}\n\nreturn [{\n  json: {\n    usedRecipient,\n    usedNumber,\n    attachmentBase64,\n    binaryFieldName: binaryFieldName || null,\n    fileName,\n    mimeType,\n    okToSend: !error,\n    error\n  },\n  binary: inputBinary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        512,
+        416
+      ],
+      "id": "c2cfc309-90ab-43e9-9fa8-67b6d3269a1d",
+      "name": "Resolve and validate payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4ee4d9ca-7482-4654-a95d-8d187f932c32",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        416
+      ],
+      "id": "05a9847b-c37e-423c-8c42-9b052beaf8fe",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://signal-cli-rest-api:8080/v2/send",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ number: $json.usedNumber, recipients: [$json.usedRecipient], base64_attachments: [`data:${$json.mimeType};filename=${encodeURIComponent($json.fileName)};base64,${$json.attachmentBase64}`] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        304
+      ],
+      "id": "74f601e0-8b4a-43da-bd1b-0bfa76701bd6",
+      "name": "Send Signal file",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const statusCode = Number($json.statusCode || 0) || null;\nconst hasError = !!$json.error || !!$json.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRecipient: resolved.usedRecipient || null,\n    usedNumber: resolved.usedNumber || null,\n    binaryFieldName: resolved.binaryFieldName || null,\n    fileName: resolved.fileName || null,\n    response: $json\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        288
+      ],
+      "id": "e8fd096d-6907-4e34-94e5-9f39581abe84",
+      "name": "Build send result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    statusCode: null,\n    usedRecipient: $json.usedRecipient || null,\n    usedNumber: $json.usedNumber || null,\n    binaryFieldName: $json.binaryFieldName || null,\n    fileName: $json.fileName || null,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        528
+      ],
+      "id": "8a3fcf51-75d6-48e7-bd40-0b48fa80d0bd",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Create test file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create test file": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize input": {
+      "main": [
+        [
+          {
+            "node": "Set Signal account",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Signal account": {
+      "main": [
+        [
+          {
+            "node": "Set default recipient",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set default recipient": {
+      "main": [
+        [
+          {
+            "node": "Resolve and validate payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve and validate payload": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Send Signal file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Signal file": {
+      "main": [
+        [
+          {
+            "node": "Build send result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4113d22b-25fe-4c52-a90f-cce4c6c673b3",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "Shpfcvz0Gs3jpN2I",
+  "tags": []
+}
