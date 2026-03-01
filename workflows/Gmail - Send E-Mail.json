@@ -1,0 +1,301 @@
+{
+  "name": "Gmail - Send E-Mail",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        480
+      ],
+      "id": "af167dfa-594a-44a0-bd3b-76e31f30a252",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        672
+      ],
+      "id": "16fc9570-0cfc-45c1-8785-005e61b8d1ab",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3c5a81f7-a75e-497d-a0f1-26aa3b11104c",
+              "name": "to",
+              "value": "recipient@example.com",
+              "type": "string"
+            },
+            {
+              "id": "c74992a5-940f-4f3f-8e53-1f5cb1faeb06",
+              "name": "subject",
+              "value": "n8n: Test-E-Mail",
+              "type": "string"
+            },
+            {
+              "id": "eff450ed-e2d6-43f0-a0fd-72083a57c5ed",
+              "name": "text",
+              "value": "n8n: Das ist eine Test-E-Mail.",
+              "type": "string"
+            },
+            {
+              "id": "59be950f-86fc-44f7-93fd-b2a8de0de7d8",
+              "name": "cc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "49a21f4f-b0be-4b57-b11d-dd7c2870d863",
+              "name": "bcc",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "b83363e5-ba89-4a1f-bda0-50b2865d8d88",
+              "name": "replyTo",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "d73a02a2-0774-46ef-be0e-e4ac3dd4ed6d",
+              "name": "fromName",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "f1e79da8-a2eb-4ce7-b86f-b09e23050f3a",
+              "name": "attachmentBinaryProperties",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        672
+      ],
+      "id": "c180c050-43bf-4d3b-abe1-cd4103961494",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.item;\nconst data = item.json || {};\nconst binary = item.binary || {};\n\nconst getString = (value) => typeof value === 'string' ? value.trim() : '';\n\nconst normalizeAddressList = (value) => {\n  if (Array.isArray(value)) {\n    return value\n      .map((v) => typeof v === 'string' ? v.trim() : '')\n      .filter(Boolean)\n      .join(',');\n  }\n\n  if (typeof value === 'string') {\n    return value\n      .split(',')\n      .map((v) => v.trim())\n      .filter(Boolean)\n      .join(',');\n  }\n\n  return '';\n};\n\nconst parseAttachmentProperties = (value) => {\n  if (Array.isArray(value)) {\n    return value\n      .map((v) => typeof v === 'string' ? v.trim() : '')\n      .filter(Boolean);\n  }\n\n  if (typeof value === 'string') {\n    return value\n      .split(',')\n      .map((v) => v.trim())\n      .filter(Boolean);\n  }\n\n  return [];\n};\n\nconst to = normalizeAddressList(data.to);\nconst cc = normalizeAddressList(data.cc);\nconst bcc = normalizeAddressList(data.bcc);\nconst replyTo = normalizeAddressList(data.replyTo);\nconst senderName = getString(data.fromName);\nconst subject = typeof data.subject === 'string' ? data.subject : '';\nconst text = typeof data.text === 'string' ? data.text : '';\nconst html = typeof data.html === 'string' ? data.html : '';\n\nconst hasHtml = html.trim().length > 0;\nconst hasText = text.trim().length > 0;\nconst emailType = hasHtml ? 'html' : 'text';\nconst message = hasHtml ? html : text;\n\nconst availableBinaryKeys = Object.keys(binary);\nconst explicitAttachmentKeys = parseAttachmentProperties(data.attachmentBinaryProperties);\n\nlet attachmentKeys = [];\nif (explicitAttachmentKeys.length > 0) {\n  const binaryKeySet = new Set(availableBinaryKeys);\n  attachmentKeys = explicitAttachmentKeys.filter((key) => binaryKeySet.has(key));\n} else {\n  attachmentKeys = availableBinaryKeys;\n}\n\nconst options = {\n  appendAttribution: false\n};\n\nif (cc) {\n  options.ccList = cc;\n}\n\nif (bcc) {\n  options.bccList = bcc;\n}\n\nif (replyTo) {\n  options.replyTo = replyTo;\n}\n\nif (senderName) {\n  options.senderName = senderName;\n}\n\nif (attachmentKeys.length > 0) {\n  options.attachmentsUi = {\n    attachmentsBinary: attachmentKeys.map((property) => ({ property }))\n  };\n}\n\nlet error = '';\nif (!to) {\n  error = 'Input field to is required and must contain at least one email address.';\n}\n\nreturn [{\n  json: {\n    to,\n    subject,\n    emailType,\n    message,\n    options,\n    usedAttachmentBinaryProperties: attachmentKeys,\n    okToSend: !error,\n    error\n  },\n  binary\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        480
+      ],
+      "id": "8393e616-d1df-4d4f-9f32-5e5169e4f01d",
+      "name": "Normalize and map input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2fe04a44-0b47-4f73-bf60-dbc61188e7dd",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        480
+      ],
+      "id": "8afc6c8a-1a5b-400c-9833-61fc5f468e19",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "{{ $json.emailType }}",
+        "message": "={{ $json.message }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        384
+      ],
+      "id": "0fc2df37-2a6b-4c38-b925-05853c480b25",
+      "name": "Send Gmail",
+      "webhookId": "3b41e7ac-1002-4c30-8be0-3224409c0cd8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Normalize and map input').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    to: resolved.to || null,\n    subject: resolved.subject || '',\n    usedAttachmentBinaryProperties: resolved.usedAttachmentBinaryProperties || [],\n    messageId: response.id || null,\n    threadId: response.threadId || null,\n    labelIds: response.labelIds || [],\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        368
+      ],
+      "id": "1c18a5a2-b562-46ff-ae8d-e14363e3127c",
+      "name": "Build send result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    statusCode: null,\n    to: $json.to || null,\n    subject: $json.subject || '',\n    usedAttachmentBinaryProperties: $json.usedAttachmentBinaryProperties || [],\n    messageId: null,\n    threadId: null,\n    labelIds: [],\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        576
+      ],
+      "id": "eabc23d0-8b71-449a-a1ce-4308df054ec4",
+      "name": "Build validation error result"
+    },
+    {
+      "parameters": {
+        "content": "# Einrichtung\n\nDieser Workflow ist als Subworkflow gedacht und kann ueber **Execute Workflow** aufgerufen werden.\n\n## 1) Gmail Credential einrichten\n- Im Node **Send Gmail** ein Credential vom Typ **Gmail OAuth2 API** waehlen oder neu erstellen.\n- In Google Cloud ein OAuth Client anlegen und die **Gmail API** aktivieren.\n- Redirect URL aus n8n-Credential-Dialog in Google Cloud als Authorized redirect URI hinterlegen.\n\n## 2) Input fuer Subworkflow\nTypische Eingabefelder (alles optional ausser `to`):\n- `to` (string oder array)\n- `cc` (string oder array)\n- `bcc` (string oder array)\n- `subject` (string)\n- `text` (string)\n- `html` (string)\n- `replyTo` (string oder array)\n- `fromName` (string)\n- `attachmentBinaryProperties` (string mit Komma-Liste oder array)\n\n## 3) Anhaenge\n- Wenn `attachmentBinaryProperties` gesetzt ist, werden genau diese Binary-Properties als Anhaenge genutzt.\n- Wenn nicht gesetzt, werden automatisch alle vorhandenen Binary-Properties angehaengt (z. B. `binary.data`).\n\n## 4) Verhalten\n- Der Workflow verwendet Gmail-typisches Verhalten: nur `to` ist Pflicht.\n- Leerer Betreff oder leerer Body wird nicht blockiert.\n- Wenn `html` gesetzt ist, wird als HTML gesendet, sonst als Text.\n\n## 5) Output\nRueckgabe enthaelt u. a. `ok`, `messageId`, `threadId`, `labelIds`, `to`, `subject`, `response`.",
+        "height": 848,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        -448
+      ],
+      "id": "d70dd80e-739e-4300-a9cd-758c074ddf4a",
+      "name": "Config note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize and map input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize and map input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and map input": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Gmail": {
+      "main": [
+        [
+          {
+            "node": "Build send result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 2
+  },
+  "versionId": "d23c398a-19f3-49c0-aaab-dc6fdf3a8e3e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "oZbgnrNwOgjqwxpr",
+  "tags": []
+}
