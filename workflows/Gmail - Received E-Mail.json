@@ -3,16 +3,24 @@
   "nodes": [
     {
       "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
         "simple": false,
-        "filters": {}
+        "filters": {},
+        "options": {}
       },
       "type": "n8n-nodes-base.gmailTrigger",
       "typeVersion": 1.2,
       "position": [
-        64,
-        368
+        32,
+        352
       ],
-      "id": "d4d1fef4-a4c9-4407-8901-551f227f6be8",
+      "id": "b48af6c8-ab8f-4060-b063-955affb76dc3",
       "name": "Gmail Trigger",
       "credentials": {
         "gmailOAuth2": {
@@ -28,18 +36,20 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        288,
-        368
+        224,
+        352
       ],
-      "id": "4e46bd70-f26a-4432-a07f-71a44f69682b",
+      "id": "0e1967fa-6ef0-4a9f-8b47-e9e90112cde2",
       "name": "Normalize incoming email"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "r9Yh2TQ7kLmP4wNs",
-          "mode": "id"
+          "value": "m51F9IO2sbOKSlKD",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/m51F9IO2sbOKSlKD",
+          "cachedResultName": "Gmail - E-Mail Router"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -54,10 +64,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        528,
-        368
+        432,
+        352
       ],
-      "id": "9463d805-658a-4a9d-af95-47cc66e97ee1",
+      "id": "03cbbd1e-b809-4642-a274-ed2495ba8ddd",
       "name": "Gmail - E-Mail Router",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -69,25 +79,25 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        768,
-        368
+        720,
+        336
       ],
-      "id": "d4bf6243-3445-49a0-b99f-cc056ccdc417",
+      "id": "ea767c70-aff3-4686-873d-e50d9ceca6c8",
       "name": "Build receive result"
     },
     {
       "parameters": {
         "content": "# Konfiguration\n\n- Dieser Workflow reagiert auf neue Gmail E-Mails und ruft den Router-Subworkflow auf.\n- Fuer robuste Steuerung in Gmail-Filterregeln ein Label wie `n8n/incoming` setzen und nur dieses labeln/abholen.\n- Nachgelagerte Aktionen wie Label setzen oder Loeschen erfolgen ueber eigene Subworkflows.",
-        "height": 320,
+        "height": 208,
         "width": 720
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        32,
-        16
+        64,
+        96
       ],
-      "id": "cb206239-1fd3-4d9f-b0be-6a14930f6de7",
+      "id": "9d40403c-df45-4f53-965a-79544b95e0e2",
       "name": "Config note"
     }
   ],
@@ -135,13 +145,19 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "executionTimeout": -1,
-    "timeSavedPerExecution": 2
+    "timeSavedPerExecution": 1
   },
-  "versionId": "9a40b95f-4ac2-473c-a9c4-8cb877443072",
+  "versionId": "a16ee612-6d09-438b-8b1b-7fe148b99e81",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "w8Qk3Vg2Lm5Nf7Dx",
-  "tags": []
+  "id": "I8mYvpu9RzbUpDYc",
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
 }
