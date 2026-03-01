@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1600,
-        0
+        2976,
+        224
       ],
-      "id": "b60a8783-51e1-4cb9-9cf9-960dcb556748",
+      "id": "ebedcf55-1365-4182-abb4-2f1c2c53df61",
       "name": "Pick random preview"
     },
     {
@@ -41,14 +41,14 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        896,
-        16
+        2272,
+        240
       ],
-      "id": "3b864507-81b2-407a-b81f-e32c7cd942bc",
+      "id": "5b62261c-b9f4-45dd-bee8-a174e9df1264",
       "name": "Get Giphy preview",
       "credentials": {
         "rocketchatApi": {
-          "id": "5E8uA5UkTeshfTmv",
+          "id": "MOy67U60d183CN6f",
           "name": "Rocket account"
         }
       }
@@ -68,15 +68,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1792,
-        0
+        3168,
+        224
       ],
-      "id": "66622565-d196-4134-b8a9-0049aeece625",
+      "id": "4158f61b-8477-48c2-956a-91ff472d8936",
       "name": "Send picked preview",
-      "executeOnce": false,
+      "executeOnce": true,
       "credentials": {
         "rocketchatApi": {
-          "id": "5E8uA5UkTeshfTmv",
+          "id": "MOy67U60d183CN6f",
           "name": "Rocket account"
         }
       }
@@ -98,27 +98,28 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        224,
-        0
+        1600,
+        224
       ],
-      "id": "e26d6f75-e33c-4da1-86cc-4dacf2db127b",
+      "id": "80cb93d6-76fb-4520-9c78-daa7dca968ce",
       "name": "Set roomId"
     },
     {
       "parameters": {
-        "cityName": "Dornstadt"
+        "cityName": "Dornstadt",
+        "language": "de"
       },
       "type": "n8n-nodes-base.openWeatherMap",
       "typeVersion": 1,
       "position": [
-        -720,
-        0
+        656,
+        224
       ],
-      "id": "06aeea93-490b-4a2d-aee3-b681b8820f8d",
+      "id": "dc1cc171-f445-45ba-b22d-f2b87fb77366",
       "name": "OpenWeatherMap",
       "credentials": {
         "openWeatherMapApi": {
-          "id": "szH3jtW4YUsLRVe9",
+          "id": "aQTh3GhtBRk6LGt9",
           "name": "OpenWeatherMap account"
         }
       }
@@ -130,10 +131,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -528,
-        0
+        848,
+        224
       ],
-      "id": "12f92f72-7246-4df4-80d6-3ab42e1a3d57",
+      "id": "48681455-5876-4840-8d06-c73712741e3b",
       "name": "Get weekday, date and season"
     },
     {
@@ -156,14 +157,14 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        -288,
-        0
+        1088,
+        224
       ],
-      "id": "2a30e415-12ae-4345-b932-fa59046696b1",
+      "id": "63f6b887-aa79-4e47-9633-370c135f7fad",
       "name": "Get a keyword or phrase",
       "credentials": {
         "openAiApi": {
-          "id": "h8aqUXdBJMsOg0ZE",
+          "id": "OpKdnL4SPopfN0cn",
           "name": "OpenAi account"
         }
       }
@@ -175,10 +176,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1152,
-        0
+        224,
+        224
       ],
-      "id": "35692799-9ed9-40c3-aa77-72be148e0246",
+      "id": "4446f41e-29b3-4857-a7f5-49b71826c0c5",
       "name": "Get a random minute (0-9)"
     },
     {
@@ -189,10 +190,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        -944,
-        0
+        432,
+        224
       ],
-      "id": "d5be28e4-25c2-4b2b-8915-3c9f7252436f",
+      "id": "f1aa4dfd-69b1-458e-879c-96bd3123e8dd",
       "name": "Wait minutes",
       "webhookId": "c1955a8a-6e21-411b-a970-daaa5d2ec135"
     },
@@ -204,11 +205,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -1376,
-        -224
+        0,
+        0
       ],
       "typeVersion": 1,
-      "id": "4ee8082a-3de6-492d-85c1-a2cfcd7554a5",
+      "id": "8ca6d8bf-4c47-4136-b515-0036bf944218",
       "name": "Sticky Note"
     },
     {
@@ -219,11 +220,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -784,
-        -224
+        592,
+        0
       ],
       "typeVersion": 1,
-      "id": "089ed0d8-246d-4a5a-a6d3-b885e0ecb0f8",
+      "id": "c07a31dd-439c-4f4b-9a59-f9e20e979ca5",
       "name": "Sticky Note1"
     },
     {
@@ -234,11 +235,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -336,
-        -224
+        1040,
+        0
       ],
       "typeVersion": 1,
-      "id": "e8269745-108c-4983-b7f5-5032430796b4",
+      "id": "21dd3023-9a6f-493d-b228-759b07d76168",
       "name": "Sticky Note2"
     },
     {
@@ -249,11 +250,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        160,
-        -224
+        1536,
+        0
       ],
       "typeVersion": 1,
-      "id": "593b0264-251d-4fe3-a652-8e05adef8caf",
+      "id": "8a491c8d-6436-4865-8bbe-430d9b5386f0",
       "name": "Sticky Note3"
     },
     {
@@ -264,11 +265,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1536,
-        -224
+        2912,
+        0
       ],
       "typeVersion": 1,
-      "id": "bd23708e-aee1-4bae-be36-b321772d92cd",
+      "id": "3506be49-4f75-4e85-a4b5-acd740379fb1",
       "name": "Sticky Note4"
     },
     {
@@ -278,10 +279,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        656,
-        0
+        2032,
+        224
       ],
-      "id": "bf23016f-f369-4741-8c12-c214b4913147",
+      "id": "109efe7e-9747-45f7-ac16-d15f16e10b58",
       "name": "Loop up to 3 times on failure",
       "alwaysOutputData": false,
       "retryOnFail": false,
@@ -314,10 +315,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1104,
-        16
+        2480,
+        240
       ],
-      "id": "de6ccacb-8a79-4a47-b43a-41559d9b3f76",
+      "id": "e942070f-9ee3-47d1-9e7b-2f377dba78aa",
       "name": "Has preview?",
       "alwaysOutputData": false,
       "retryOnFail": false
@@ -329,10 +330,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1312,
-        80
+        2688,
+        304
       ],
-      "id": "055634d3-3b2c-4d1c-bcb8-179312f82363",
+      "id": "652041bc-dd47-4db5-b69a-0bc6c4ebc267",
       "name": "Wait 2s",
       "webhookId": "e2f5fa83-fceb-492e-a066-fd224571ca9a"
     },
@@ -343,10 +344,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        896,
-        -128
+        2272,
+        96
       ],
-      "id": "b71afbf1-c689-490c-9649-f57bf38f2400",
+      "id": "f91c1701-1d5f-453c-a156-508a964f1005",
       "name": "Error Message"
     },
     {
@@ -356,10 +357,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        432,
-        0
+        1808,
+        224
       ],
-      "id": "2764089c-ec9f-471d-9fde-3154a5b63ef4",
+      "id": "fcc6cad0-c742-42c3-b71c-24d1248907f0",
       "name": "Generate 3 json objects"
     },
     {
@@ -367,10 +368,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -944,
-        160
+        432,
+        384
       ],
-      "id": "6ed3fc20-e9e7-4c0d-8057-7c3589d95f86",
+      "id": "3fe27b7d-f28a-4d3a-9bc3-ab4e25e2c084",
       "name": "Manual Trigger"
     },
     {
@@ -386,10 +387,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -1344,
-        0
+        32,
+        224
       ],
-      "id": "c70110d3-a950-478f-8e3c-fbce0aff763c",
+      "id": "948f1f53-cd93-43a1-a03d-2e8523a931d0",
       "name": "Trigger at 09:00"
     }
   ],
@@ -422,11 +423,6 @@
             "index": 0
           }
         ]
-      ]
-    },
-    "Send picked preview": {
-      "main": [
-        []
       ]
     },
     "Pick random preview": {
@@ -589,13 +585,20 @@
   },
   "active": true,
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "binaryMode": "separate",
+    "timeSavedPerExecution": 2,
+    "executionTimeout": -1
   },
-  "versionId": "488e3f54-72d6-4f34-beaa-0aab484bda8a",
+  "versionId": "f1c5421f-7ed5-46ad-bf63-7bed2e488499",
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "61c1812dff103a4a814b5c48159bea5eb090aacf5a1060cc3e9bcb96d59a25d9"
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "ursULvJr104g84AD",
+  "id": "cMtb5UL_ETErKRqaHmZ5i",
   "tags": []
 }

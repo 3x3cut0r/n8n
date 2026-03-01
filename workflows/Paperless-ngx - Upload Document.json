@@ -430,7 +430,12 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 3,
+    "executionTimeout": -1
   },
   "versionId": "e929ffd0-f838-4a1d-b47c-357bd83dae80",
   "meta": {

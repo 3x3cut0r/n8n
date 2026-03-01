@@ -11,7 +11,7 @@
         -368,
         208
       ],
-      "id": "d74ab991-b577-4af9-ac6b-7e64c2ac863f",
+      "id": "2ab1aca1-5b02-4b1a-93f3-2d09e912a10b",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -22,7 +22,7 @@
         -576,
         416
       ],
-      "id": "1e4b8269-10b3-4a2e-8e9f-77bf45154ec3",
+      "id": "d25d238e-2513-4107-abe7-b35c98c66c91",
       "name": "Manual Trigger"
     },
     {
@@ -51,7 +51,7 @@
         -368,
         416
       ],
-      "id": "7056807b-f70e-4921-8403-494bb1ab5a6e",
+      "id": "a9251d0e-0733-4eb0-beeb-82ce06f408c4",
       "name": "Set test input"
     },
     {
@@ -64,7 +64,7 @@
         -160,
         320
       ],
-      "id": "1125e6fc-e421-4972-b04d-898e26c2cf75",
+      "id": "a77c1d7f-0959-4372-96e8-cac462becc02",
       "name": "Normalize input"
     },
     {
@@ -87,7 +87,7 @@
         48,
         320
       ],
-      "id": "e16be7db-cbf4-4561-a871-511148941c93",
+      "id": "74946a2a-abaa-40f9-884b-00ef79b207f5",
       "name": "Set Signal account"
     },
     {
@@ -110,7 +110,7 @@
         256,
         320
       ],
-      "id": "409331a5-ca2f-47fa-8761-f6375c99bfb7",
+      "id": "fad48aae-9061-49e0-b77c-b651519779d0",
       "name": "Set default recipient"
     },
     {
@@ -125,7 +125,7 @@
         0,
         0
       ],
-      "id": "ac3afc14-5027-4cbf-8224-a90ea2cca971",
+      "id": "a4421091-cf67-4ea5-8104-afadc59cbabb",
       "name": "Config note"
     },
     {
@@ -138,7 +138,7 @@
         464,
         320
       ],
-      "id": "2e4d043f-9833-4f5f-965a-d819b71ffbfe",
+      "id": "72c96b31-10ac-495c-9a39-b1d17d9d733a",
       "name": "Resolve and validate payload"
     },
     {
@@ -172,7 +172,7 @@
         672,
         320
       ],
-      "id": "f18aa8e5-a2da-4ff8-bb33-32185006f73d",
+      "id": "e65f7c4c-546e-4a8d-932d-881fe80611f1",
       "name": "If payload valid"
     },
     {
@@ -191,7 +191,7 @@
         912,
         208
       ],
-      "id": "309ea921-1e3b-4b95-af57-f122ebecb985",
+      "id": "e689adf7-b588-4dec-9c31-5652d936dbe9",
       "name": "Send Signal message",
       "onError": "continueErrorOutput"
     },
@@ -205,7 +205,7 @@
         1216,
         192
       ],
-      "id": "b97db598-19ed-4113-a139-f9327dc005bf",
+      "id": "55c361d9-f96a-4dde-a9c1-424fbad82ea9",
       "name": "Build send result"
     },
     {
@@ -218,7 +218,7 @@
         912,
         432
       ],
-      "id": "8cff3d5f-12f7-46b8-86ba-a230b1e735f9",
+      "id": "a55d4aa0-5b5d-4f7e-94aa-2672fe4414e2",
       "name": "Build validation error result"
     }
   ],
@@ -331,16 +331,20 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 1
   },
-  "versionId": "860b708b-4ab4-4c4e-93cd-c04394c4ea27",
+  "versionId": "c0b682fd-1d25-4898-8d28-a53cc6af0fb3",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "EFvmFTU3zA9xVfBB",
+  "id": "jEC35MXsssds8HOB",
   "tags": []
 }
