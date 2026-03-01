@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        160,
-        384
+        -1328,
+        176
       ],
-      "id": "68e4ffb1-201d-4f9e-a367-8587db4eda17",
+      "id": "7cd7672e-d122-4837-ae05-2cc5abe01a6b",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -32,
-        640
+        -1520,
+        368
       ],
-      "id": "2ceba8ac-5b4c-46d4-88df-2e329f43d4ca",
+      "id": "991df079-e8a7-4902-ab24-12e4f065198c",
       "name": "Manual Trigger"
     },
     {
@@ -48,10 +48,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        160,
-        640
+        -1328,
+        368
       ],
-      "id": "8d686d5f-7c06-4eb7-a93f-b18afe2e58ea",
+      "id": "0c737d0e-8f7a-4f3a-b239-afbe44283d0e",
       "name": "Set test input"
     },
     {
@@ -61,10 +61,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        384,
-        384
+        -1120,
+        176
       ],
-      "id": "1b2fa90c-34a9-4b5b-b2f2-f44a8c61117c",
+      "id": "828bf275-2fa7-40c4-ac5f-0c330bcdb699",
       "name": "Normalize and validate input"
     },
     {
@@ -95,10 +95,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        592,
-        384
+        -912,
+        176
       ],
-      "id": "81bed2c9-57ef-4ce4-8cf7-4749f7a7347b",
+      "id": "322b3cc3-cbd5-40b5-af9e-ed15be2727ac",
       "name": "If payload valid"
     },
     {
@@ -113,18 +113,19 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        816,
-        288
+        -688,
+        64
       ],
-      "id": "8f2bfec0-e835-4b95-b4e6-782f1baf4988",
+      "id": "f49c9a0f-6977-45c5-a39e-ebea6922ed4c",
       "name": "Get Gmail message with attachments",
-      "onError": "continueErrorOutput",
+      "webhookId": "b2d5a212-5166-4e46-8c51-c56e4653b85a",
       "credentials": {
         "gmailOAuth2": {
           "id": "TbMOUQL6WmlDF4Be",
           "name": "Gmail account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -133,10 +134,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1056,
-        288
+        -400,
+        48
       ],
-      "id": "30d651da-eeb3-48f5-a3a0-1df3a49738f4",
+      "id": "c6f2bb94-798e-4461-9c40-7374d10673af",
       "name": "Extract and classify attachments"
     },
     {
@@ -167,10 +168,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1280,
-        288
+        -192,
+        48
       ],
-      "id": "1ea688ab-a8f4-4451-a325-f80ae96ca648",
+      "id": "b357e41a-c20f-4e51-a095-52055d99e909",
       "name": "If attachment supported"
     },
     {
@@ -195,10 +196,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1504,
-        208
+        32,
+        -64
       ],
-      "id": "46deca96-ebf1-4d13-a4d4-14578adb311a",
+      "id": "d2648813-3d08-427e-b96c-b3a95e7f02cb",
       "name": "Paperless-ngx - Upload Document",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -210,10 +211,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1728,
-        208
+        304,
+        -80
       ],
-      "id": "91459490-5786-43ff-8de2-f8e04a3f29de",
+      "id": "45d4fde0-c253-4214-8637-95a822e23fe1",
       "name": "Build upload item result"
     },
     {
@@ -223,37 +224,34 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1504,
-        400
+        32,
+        160
       ],
-      "id": "398817bb-cf4f-42a2-b2a4-18fca4dacc61",
+      "id": "2849dde8-7d76-40f0-9295-40e7295bac67",
       "name": "Pass skipped item"
     },
     {
-      "parameters": {
-        "mode": "append"
-      },
+      "parameters": {},
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1952,
-        304
+        560,
+        144
       ],
-      "id": "cb6f1223-4fe8-4260-8e18-f4d7dbe8a8f7",
+      "id": "b08459e3-34fb-4a7e-baca-3980c5bc276c",
       "name": "Merge item results"
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
         "jsCode": "const rows = $input.all().map((item) => item.json || {});\n\nconst totalAttachments = rows.length;\nconst uploadedCount = rows.filter((r) => r.status === 'uploaded').length;\nconst skippedCount = rows.filter((r) => r.status === 'skipped').length;\nconst failedCount = rows.filter((r) => r.status === 'failed').length;\nconst eligibleAttachments = rows.filter((r) => r.status !== 'skipped').length;\n\nconst messageId = rows.find((r) => r.messageId)?.messageId || $('Normalize and validate input').item.json.messageId || null;\n\nlet note = '';\nif (eligibleAttachments === 0) {\n  note = 'nothing_to_upload';\n}\n\nreturn [{\n  json: {\n    ok: failedCount === 0,\n    action: 'uploadAttachmentsToPaperless',\n    messageId,\n    totalAttachments,\n    eligibleAttachments,\n    uploadedCount,\n    skippedCount,\n    failedCount,\n    note,\n    results: rows\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2176,
-        304
+        768,
+        144
       ],
-      "id": "3b5c5e2d-d44c-40a7-b765-fb4ed130ce7c",
+      "id": "c5fb49e0-0ed4-4691-90e0-a3d45f072466",
       "name": "Build final summary"
     },
     {
@@ -263,10 +261,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        816,
-        560
+        -688,
+        304
       ],
-      "id": "ec95c59f-9030-45ce-85fd-75f4f6fd7ee9",
+      "id": "9266149c-2e71-418d-b792-2c87f2cedf46",
       "name": "Build validation error result"
     }
   ],
@@ -430,10 +428,17 @@
     "executionTimeout": -1,
     "timeSavedPerExecution": 3
   },
-  "versionId": "40f673ef-2430-43ab-95f9-52f79318f6ff",
+  "versionId": "40008111-fb82-4adf-a448-ddfcd7472401",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "aT6kP3nR9vM2qX5c",
-  "tags": []
+  "id": "oLVgBD7D0z6tNIp1",
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
 }
