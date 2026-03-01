@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        224,
-        480
+        1456,
+        864
       ],
-      "id": "af167dfa-594a-44a0-bd3b-76e31f30a252",
+      "id": "4f32f3ad-a8bd-495e-83f1-03df1b1db466",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        32,
-        672
+        1264,
+        1056
       ],
-      "id": "16fc9570-0cfc-45c1-8785-005e61b8d1ab",
+      "id": "676a2251-42af-487b-8732-0f9f9b3264e6",
       "name": "Manual Trigger"
     },
     {
@@ -84,10 +84,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        224,
-        672
+        1456,
+        1056
       ],
-      "id": "c180c050-43bf-4d3b-abe1-cd4103961494",
+      "id": "84546a3c-d073-4831-a360-aa7eaeac649a",
       "name": "Set test input"
     },
     {
@@ -97,10 +97,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        432,
-        480
+        1664,
+        864
       ],
-      "id": "8393e616-d1df-4d4f-9f32-5e5169e4f01d",
+      "id": "a417d617-0975-4f21-a030-39eaa67c7e25",
       "name": "Normalize and map input"
     },
     {
@@ -131,10 +131,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        640,
-        480
+        1872,
+        864
       ],
-      "id": "8afc6c8a-1a5b-400c-9833-61fc5f468e19",
+      "id": "35cc330d-9956-4576-96f9-62d1a9544ece",
       "name": "If payload valid"
     },
     {
@@ -148,10 +148,10 @@
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        880,
-        384
+        2112,
+        768
       ],
-      "id": "0fc2df37-2a6b-4c38-b925-05853c480b25",
+      "id": "b2448762-3e06-4de2-8e18-f511180d1222",
       "name": "Send Gmail",
       "webhookId": "3b41e7ac-1002-4c30-8be0-3224409c0cd8",
       "credentials": {
@@ -159,8 +159,7 @@
           "id": "TbMOUQL6WmlDF4Be",
           "name": "Gmail account"
         }
-      },
-      "onError": "continueErrorOutput"
+      }
     },
     {
       "parameters": {
@@ -169,10 +168,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1168,
-        368
+        2320,
+        768
       ],
-      "id": "1c18a5a2-b562-46ff-ae8d-e14363e3127c",
+      "id": "1ea3b05c-2b5e-4bd5-814a-7151f6d8e3e2",
       "name": "Build send result"
     },
     {
@@ -182,10 +181,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        880,
-        576
+        2112,
+        960
       ],
-      "id": "eabc23d0-8b71-449a-a1ce-4308df054ec4",
+      "id": "b87a7e5d-9fcc-4a55-a054-a5ab48e8af84",
       "name": "Build validation error result"
     },
     {
@@ -197,10 +196,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -32,
-        -448
+        1200,
+        -64
       ],
-      "id": "d70dd80e-739e-4300-a9cd-758c074ddf4a",
+      "id": "6fea1ac0-9348-4b57-8d01-dada54035804",
       "name": "Config note"
     }
   ],
@@ -288,14 +287,20 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "executionTimeout": -1,
     "timeSavedPerExecution": 2
   },
-  "versionId": "d23c398a-19f3-49c0-aaab-dc6fdf3a8e3e",
+  "versionId": "92cacbbe-4bf6-49ff-8682-e5529d87c0db",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "oZbgnrNwOgjqwxpr",
-  "tags": []
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
 }
