@@ -361,13 +361,17 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 2
   },
-  "versionId": "4113d22b-25fe-4c52-a90f-cce4c6c673b3",
+  "versionId": "1c130e15-8dfb-4f54-b368-c14ab8cf8d90",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
