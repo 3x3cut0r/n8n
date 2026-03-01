@@ -1,0 +1,240 @@
+{
+  "name": "Gmail - Delete E-Mail",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        320
+      ],
+      "id": "e0f9e6cc-170d-4fcf-b9cf-625560302527",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        528
+      ],
+      "id": "8a03d5af-3858-4293-a7f9-b83f8a24f09c",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "60d5a31e-f53a-4f7e-900e-b51334c04651",
+              "name": "messageId",
+              "value": "gmail_message_id_here",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        528
+      ],
+      "id": "f0516fef-f2d7-43f6-9cf2-c54e19be98db",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    okToDelete: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        320
+      ],
+      "id": "f4f93d82-bf48-4f34-b6b7-0566ca6f955e",
+      "name": "Normalize and validate input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8f48ff91-d338-42cf-8676-e26768fa3db8",
+              "leftValue": "={{ $json.okToDelete }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        320
+      ],
+      "id": "2a3a6958-7f7a-4eb3-bf0e-cef10ad4eb89",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "messageId": "={{ $json.messageId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        224
+      ],
+      "id": "d20c1cfb-eafb-4115-befc-cf1ec1986efc",
+      "name": "Delete Gmail message",
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    action: 'delete',\n    messageId: $('Normalize and validate input').item.json.messageId || null,\n    statusCode,\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        224
+      ],
+      "id": "e23e929d-75e6-4c2d-a7ec-17ff3d00bcc2",
+      "name": "Build delete result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    action: 'delete',\n    messageId: $json.messageId || null,\n    statusCode: null,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        432
+      ],
+      "id": "7fe31144-4ced-4afe-9fb2-e6688ad2ca4f",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and validate input": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Delete Gmail message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Gmail message": {
+      "main": [
+        [
+          {
+            "node": "Build delete result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "1b6f2f4f-a0a2-4f23-8fd4-7fbe2f1c6ded",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "hD4pQm9tW2yL6xZa",
+  "tags": []
+}

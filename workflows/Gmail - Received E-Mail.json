@@ -1,0 +1,147 @@
+{
+  "name": "Gmail - Received E-Mail",
+  "nodes": [
+    {
+      "parameters": {
+        "simple": false,
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        368
+      ],
+      "id": "d4d1fef4-a4c9-4407-8901-551f227f6be8",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\nconst payload = raw.payload || {};\nconst headers = Array.isArray(payload.headers) ? payload.headers : [];\n\nconst getHeader = (name) => {\n  const item = headers.find((h) => String(h.name || '').toLowerCase() === name.toLowerCase());\n  return item?.value || '';\n};\n\nconst body = payload.body || {};\nconst parts = Array.isArray(payload.parts) ? payload.parts : [];\n\nconst textPart = parts.find((p) => p?.mimeType === 'text/plain');\nconst htmlPart = parts.find((p) => p?.mimeType === 'text/html');\n\nconst labels = Array.isArray(raw.labelIds) ? raw.labelIds : [];\n\nreturn [{\n  json: {\n    messageId: raw.id || '',\n    threadId: raw.threadId || '',\n    from: getHeader('From'),\n    to: getHeader('To'),\n    subject: getHeader('Subject'),\n    date: getHeader('Date'),\n    snippet: raw.snippet || '',\n    text: textPart?.body?.data || body?.data || '',\n    html: htmlPart?.body?.data || '',\n    labels,\n    raw\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        368
+      ],
+      "id": "4e46bd70-f26a-4432-a07f-71a44f69682b",
+      "name": "Normalize incoming email"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "r9Yh2TQ7kLmP4wNs",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        528,
+        368
+      ],
+      "id": "9463d805-658a-4a9d-af95-47cc66e97ee1",
+      "name": "Gmail - E-Mail Router",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize incoming email').item.json || {};\nconst routeResponse = $json || {};\n\nconst statusCode = Number(routeResponse.statusCode || 0) || null;\nconst hasError = !!routeResponse.error || !!routeResponse.message;\nconst routeOk = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok: routeOk,\n    action: 'receiveAndRoute',\n    messageId: normalized.messageId || null,\n    threadId: normalized.threadId || null,\n    from: normalized.from || '',\n    subject: normalized.subject || '',\n    routeResponse\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        368
+      ],
+      "id": "d4bf6243-3445-49a0-b99f-cc056ccdc417",
+      "name": "Build receive result"
+    },
+    {
+      "parameters": {
+        "content": "# Konfiguration\n\n- Dieser Workflow reagiert auf neue Gmail E-Mails und ruft den Router-Subworkflow auf.\n- Fuer robuste Steuerung in Gmail-Filterregeln ein Label wie `n8n/incoming` setzen und nur dieses labeln/abholen.\n- Nachgelagerte Aktionen wie Label setzen oder Loeschen erfolgen ueber eigene Subworkflows.",
+        "height": 320,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        32,
+        16
+      ],
+      "id": "cb206239-1fd3-4d9f-b0be-6a14930f6de7",
+      "name": "Config note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize incoming email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize incoming email": {
+      "main": [
+        [
+          {
+            "node": "Gmail - E-Mail Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail - E-Mail Router": {
+      "main": [
+        [
+          {
+            "node": "Build receive result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 2
+  },
+  "versionId": "9a40b95f-4ac2-473c-a9c4-8cb877443072",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "w8Qk3Vg2Lm5Nf7Dx",
+  "tags": []
+}

@@ -1,0 +1,439 @@
+{
+  "name": "Gmail - Attachment to Paperless",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        384
+      ],
+      "id": "68e4ffb1-201d-4f9e-a367-8587db4eda17",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        640
+      ],
+      "id": "2ceba8ac-5b4c-46d4-88df-2e329f43d4ca",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "33498f65-834f-48cb-8434-4f0d66ce6cc2",
+              "name": "messageId",
+              "value": "gmail_message_id_here",
+              "type": "string"
+            },
+            {
+              "id": "8e98eb5c-af37-4a7e-bc0b-73dadb952f47",
+              "name": "allowedExtensions",
+              "value": "pdf,png,jpg,jpeg,tif,tiff,gif,webp,txt,doc,docx,odt,ppt,pptx,odp,xls,xlsx,ods,eml",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        640
+      ],
+      "id": "8d686d5f-7c06-4eb7-a93f-b18afe2e58ea",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\n\nconst normalizeList = (value) => {\n  if (Array.isArray(value)) {\n    return [...new Set(value.map((v) => String(v).toLowerCase().trim()).filter(Boolean))];\n  }\n\n  if (typeof value === 'string') {\n    return [...new Set(value.split(',').map((v) => v.toLowerCase().trim()).filter(Boolean))];\n  }\n\n  return [];\n};\n\nconst defaultAllowed = [\n  'pdf', 'png', 'jpg', 'jpeg', 'tif', 'tiff', 'gif', 'webp', 'txt',\n  'doc', 'docx', 'odt', 'ppt', 'pptx', 'odp', 'xls', 'xlsx', 'ods', 'eml'\n];\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst allowedExtensions = normalizeList(raw.allowedExtensions);\nconst usedAllowedExtensions = allowedExtensions.length > 0 ? allowedExtensions : defaultAllowed;\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    allowedExtensions: usedAllowedExtensions,\n    okToProcess: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        384
+      ],
+      "id": "1b2fa90c-34a9-4b5b-b2f2-f44a8c61117c",
+      "name": "Normalize and validate input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "849f3d23-1364-43ef-8890-e5746856e2c4",
+              "leftValue": "={{ $json.okToProcess }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        384
+      ],
+      "id": "81bed2c9-57ef-4ce4-8cf7-4749f7a7347b",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.messageId }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        288
+      ],
+      "id": "8f2bfec0-e835-4b95-b4e6-782f1baf4988",
+      "name": "Get Gmail message with attachments",
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $json || {};\nconst binary = $binary || {};\nconst allowed = new Set(($('Normalize and validate input').item.json.allowedExtensions || []).map((v) => String(v).toLowerCase()));\nconst messageId = $('Normalize and validate input').item.json.messageId || source.id || '';\n\nconst keys = Object.keys(binary);\nif (keys.length === 0) {\n  return [{\n    json: {\n      messageId,\n      filename: null,\n      extension: null,\n      status: 'skipped',\n      reason: 'no_attachments',\n      eligible: false\n    }\n  }];\n}\n\nconst results = [];\nfor (const key of keys) {\n  const file = binary[key] || {};\n  const filename = file.fileName || key;\n  const extension = filename.includes('.') ? filename.split('.').pop().toLowerCase() : '';\n  const isSupported = !!extension && allowed.has(extension);\n\n  if (!isSupported) {\n    results.push({\n      json: {\n        messageId,\n        filename,\n        extension: extension || null,\n        status: 'skipped',\n        reason: 'unsupported_extension',\n        eligible: false\n      }\n    });\n    continue;\n  }\n\n  results.push({\n    json: {\n      messageId,\n      filename,\n      extension,\n      status: 'pending_upload',\n      reason: null,\n      eligible: true\n    },\n    binary: {\n      data: file\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        288
+      ],
+      "id": "30d651da-eeb3-48f5-a3a0-1df3a49738f4",
+      "name": "Extract and classify attachments"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "53a0362a-e450-477f-a3b6-5b6c9fcb0aff",
+              "leftValue": "={{ $json.eligible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        288
+      ],
+      "id": "1ea688ab-a8f4-4451-a325-f80ae96ca648",
+      "name": "If attachment supported"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "VY97ocet0nc0Lkpr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/VY97ocet0nc0Lkpr",
+          "cachedResultName": "Paperless-ngx - Upload Document"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1504,
+        208
+      ],
+      "id": "46deca96-ebf1-4d13-a4d4-14578adb311a",
+      "name": "Paperless-ngx - Upload Document",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $('Extract and classify attachments').item.json || {};\nconst upload = $json || {};\n\nconst success = upload.isSuccess === true || upload.status === 'success';\n\nreturn [{\n  json: {\n    messageId: source.messageId || null,\n    filename: source.filename || null,\n    extension: source.extension || null,\n    status: success ? 'uploaded' : 'failed',\n    reason: success ? null : (upload.errorReason || upload.message || 'paperless_upload_failed'),\n    paperless: upload\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1728,
+        208
+      ],
+      "id": "91459490-5786-43ff-8de2-f8e04a3f29de",
+      "name": "Build upload item result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        400
+      ],
+      "id": "398817bb-cf4f-42a2-b2a4-18fca4dacc61",
+      "name": "Pass skipped item"
+    },
+    {
+      "parameters": {
+        "mode": "append"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1952,
+        304
+      ],
+      "id": "cb6f1223-4fe8-4260-8e18-f4d7dbe8a8f7",
+      "name": "Merge item results"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const rows = $input.all().map((item) => item.json || {});\n\nconst totalAttachments = rows.length;\nconst uploadedCount = rows.filter((r) => r.status === 'uploaded').length;\nconst skippedCount = rows.filter((r) => r.status === 'skipped').length;\nconst failedCount = rows.filter((r) => r.status === 'failed').length;\nconst eligibleAttachments = rows.filter((r) => r.status !== 'skipped').length;\n\nconst messageId = rows.find((r) => r.messageId)?.messageId || $('Normalize and validate input').item.json.messageId || null;\n\nlet note = '';\nif (eligibleAttachments === 0) {\n  note = 'nothing_to_upload';\n}\n\nreturn [{\n  json: {\n    ok: failedCount === 0,\n    action: 'uploadAttachmentsToPaperless',\n    messageId,\n    totalAttachments,\n    eligibleAttachments,\n    uploadedCount,\n    skippedCount,\n    failedCount,\n    note,\n    results: rows\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        304
+      ],
+      "id": "3b5c5e2d-d44c-40a7-b765-fb4ed130ce7c",
+      "name": "Build final summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    action: 'uploadAttachmentsToPaperless',\n    messageId: $json.messageId || null,\n    totalAttachments: 0,\n    eligibleAttachments: 0,\n    uploadedCount: 0,\n    skippedCount: 0,\n    failedCount: 0,\n    note: null,\n    results: [],\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        560
+      ],
+      "id": "ec95c59f-9030-45ce-85fd-75f4f6fd7ee9",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and validate input": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Get Gmail message with attachments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Gmail message with attachments": {
+      "main": [
+        [
+          {
+            "node": "Extract and classify attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract and classify attachments": {
+      "main": [
+        [
+          {
+            "node": "If attachment supported",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If attachment supported": {
+      "main": [
+        [
+          {
+            "node": "Paperless-ngx - Upload Document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass skipped item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paperless-ngx - Upload Document": {
+      "main": [
+        [
+          {
+            "node": "Build upload item result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build upload item result": {
+      "main": [
+        [
+          {
+            "node": "Merge item results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass skipped item": {
+      "main": [
+        [
+          {
+            "node": "Merge item results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge item results": {
+      "main": [
+        [
+          {
+            "node": "Build final summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 3
+  },
+  "versionId": "40f673ef-2430-43ab-95f9-52f79318f6ff",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "aT6kP3nR9vM2qX5c",
+  "tags": []
+}

@@ -1,0 +1,411 @@
+{
+  "name": "Gmail - E-Mail Router",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        400
+      ],
+      "id": "7d3f4f3f-6cba-4f8f-8651-a5012fd58452",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        672
+      ],
+      "id": "9dc93f88-fdf1-4d2c-bf24-6d4ca4a5f790",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "15de4f4b-6e46-4f5c-be8f-5b07f59bd2f5",
+              "name": "messageId",
+              "value": "gmail_message_id_here",
+              "type": "string"
+            },
+            {
+              "id": "cc922d24-3dc4-4452-b3f4-2613f34ec9ec",
+              "name": "threadId",
+              "value": "gmail_thread_id_here",
+              "type": "string"
+            },
+            {
+              "id": "dfc9184d-eabc-4b3e-beb7-7cbc0cf34cad",
+              "name": "from",
+              "value": "billing@example.com",
+              "type": "string"
+            },
+            {
+              "id": "f5293465-14e0-4b77-86dd-88a5adef0f4b",
+              "name": "subject",
+              "value": "Invoice 2026-03",
+              "type": "string"
+            },
+            {
+              "id": "42f4fb9e-f22b-4454-8f49-62d70d47f206",
+              "name": "snippet",
+              "value": "Please find attached the latest invoice",
+              "type": "string"
+            },
+            {
+              "id": "f87585e8-1862-448f-80e5-c1eec88ff9ea",
+              "name": "text",
+              "value": "Please process this invoice.",
+              "type": "string"
+            },
+            {
+              "id": "56e2ebb9-0240-43ee-a2d9-d2e5e04d98be",
+              "name": "executeSubworkflow",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        672
+      ],
+      "id": "697069af-c18b-4a49-9f5b-cf68e13d9723",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst threadId = typeof raw.threadId === 'string' ? raw.threadId.trim() : '';\nconst from = typeof raw.from === 'string' ? raw.from.trim() : '';\nconst subject = typeof raw.subject === 'string' ? raw.subject.trim() : '';\nconst snippet = typeof raw.snippet === 'string' ? raw.snippet.trim() : '';\nconst text = typeof raw.text === 'string' ? raw.text : '';\nconst executeSubworkflow = raw.executeSubworkflow === true;\nconst routeWorkflowIds = typeof raw.routeWorkflowIds === 'object' && raw.routeWorkflowIds !== null ? raw.routeWorkflowIds : {};\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    threadId,\n    from,\n    subject,\n    snippet,\n    text,\n    executeSubworkflow,\n    routeWorkflowIds,\n    okToRoute: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        400
+      ],
+      "id": "d6b3143c-8fdc-4ddf-95c1-b8b0f572e6a0",
+      "name": "Normalize and validate input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "91de49c4-6f9e-4a1f-aec5-cc09e638f86f",
+              "leftValue": "={{ $json.okToRoute }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        400
+      ],
+      "id": "f3437668-6f34-4f65-8af4-d98b0a1f3203",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-nano",
+          "mode": "list",
+          "cachedResultName": "GPT-5-NANO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Classify this email into one of these categories: invoice, support, newsletter, personal, spam, unknown.\n\nReturn strict JSON with keys: category, confidence, reason.\nconfidence must be a number between 0 and 1.\n\nEmail:\nfrom: {{ $('Normalize and validate input').item.json.from }}\nsubject: {{ $('Normalize and validate input').item.json.subject }}\nsnippet: {{ $('Normalize and validate input').item.json.snippet }}\ntext: {{ $('Normalize and validate input').item.json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        816,
+        304
+      ],
+      "id": "6f3955bf-bd23-46f8-b8f3-9f30944b9ec8",
+      "name": "AI classify email",
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "openAiApi": {
+          "id": "OpKdnL4SPopfN0cn",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json?.message?.content || $json?.text || $json?.output || '';\n\nconst fallback = {\n  category: 'unknown',\n  confidence: 0,\n  reason: 'AI output missing or invalid JSON'\n};\n\nlet parsed = fallback;\nif (typeof raw === 'string' && raw.trim()) {\n  try {\n    parsed = JSON.parse(raw);\n  } catch (error) {\n    parsed = fallback;\n  }\n}\n\nconst allowed = new Set(['invoice', 'support', 'newsletter', 'personal', 'spam', 'unknown']);\nconst category = typeof parsed.category === 'string' ? parsed.category.toLowerCase().trim() : 'unknown';\nconst normalizedCategory = allowed.has(category) ? category : 'unknown';\n\nlet confidence = Number(parsed.confidence);\nif (!Number.isFinite(confidence)) confidence = 0;\nif (confidence < 0) confidence = 0;\nif (confidence > 1) confidence = 1;\n\nconst reason = typeof parsed.reason === 'string' ? parsed.reason : '';\nconst useFallback = confidence < 0.7;\nconst finalCategory = useFallback ? 'unknown' : normalizedCategory;\n\nconst input = $('Normalize and validate input').item.json || {};\nconst routeWorkflowIds = input.routeWorkflowIds || {};\n\nconst workflowIdMap = {\n  invoice: routeWorkflowIds.invoice || '',\n  support: routeWorkflowIds.support || '',\n  newsletter: routeWorkflowIds.newsletter || '',\n  personal: routeWorkflowIds.personal || '',\n  spam: routeWorkflowIds.spam || '',\n  unknown: routeWorkflowIds.unknown || ''\n};\n\nreturn [{\n  json: {\n    ...input,\n    classification: {\n      category: finalCategory,\n      confidence,\n      reason\n    },\n    route: {\n      category: finalCategory,\n      workflowId: workflowIdMap[finalCategory] || '',\n      workflowName: finalCategory\n    },\n    shouldExecuteSubworkflow: input.executeSubworkflow === true && !!workflowIdMap[finalCategory]\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        304
+      ],
+      "id": "ce2e090f-af0f-4767-b289-9dcf4ef024b8",
+      "name": "Parse and resolve route"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "09c2450e-0f07-4ef9-ad34-cccb945dc8cf",
+              "leftValue": "={{ $json.shouldExecuteSubworkflow }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1264,
+        304
+      ],
+      "id": "637a1884-36d9-4e49-8ca5-24559847e596",
+      "name": "If sub workflow configured"
+    },
+    {
+      "parameters": {
+        "workflowId": "={{ $json.route.workflowId }}",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1504,
+        224
+      ],
+      "id": "1f2785b9-8ad4-4bb8-86dc-c5dce2f84676",
+      "name": "Execute target sub workflow",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Parse and resolve route').item.json || {};\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: false,\n    response: {\n      note: 'No target sub workflow configured for this category. Set routeWorkflowIds and executeSubworkflow=true in caller.'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        400
+      ],
+      "id": "4e850cbf-4d33-42ad-a6a7-75d012f6f411",
+      "name": "Build pending route result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Parse and resolve route').item.json || {};\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: true,\n    response: $json || {}\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1744,
+        224
+      ],
+      "id": "f07f9c97-936c-47bf-b58d-36f2ec8550bf",
+      "name": "Build route result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    action: 'route',\n    messageId: $json.messageId || null,\n    threadId: $json.threadId || null,\n    classification: null,\n    route: null,\n    executed: false,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        560
+      ],
+      "id": "ebac092d-9010-4e5c-a3fd-a61996e5f607",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and validate input": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "AI classify email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI classify email": {
+      "main": [
+        [
+          {
+            "node": "Parse and resolve route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse and resolve route": {
+      "main": [
+        [
+          {
+            "node": "If sub workflow configured",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If sub workflow configured": {
+      "main": [
+        [
+          {
+            "node": "Execute target sub workflow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build pending route result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute target sub workflow": {
+      "main": [
+        [
+          {
+            "node": "Build route result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 3
+  },
+  "versionId": "a944ee3f-0f8a-4c24-aeb5-ad90f257f5dd",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "r9Yh2TQ7kLmP4wNs",
+  "tags": []
+}

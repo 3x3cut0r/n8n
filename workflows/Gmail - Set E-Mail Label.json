@@ -1,0 +1,428 @@
+{
+  "name": "Gmail - Set E-Mail Label",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        384
+      ],
+      "id": "2ad5f80f-c0f3-434d-b4d2-26ad0c213d6e",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        640
+      ],
+      "id": "d5f64194-5af0-41ea-af37-d98647795d5a",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6adfc8bf-c7ba-4934-8f9b-308696f4cfdf",
+              "name": "messageId",
+              "value": "gmail_message_id_here",
+              "type": "string"
+            },
+            {
+              "id": "d90f2fab-b327-4492-8a46-b5dce6305a03",
+              "name": "labelsToAdd",
+              "value": "n8n/processed",
+              "type": "string"
+            },
+            {
+              "id": "53ca164b-2467-4f7c-a6d5-0f3f831f493f",
+              "name": "labelsToRemove",
+              "value": "n8n/incoming",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        160,
+        640
+      ],
+      "id": "799df25d-afe4-4eb8-9e0d-7abe0cf0f588",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\n\nconst normalizeLabels = (value) => {\n  if (Array.isArray(value)) {\n    return [...new Set(value\n      .map((v) => typeof v === 'string' ? v.trim() : '')\n      .filter(Boolean))];\n  }\n\n  if (typeof value === 'string') {\n    return [...new Set(value\n      .split(',')\n      .map((v) => v.trim())\n      .filter(Boolean))];\n  }\n\n  return [];\n};\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst labelsToAdd = normalizeLabels(raw.labelsToAdd);\nconst labelsToRemove = normalizeLabels(raw.labelsToRemove);\n\nlet error = '';\nif (!messageId) {\n  error = 'Input field messageId is required and must be a non-empty string.';\n} else if (labelsToAdd.length === 0 && labelsToRemove.length === 0) {\n  error = 'At least one label change is required (labelsToAdd or labelsToRemove).';\n}\n\nreturn [{\n  json: {\n    messageId,\n    labelsToAdd,\n    labelsToRemove,\n    labelsToAddValue: labelsToAdd.join(','),\n    labelsToRemoveValue: labelsToRemove.join(','),\n    doAdd: labelsToAdd.length > 0,\n    doRemove: labelsToRemove.length > 0,\n    okToSetLabels: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        384
+      ],
+      "id": "025aecc6-9f93-4696-8686-bc85576f9953",
+      "name": "Normalize and validate input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "932cc2cf-a7d6-4a08-bdc8-c092327d1031",
+              "leftValue": "={{ $json.okToSetLabels }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        384
+      ],
+      "id": "343f717f-0a6e-419b-be84-5f07bc269e61",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0a42662-acd0-4eeb-a2fe-f20fd6008055",
+              "leftValue": "={{ $json.doAdd }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        288
+      ],
+      "id": "b5730f4b-8693-4f58-b489-2f13bd829e43",
+      "name": "If labels to add"
+    },
+    {
+      "parameters": {
+        "operation": "addLabel",
+        "messageId": "={{ $json.messageId }}",
+        "labelNames": "={{ $json.labelsToAddValue }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1024,
+        208
+      ],
+      "id": "21235b6d-88d2-4dc8-b8ee-fe6764bcff17",
+      "name": "Add labels",
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('Normalize and validate input').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        368
+      ],
+      "id": "2f15574b-badf-422f-baf4-f8c48f96a1ec",
+      "name": "Skip add"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "02abcadb-0fa6-4a5c-a3c0-f071f4e57cbf",
+              "leftValue": "={{ $('Normalize and validate input').item.json.doRemove }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        288
+      ],
+      "id": "5c20bd17-394f-4a54-928b-c7eb147ce2f3",
+      "name": "If labels to remove"
+    },
+    {
+      "parameters": {
+        "operation": "removeLabel",
+        "messageId": "={{ $('Normalize and validate input').item.json.messageId }}",
+        "labelNames": "={{ $('Normalize and validate input').item.json.labelsToRemoveValue }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1472,
+        208
+      ],
+      "id": "e0c6ad1e-3d64-4632-bf14-30d02562bdd8",
+      "name": "Remove labels",
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $('Normalize and validate input').item.json || {};\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'setLabels',\n    messageId: input.messageId || null,\n    labelsToAdd: input.labelsToAdd || [],\n    labelsToRemove: input.labelsToRemove || [],\n    response: {\n      skippedRemove: true\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        368
+      ],
+      "id": "247fe53d-ad12-4f4f-8757-a6b8e8529fcb",
+      "name": "Build add-only result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst input = $('Normalize and validate input').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    action: 'setLabels',\n    messageId: input.messageId || null,\n    labelsToAdd: input.labelsToAdd || [],\n    labelsToRemove: input.labelsToRemove || [],\n    statusCode,\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        208
+      ],
+      "id": "8c6a4c23-bb03-4db4-a762-cf28fd896f87",
+      "name": "Build set label result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    action: 'setLabels',\n    messageId: $json.messageId || null,\n    labelsToAdd: $json.labelsToAdd || [],\n    labelsToRemove: $json.labelsToRemove || [],\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        560
+      ],
+      "id": "c17d7e48-50f9-4cb8-807b-226ce8eebd53",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and validate input": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "If labels to add",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If labels to add": {
+      "main": [
+        [
+          {
+            "node": "Add labels",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip add",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add labels": {
+      "main": [
+        [
+          {
+            "node": "If labels to remove",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip add": {
+      "main": [
+        [
+          {
+            "node": "If labels to remove",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If labels to remove": {
+      "main": [
+        [
+          {
+            "node": "Remove labels",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build add-only result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove labels": {
+      "main": [
+        [
+          {
+            "node": "Build set label result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "2990de2f-2d8d-4d78-b43a-c3958ee93e73",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "gLs8mB2dQ1kV7pRf",
+  "tags": []
+}
