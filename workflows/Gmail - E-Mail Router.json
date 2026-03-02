@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        160,
-        400
+        -1344,
+        176
       ],
-      "id": "7d3f4f3f-6cba-4f8f-8651-a5012fd58452",
+      "id": "aed1cb47-1700-4dd1-a801-8264043d18db",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -32,
-        672
+        -1536,
+        368
       ],
-      "id": "9dc93f88-fdf1-4d2c-bf24-6d4ca4a5f790",
+      "id": "5ccbd6b4-91b7-4489-a547-0aaee13e0e01",
       "name": "Manual Trigger"
     },
     {
@@ -78,10 +78,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        160,
-        672
+        -1344,
+        368
       ],
-      "id": "697069af-c18b-4a49-9f5b-cf68e13d9723",
+      "id": "f2d0fc3a-9302-4d2d-850c-fd7387bd4657",
       "name": "Set test input"
     },
     {
@@ -91,10 +91,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        368,
-        400
+        -1136,
+        176
       ],
-      "id": "d6b3143c-8fdc-4ddf-95c1-b8b0f572e6a0",
+      "id": "ce9bd75a-9e60-406c-b4a5-fcd307e8e296",
       "name": "Normalize and validate input"
     },
     {
@@ -125,10 +125,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        576,
-        400
+        -928,
+        176
       ],
-      "id": "f3437668-6f34-4f65-8af4-d98b0a1f3203",
+      "id": "7f590269-06d2-4d96-adb0-8b15c3c9c7c7",
       "name": "If payload valid"
     },
     {
@@ -151,18 +151,18 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        816,
-        304
+        -704,
+        64
       ],
-      "id": "6f3955bf-bd23-46f8-b8f3-9f30944b9ec8",
+      "id": "c041ce0a-11a4-44ea-9815-d66819d4253e",
       "name": "AI classify email",
-      "onError": "continueErrorOutput",
       "credentials": {
         "openAiApi": {
           "id": "OpKdnL4SPopfN0cn",
           "name": "OpenAi account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -171,10 +171,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1056,
-        304
+        -304,
+        48
       ],
-      "id": "ce2e090f-af0f-4767-b289-9dcf4ef024b8",
+      "id": "48e1b823-e32e-434c-b62e-f42e35ca33b2",
       "name": "Parse and resolve route"
     },
     {
@@ -205,10 +205,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1264,
-        304
+        -96,
+        48
       ],
-      "id": "637a1884-36d9-4e49-8ca5-24559847e596",
+      "id": "525edda2-7057-4bb7-a0d4-0cd290af4b67",
       "name": "If sub workflow configured"
     },
     {
@@ -227,10 +227,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1504,
-        224
+        144,
+        -32
       ],
-      "id": "1f2785b9-8ad4-4bb8-86dc-c5dce2f84676",
+      "id": "c41755d1-ebab-4cd2-a19a-852447235d79",
       "name": "Execute target sub workflow",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -242,10 +242,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1504,
-        400
+        144,
+        144
       ],
-      "id": "4e850cbf-4d33-42ad-a6a7-75d012f6f411",
+      "id": "056cfe20-33ff-4c1f-983c-58c3684e052f",
       "name": "Build pending route result"
     },
     {
@@ -255,10 +255,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1744,
-        224
+        432,
+        -48
       ],
-      "id": "f07f9c97-936c-47bf-b58d-36f2ec8550bf",
+      "id": "c6dfa4e5-216e-47ec-8973-045bd07db7b7",
       "name": "Build route result"
     },
     {
@@ -268,10 +268,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        816,
-        560
+        -704,
+        272
       ],
-      "id": "ebac092d-9010-4e5c-a3fd-a61996e5f607",
+      "id": "a775bae7-a9f7-4fa0-b008-631357947f62",
       "name": "Build validation error result"
     }
   ],
@@ -391,7 +391,7 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -400,12 +400,19 @@
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": -1,
-    "timeSavedPerExecution": 3
+    "timeSavedPerExecution": 2
   },
-  "versionId": "a944ee3f-0f8a-4c24-aeb5-ad90f257f5dd",
+  "versionId": "d040a16e-0a1d-4d7e-8f02-5597fc475590",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "r9Yh2TQ7kLmP4wNs",
-  "tags": []
+  "id": "m51F9IO2sbOKSlKD",
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
 }

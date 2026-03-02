@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        160,
-        320
+        -640,
+        96
       ],
-      "id": "e0f9e6cc-170d-4fcf-b9cf-625560302527",
+      "id": "c574e35d-004b-4422-adcc-b2afbd730ec1",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -32,
-        528
+        -832,
+        304
       ],
-      "id": "8a03d5af-3858-4293-a7f9-b83f8a24f09c",
+      "id": "8e41f8e1-82a4-4389-939a-4bf509b478fd",
       "name": "Manual Trigger"
     },
     {
@@ -42,10 +42,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        160,
-        528
+        -640,
+        304
       ],
-      "id": "f0516fef-f2d7-43f6-9cf2-c54e19be98db",
+      "id": "96c6bcbf-0664-4851-916d-6026c75e46de",
       "name": "Set test input"
     },
     {
@@ -55,10 +55,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        368,
-        320
+        -432,
+        96
       ],
-      "id": "f4f93d82-bf48-4f34-b6b7-0566ca6f955e",
+      "id": "b395e637-0e10-4a5c-a576-196718b31414",
       "name": "Normalize and validate input"
     },
     {
@@ -89,33 +89,33 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        576,
-        320
+        -224,
+        96
       ],
-      "id": "2a3a6958-7f7a-4eb3-bf0e-cef10ad4eb89",
+      "id": "8c8b48f0-45a7-4779-ac0d-f1a766ec5de6",
       "name": "If payload valid"
     },
     {
       "parameters": {
         "operation": "delete",
-        "messageId": "={{ $json.messageId }}",
-        "options": {}
+        "messageId": "={{ $json.messageId }}"
       },
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.2,
       "position": [
-        800,
-        224
+        0,
+        -16
       ],
-      "id": "d20c1cfb-eafb-4115-befc-cf1ec1986efc",
+      "id": "072060a7-b119-4d2e-adea-a954742660b3",
       "name": "Delete Gmail message",
-      "onError": "continueErrorOutput",
+      "webhookId": "b8ecfdc8-8726-4e26-a3ee-0779c39de21f",
       "credentials": {
         "gmailOAuth2": {
           "id": "TbMOUQL6WmlDF4Be",
           "name": "Gmail account"
         }
-      }
+      },
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -124,10 +124,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1056,
-        224
+        288,
+        -32
       ],
-      "id": "e23e929d-75e6-4c2d-a7ec-17ff3d00bcc2",
+      "id": "780e2c6c-5b02-4d00-8718-b9685eb2d4a1",
       "name": "Build delete result"
     },
     {
@@ -137,10 +137,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        800,
-        432
+        0,
+        208
       ],
-      "id": "7fe31144-4ced-4afe-9fb2-e6688ad2ca4f",
+      "id": "837bad1d-21c7-4723-926f-8ac9e439da73",
       "name": "Build validation error result"
     }
   ],
@@ -231,10 +231,17 @@
     "executionTimeout": -1,
     "timeSavedPerExecution": 1
   },
-  "versionId": "1b6f2f4f-a0a2-4f23-8fd4-7fbe2f1c6ded",
+  "versionId": "0beaa774-8a7d-4599-8f4d-17b467ee6509",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "hD4pQm9tW2yL6xZa",
-  "tags": []
+  "id": "3O6R9JybPJWyeyzF",
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
 }
