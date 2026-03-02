@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        1472,
-        560
+        3104,
+        720
       ],
-      "id": "480b132c-ad5a-4b5c-8f75-b6d569bd1235",
+      "id": "8c2377e7-43bd-44ef-b787-c2da0e007e96",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        1264,
-        768
+        2896,
+        928
       ],
-      "id": "2b488912-8f5f-44f2-ae72-0f58e3a75c2f",
+      "id": "16ff9b35-156f-4b1f-b8df-d5b35d26bf76",
       "name": "Manual Trigger"
     },
     {
@@ -38,7 +38,7 @@
             {
               "id": "5de43b46-e3d4-40e2-8ff3-d7f95e073ef2",
               "name": "room",
-              "value": "!exampleRoom:matrix.local",
+              "value": "!Testroom:3x3cut0r.de",
               "type": "string"
             },
             {
@@ -60,10 +60,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1472,
-        768
+        3104,
+        928
       ],
-      "id": "9340ae12-17fd-48c5-9dc9-e8e13e2e63be",
+      "id": "88ef74c8-b7b9-428c-ad71-311e60939df0",
       "name": "Set test input"
     },
     {
@@ -73,10 +73,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1680,
-        672
+        3312,
+        832
       ],
-      "id": "44f68bd4-65fe-435a-888a-9cbcc037e1ed",
+      "id": "e32b344b-48bd-40b4-877c-984f9afd8ecd",
       "name": "Normalize input"
     },
     {
@@ -92,13 +92,13 @@
             {
               "id": "2ef70473-8e53-49c8-b5de-a4f995f0606d",
               "name": "defaultRoom",
-              "value": "={{ $env.MATRIX_DEFAULT_ROOM_ID }}",
+              "value": "Testroom",
               "type": "string"
             },
             {
               "id": "f3f56f51-cef4-45ca-a42f-08d9f3292f27",
               "name": "fallbackAccessToken",
-              "value": "={{ $env.MATRIX_ACCESS_TOKEN }}",
+              "value": "",
               "type": "string"
             }
           ]
@@ -108,38 +108,38 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1888,
-        672
+        3520,
+        832
       ],
-      "id": "26f294f7-1801-4c89-b024-26a7dfa8ede5",
+      "id": "e2eabc0f-852f-4059-8649-a125d5ecd310",
       "name": "Set Matrix config"
     },
     {
       "parameters": {
-        "content": "# Konfiguration\n\nDieser Workflow ist als Subworkflow gedacht und kann ueber **Execute Workflow** aufgerufen werden.\n\n## Auth-Reihenfolge\n1) Erst mit n8n Credential (HTTP Header Auth im Node **Send Matrix message (Credential)**).\n2) Bei Fehler: Fallback mit Input `accessToken` oder `MATRIX_ACCESS_TOKEN`.\n3) Wenn beides fehlschlaegt, endet der Workflow mit Fehler.\n\n## Token in n8n hinterlegen\n### Variante 1 (empfohlen): Credential\n1) In n8n unter **Credentials** ein Credential vom Typ **HTTP Header Auth** anlegen.\n2) Header Name: `Authorization`\n3) Header Value: `Bearer <MATRIX_ACCESS_TOKEN>`\n4) Dieses Credential im Node **Send Matrix message (Credential)** auswaehlen.\n\n### Variante 2: Umgebungsvariable\n1) In der n8n-Umgebung `MATRIX_ACCESS_TOKEN` setzen (z. B. in `.env` / Docker Compose).\n2) n8n neu starten.\n3) Der Workflow nutzt den Wert als Fallback.\n\n### Optional pro Aufruf\n- `accessToken` im Input setzen (ueberschreibt ENV-Fallback).\n\n## Raum vs. Space\n- Es wird nur `room` benoetigt (Room-ID wie `!abc123:server.tld`).\n- Einen `space` musst du nicht separat uebergeben.\n\n## Defaults\n- homeserverUrl: `http://synapse:8008`\n- defaultRoom: `{{ $env.MATRIX_DEFAULT_ROOM_ID }}`\n- fallbackAccessToken: `{{ $env.MATRIX_ACCESS_TOKEN }}`\n\n## Input\n- `message` (pflicht)\n- `room` (optional, sonst `defaultRoom`)\n- `msgtype` (optional, default `m.text`)\n- `accessToken` (optional, bevorzugt vor ENV-Fallback)",
-        "height": 544,
+        "content": "# Konfiguration\n\nDieser Workflow ist als Subworkflow gedacht und kann ueber **Execute Workflow** aufgerufen werden.\n\n## Auth-Reihenfolge\n1) Erst mit n8n Credential (HTTP Header Auth im Node **Send Matrix message (Credential)**).\n2) Bei Fehler: Fallback nur mit Input `accessToken`.\n3) Wenn beides fehlschlaegt, endet der Workflow mit Fehler.\n\n## Token in n8n hinterlegen\n### Variante 1 (empfohlen): Credential\n1) In n8n unter **Credentials** ein Credential vom Typ **HTTP Header Auth** anlegen.\n2) Header Name: `Authorization`\n3) Header Value: `Bearer <MATRIX_ACCESS_TOKEN>`\n4) Dieses Credential im Node **Send Matrix message (Credential)** auswaehlen.\n\n### Optional pro Aufruf\n- `accessToken` im Input setzen (nur pro Aufruf, kein ENV-Default aktiv).\n\n## Aktive Defaults im Workflow\n- homeserverUrl: `http://synapse:8008`\n- defaultRoom: `Testroom`\n- fallbackAccessToken: leer\n\n## ENV-Beispiele (nur Copy/Paste, nicht aktiv)\n- `{{ $env.MATRIX_DEFAULT_ROOM_ID }}`\n- `{{ $env.MATRIX_ACCESS_TOKEN }}`\n\n## Input\n- `message` (pflicht)\n- `room` (optional, sonst `defaultRoom`)\n- `msgtype` (optional, default `m.text`)\n- `accessToken` (optional, bevorzugt vor leerem Fallback)",
+        "height": 896,
         "width": 720
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1680,
-        80
+        3312,
+        -96
       ],
-      "id": "efd9bb57-1a3f-40f6-863e-1bb375f49da6",
+      "id": "eb66f739-6f36-4330-8ee9-144aa28a6b67",
       "name": "Config note"
     },
     {
       "parameters": {
-        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst config = $('Set Matrix config').item.json || {};\n\nconst message = typeof normalized.message === 'string' ? normalized.message.trim() : '';\nconst inputRoom = typeof normalized.room === 'string' ? normalized.room.trim() : '';\nconst msgtype = typeof normalized.msgtype === 'string' && normalized.msgtype.trim() ? normalized.msgtype.trim() : 'm.text';\nconst inputAccessToken = typeof normalized.accessToken === 'string' ? normalized.accessToken.trim() : '';\n\nconst homeserverUrlRaw = typeof config.homeserverUrl === 'string' ? config.homeserverUrl.trim() : '';\nconst defaultRoomRaw = typeof config.defaultRoom === 'string' ? config.defaultRoom.trim() : '';\nconst fallbackAccessTokenRaw = typeof config.fallbackAccessToken === 'string' ? config.fallbackAccessToken.trim() : '';\n\nconst usedHomeserverUrl = homeserverUrlRaw.replace(//+$/, '');\nconst usedRoom = inputRoom || defaultRoomRaw;\nconst resolvedFallbackToken = inputAccessToken || fallbackAccessTokenRaw;\nconst hasFallbackToken = !!resolvedFallbackToken;\nconst txnId = `n8n-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;\n\nlet error = '';\nif (!message) {\n  error = 'Input field message is required and must be a non-empty string.';\n} else if (!usedRoom) {\n  error = 'No room configured. Pass room or set defaultRoom in node Set Matrix config.';\n} else if (!usedHomeserverUrl) {\n  error = 'No homeserver URL configured. Set homeserverUrl in node Set Matrix config.';\n}\n\nconst requestUrl = !error\n  ? `${usedHomeserverUrl}/_matrix/client/v3/rooms/${encodeURIComponent(usedRoom)}/send/m.room.message/${encodeURIComponent(txnId)}`\n  : '';\n\nreturn [{\n  json: {\n    message,\n    msgtype,\n    usedRoom,\n    usedHomeserverUrl,\n    resolvedFallbackToken,\n    hasFallbackToken,\n    txnId,\n    requestUrl,\n    okToSend: !error,\n    error\n  }\n}];"
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst config = $('Set Matrix config').item.json || {};\n\nconst message = typeof normalized.message === 'string' ? normalized.message.trim() : '';\nconst inputRoom = typeof normalized.room === 'string' ? normalized.room.trim() : '';\nconst msgtype = typeof normalized.msgtype === 'string' && normalized.msgtype.trim() ? normalized.msgtype.trim() : 'm.text';\nconst inputAccessToken = typeof normalized.accessToken === 'string' ? normalized.accessToken.trim() : '';\n\nconst homeserverUrlRaw = typeof config.homeserverUrl === 'string' ? config.homeserverUrl.trim() : '';\nconst defaultRoomRaw = typeof config.defaultRoom === 'string' ? config.defaultRoom.trim() : '';\nconst fallbackAccessTokenRaw = typeof config.fallbackAccessToken === 'string' ? config.fallbackAccessToken.trim() : '';\n\nconst usedHomeserverUrl = homeserverUrlRaw.replace(/\\/+$/, '');\nconst usedRoom = inputRoom || defaultRoomRaw;\nconst resolvedFallbackToken = inputAccessToken || fallbackAccessTokenRaw;\nconst hasFallbackToken = !!resolvedFallbackToken;\nconst txnId = `n8n-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;\n\nlet error = '';\nif (!message) {\n  error = 'Input field message is required and must be a non-empty string.';\n} else if (!usedRoom) {\n  error = 'No room configured. Pass room or set defaultRoom in node Set Matrix config.';\n} else if (!usedHomeserverUrl) {\n  error = 'No homeserver URL configured. Set homeserverUrl in node Set Matrix config.';\n}\n\nconst requestUrl = !error\n  ? `${usedHomeserverUrl}/_matrix/client/v3/rooms/${encodeURIComponent(usedRoom)}/send/m.room.message/${encodeURIComponent(txnId)}`\n  : '';\n\nreturn [{\n  json: {\n    message,\n    msgtype,\n    usedRoom,\n    usedHomeserverUrl,\n    resolvedFallbackToken,\n    hasFallbackToken,\n    txnId,\n    requestUrl,\n    okToSend: !error,\n    error\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2096,
-        672
+        3728,
+        832
       ],
-      "id": "ced36939-71da-416b-928e-358199c0d1e8",
+      "id": "c204e032-1631-405c-b573-b154fd82d45a",
       "name": "Resolve and validate payload"
     },
     {
@@ -170,10 +170,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2304,
-        672
+        3936,
+        832
       ],
-      "id": "beee244f-7892-4772-af85-66904c83f853",
+      "id": "79b9eda5-a774-43ba-97c4-5b5884512e50",
       "name": "If payload valid"
     },
     {
@@ -183,10 +183,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2528,
-        784
+        4160,
+        944
       ],
-      "id": "d306e554-7c53-461a-9a9a-e2818778e0ae",
+      "id": "e061b5c1-0621-4f75-ba08-1af2b4456677",
       "name": "Fail validation"
     },
     {
@@ -204,15 +204,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2528,
-        560
+        4160,
+        720
       ],
-      "id": "6fdc1c08-a190-4141-be97-47d1187e07e6",
+      "id": "92d21f73-4207-462e-ac1c-0e5329425e55",
       "name": "Send Matrix message (Credential)",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "FTZ7UvOYYyINgp5P",
-          "name": "Paperless-ngx"
+          "id": "MbAMZ55kO8vjDnFQ",
+          "name": "Synapse"
         }
       },
       "onError": "continueErrorOutput"
@@ -224,10 +224,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2800,
-        544
+        4432,
+        704
       ],
-      "id": "305bf190-58bc-4b73-a9c3-8b7a1233a4a3",
+      "id": "bfc5ad67-9989-416a-a34a-207834b5d047",
       "name": "Evaluate credential attempt"
     },
     {
@@ -258,10 +258,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        3008,
-        544
+        4640,
+        704
       ],
-      "id": "6148eace-cf95-4a97-b9fd-109e16d812a1",
+      "id": "beb4cd02-1043-4a44-8ac3-caffc414e5fd",
       "name": "If credential send succeeded"
     },
     {
@@ -277,10 +277,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3280,
-        560
+        4912,
+        720
       ],
-      "id": "2573e4af-c723-4b10-8f6c-2385a53e921a",
+      "id": "f2b62813-5d95-43c4-ae66-ce5625362a39",
       "name": "Send Matrix message (Token/No Auth)",
       "onError": "continueErrorOutput"
     },
@@ -291,10 +291,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3552,
-        544
+        5184,
+        704
       ],
-      "id": "06cf5a7c-59da-41b6-8398-14c672f6c654",
+      "id": "9a3415de-86de-4ad8-9be9-6b389ce506e6",
       "name": "Evaluate fallback attempt"
     },
     {
@@ -325,10 +325,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        3760,
-        544
+        5392,
+        704
       ],
-      "id": "b8e2d116-9d73-41b5-8c1a-573551899e27",
+      "id": "603f5c71-6ce4-4ec8-a8b5-24a0226573c0",
       "name": "If fallback send succeeded"
     },
     {
@@ -338,10 +338,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4032,
-        560
+        5664,
+        720
       ],
-      "id": "68ad73ae-e4f3-4f65-be82-299cf47f375f",
+      "id": "a88474ef-d368-417f-b778-abf33fe9024e",
       "name": "Fail send"
     }
   ],
@@ -508,10 +508,9 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "executionTimeout": -1,
     "timeSavedPerExecution": 1
   },
-  "versionId": "d09e6254-d4a3-4425-999c-0864128afb1e",
+  "versionId": "6add5158-62b8-4709-aaf3-de82df343b97",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
