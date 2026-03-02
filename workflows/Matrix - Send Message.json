@@ -1,0 +1,522 @@
+{
+  "name": "Matrix - Send Message",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        176
+      ],
+      "id": "8f9ca236-a0eb-4261-9175-f4dedf2713ac",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        384
+      ],
+      "id": "3ed2834d-56e6-44a7-b1f8-bf3f14b2eeb3",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "73e05276-5745-4b4d-bab7-c7f56ccfbdcd",
+              "name": "message",
+              "value": "n8n: This is a test message",
+              "type": "string"
+            },
+            {
+              "id": "5de43b46-e3d4-40e2-8ff3-d7f95e073ef2",
+              "name": "room",
+              "value": "!exampleRoom:matrix.local",
+              "type": "string"
+            },
+            {
+              "id": "7fe36c4f-77fa-4896-b72b-4d14993f1852",
+              "name": "msgtype",
+              "value": "m.text",
+              "type": "string"
+            },
+            {
+              "id": "9f9ca8ce-23f1-44e4-aecc-8f46f32fd31c",
+              "name": "accessToken",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -416,
+        384
+      ],
+      "id": "0c6e5eb2-a159-4428-b6ca-a8ca1a8c9f9f",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawMessage = $json.message;\nconst rawRoom = $json.room;\nconst rawMsgtype = $json.msgtype;\nconst rawAccessToken = $json.accessToken;\n\nconst message = typeof rawMessage === 'string' ? rawMessage.trim() : '';\nconst room = typeof rawRoom === 'string' ? rawRoom.trim() : '';\nconst msgtype = typeof rawMsgtype === 'string' && rawMsgtype.trim() ? rawMsgtype.trim() : 'm.text';\nconst accessToken = typeof rawAccessToken === 'string' ? rawAccessToken.trim() : '';\n\nreturn [{\n  json: {\n    message,\n    room,\n    msgtype,\n    accessToken\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        288
+      ],
+      "id": "3af53e9f-02cd-430f-92bb-6119859cbdfd",
+      "name": "Normalize input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f93141cf-0add-4305-a8f3-a420cb0da8df",
+              "name": "homeserverUrl",
+              "value": "http://synapse:8008",
+              "type": "string"
+            },
+            {
+              "id": "2ef70473-8e53-49c8-b5de-a4f995f0606d",
+              "name": "defaultRoom",
+              "value": "={{ $env.MATRIX_DEFAULT_ROOM_ID }}",
+              "type": "string"
+            },
+            {
+              "id": "f3f56f51-cef4-45ca-a42f-08d9f3292f27",
+              "name": "fallbackAccessToken",
+              "value": "={{ $env.MATRIX_ACCESS_TOKEN }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        288
+      ],
+      "id": "6a82ec18-cc53-4673-a5a0-6eb6d7a0671c",
+      "name": "Set Matrix config"
+    },
+    {
+      "parameters": {
+        "content": "# Konfiguration\n\nDieser Workflow ist als Subworkflow gedacht und kann ueber **Execute Workflow** aufgerufen werden.\n\n## Auth-Reihenfolge\n1) Erst mit n8n Credential (HTTP Header Auth im Node **Send Matrix message (Credential)**).\n2) Bei Fehler: Fallback mit Input `accessToken` oder `MATRIX_ACCESS_TOKEN`.\n3) Wenn beides fehlschlaegt, endet der Workflow mit Fehler.\n\n## Defaults\n- homeserverUrl: `http://synapse:8008`\n- defaultRoom: `{{ $env.MATRIX_DEFAULT_ROOM_ID }}`\n- fallbackAccessToken: `{{ $env.MATRIX_ACCESS_TOKEN }}`\n\n## Input\n- `message` (pflicht)\n- `room` (optional, sonst `defaultRoom`)\n- `msgtype` (optional, default `m.text`)\n- `accessToken` (optional, bevorzugt vor ENV-Fallback)",
+        "height": 640,
+        "width": 736
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -384
+      ],
+      "id": "7e97b740-8d00-44f7-ac68-edf54f87abb3",
+      "name": "Config note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst config = $('Set Matrix config').item.json || {};\n\nconst message = typeof normalized.message === 'string' ? normalized.message.trim() : '';\nconst inputRoom = typeof normalized.room === 'string' ? normalized.room.trim() : '';\nconst msgtype = typeof normalized.msgtype === 'string' && normalized.msgtype.trim() ? normalized.msgtype.trim() : 'm.text';\nconst inputAccessToken = typeof normalized.accessToken === 'string' ? normalized.accessToken.trim() : '';\n\nconst homeserverUrlRaw = typeof config.homeserverUrl === 'string' ? config.homeserverUrl.trim() : '';\nconst defaultRoomRaw = typeof config.defaultRoom === 'string' ? config.defaultRoom.trim() : '';\nconst fallbackAccessTokenRaw = typeof config.fallbackAccessToken === 'string' ? config.fallbackAccessToken.trim() : '';\n\nconst usedHomeserverUrl = homeserverUrlRaw.replace(/\/+$/, '');\nconst usedRoom = inputRoom || defaultRoomRaw;\nconst resolvedFallbackToken = inputAccessToken || fallbackAccessTokenRaw;\nconst hasFallbackToken = !!resolvedFallbackToken;\nconst txnId = `n8n-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;\n\nlet error = '';\nif (!message) {\n  error = 'Input field message is required and must be a non-empty string.';\n} else if (!usedRoom) {\n  error = 'No room configured. Pass room or set defaultRoom in node Set Matrix config.';\n} else if (!usedHomeserverUrl) {\n  error = 'No homeserver URL configured. Set homeserverUrl in node Set Matrix config.';\n}\n\nconst requestUrl = !error\n  ? `${usedHomeserverUrl}/_matrix/client/v3/rooms/${encodeURIComponent(usedRoom)}/send/m.room.message/${encodeURIComponent(txnId)}`\n  : '';\n\nreturn [{\n  json: {\n    message,\n    msgtype,\n    usedRoom,\n    usedHomeserverUrl,\n    resolvedFallbackToken,\n    hasFallbackToken,\n    txnId,\n    requestUrl,\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        288
+      ],
+      "id": "a8fbf4ea-f113-4f6e-a557-59f8b9e40c12",
+      "name": "Resolve and validate payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2cc8f572-2612-4678-995f-e4ec0fd9ad2e",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        288
+      ],
+      "id": "78bf69f2-a4d5-4951-882f-2462ec5dc2d7",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error($json.error || 'Invalid input');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        432
+      ],
+      "id": "7ceec9d8-9e6e-4a87-9fa3-ec481460bd99",
+      "name": "Fail validation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.requestUrl }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ msgtype: $json.msgtype, body: $json.message }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        704,
+        176
+      ],
+      "id": "f8116142-7c7f-4a93-8010-fd13e803fd4f",
+      "name": "Send Matrix message (Credential)",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst hasError = !!response.error || !!response.message || !!response.errcode || (statusCode !== null && statusCode >= 400);\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRoom: resolved.usedRoom || null,\n    usedHomeserverUrl: resolved.usedHomeserverUrl || null,\n    usedAuth: 'credential',\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        176
+      ],
+      "id": "2ba0f958-acc6-46eb-a0c8-a0f09857f105",
+      "name": "Evaluate credential attempt"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7aa296f1-83ea-49da-9754-a7ad2f5906f2",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        176
+      ],
+      "id": "1e5f26ad-c14a-4ca1-a20a-bee8f5f01838",
+      "name": "If credential send succeeded"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Resolve and validate payload').item.json.requestUrl }}",
+        "sendHeaders": "={{ $('Resolve and validate payload').item.json.hasFallbackToken }}",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{ 'Bearer ' + $('Resolve and validate payload').item.json.resolvedFallbackToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ msgtype: $('Resolve and validate payload').item.json.msgtype, body: $('Resolve and validate payload').item.json.message }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1424,
+        320
+      ],
+      "id": "ff36b3ba-6500-48a4-8d8f-c45dd427bc12",
+      "name": "Send Matrix message (Token/No Auth)",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst hasError = !!response.error || !!response.message || !!response.errcode || (statusCode !== null && statusCode >= 400);\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRoom: resolved.usedRoom || null,\n    usedHomeserverUrl: resolved.usedHomeserverUrl || null,\n    usedAuth: resolved.hasFallbackToken ? 'fallbackToken' : 'none',\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        320
+      ],
+      "id": "2b131f68-7a40-4a17-92ce-68745cc30547",
+      "name": "Evaluate fallback attempt"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0edd147f-5d98-44a0-8d17-70113f97f718",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1888,
+        320
+      ],
+      "id": "84835408-8444-4ec4-9598-11f210d972f1",
+      "name": "If fallback send succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "const credentialResult = $('Evaluate credential attempt').item.json || {};\nconst fallbackResult = $('Evaluate fallback attempt').item.json || {};\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nconst credentialMessage = credentialResult.response?.error || credentialResult.response?.message || credentialResult.response?.errcode || 'unknown credential error';\nconst fallbackMessage = fallbackResult.response?.error || fallbackResult.response?.message || fallbackResult.response?.errcode || 'unknown fallback error';\nconst fallbackMode = resolved.hasFallbackToken ? 'fallback token' : 'no auth';\n\nthrow new Error(`Matrix send failed. Credential attempt failed (${credentialMessage}). Fallback attempt (${fallbackMode}) failed (${fallbackMessage}).`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2128,
+        464
+      ],
+      "id": "a6795e4a-d6f8-4a65-b0c0-5e7516bf4d15",
+      "name": "Fail send"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize input": {
+      "main": [
+        [
+          {
+            "node": "Set Matrix config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Matrix config": {
+      "main": [
+        [
+          {
+            "node": "Resolve and validate payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve and validate payload": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Send Matrix message (Credential)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Matrix message (Credential)": {
+      "main": [
+        [
+          {
+            "node": "Evaluate credential attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate credential attempt": {
+      "main": [
+        [
+          {
+            "node": "If credential send succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If credential send succeeded": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send Matrix message (Token/No Auth)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Matrix message (Token/No Auth)": {
+      "main": [
+        [
+          {
+            "node": "Evaluate fallback attempt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate fallback attempt": {
+      "main": [
+        [
+          {
+            "node": "If fallback send succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If fallback send succeeded": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Fail send",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "7fbc9f2b-6f2e-4d6f-96b9-87f36431b353",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "qk0LwQ5CjM8X1eKt",
+  "tags": []
+}
