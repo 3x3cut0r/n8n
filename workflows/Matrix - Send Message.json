@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        3104,
-        720
+        4544,
+        960
       ],
-      "id": "8c2377e7-43bd-44ef-b787-c2da0e007e96",
+      "id": "4a67025f-4320-47ec-ae04-a0281f865695",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        2896,
-        928
+        4336,
+        1168
       ],
-      "id": "16ff9b35-156f-4b1f-b8df-d5b35d26bf76",
+      "id": "9160fd9d-9deb-40cd-a8d1-2fb7e0b4861c",
       "name": "Manual Trigger"
     },
     {
@@ -60,10 +60,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        3104,
-        928
+        4544,
+        1168
       ],
-      "id": "88ef74c8-b7b9-428c-ad71-311e60939df0",
+      "id": "70804732-7e79-4437-8d83-0b23914beac2",
       "name": "Set test input"
     },
     {
@@ -73,10 +73,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3312,
-        832
+        4752,
+        1072
       ],
-      "id": "e32b344b-48bd-40b4-877c-984f9afd8ecd",
+      "id": "1e612cf5-70cf-4195-a328-9c573d8ff198",
       "name": "Normalize input"
     },
     {
@@ -86,7 +86,7 @@
             {
               "id": "f93141cf-0add-4305-a8f3-a420cb0da8df",
               "name": "homeserverUrl",
-              "value": "http://synapse:8008",
+              "value": "https://synapse.3x3cut0r.de",
               "type": "string"
             },
             {
@@ -108,10 +108,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        3520,
-        832
+        4960,
+        1072
       ],
-      "id": "e2eabc0f-852f-4059-8649-a125d5ecd310",
+      "id": "b92d4a1b-ff09-4b2e-9dc7-37fa66e3a693",
       "name": "Set Matrix config"
     },
     {
@@ -123,10 +123,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3312,
-        -96
+        4752,
+        144
       ],
-      "id": "eb66f739-6f36-4330-8ee9-144aa28a6b67",
+      "id": "760c7344-e152-4bea-9e65-8f15b594da6f",
       "name": "Config note"
     },
     {
@@ -136,10 +136,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3728,
-        832
+        5168,
+        1072
       ],
-      "id": "c204e032-1631-405c-b573-b154fd82d45a",
+      "id": "831ba7e3-5dd9-4ab0-aabf-a549a0feaea2",
       "name": "Resolve and validate payload"
     },
     {
@@ -170,10 +170,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        3936,
-        832
+        5376,
+        1072
       ],
-      "id": "79b9eda5-a774-43ba-97c4-5b5884512e50",
+      "id": "d24f98cb-2134-4174-b0b4-a9c434049f7e",
       "name": "If payload valid"
     },
     {
@@ -183,10 +183,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4160,
-        944
+        5600,
+        1184
       ],
-      "id": "e061b5c1-0621-4f75-ba08-1af2b4456677",
+      "id": "b8cb223d-225f-4cc8-bed5-d01aff2050cf",
       "name": "Fail validation"
     },
     {
@@ -204,10 +204,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4160,
-        720
+        5600,
+        944
       ],
-      "id": "92d21f73-4207-462e-ac1c-0e5329425e55",
+      "id": "d0afe8dd-394f-40ca-aa4e-72b6e772f32b",
       "name": "Send Matrix message (Credential)",
       "credentials": {
         "httpHeaderAuth": {
@@ -215,19 +215,19 @@
           "name": "Synapse"
         }
       },
-      "onError": "continueErrorOutput"
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst hasError = !!response.error || !!response.message || !!response.errcode || (statusCode !== null && statusCode >= 400);\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRoom: resolved.usedRoom || null,\n    usedHomeserverUrl: resolved.usedHomeserverUrl || null,\n    usedAuth: 'credential',\n    response\n  }\n}];"
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst hasError = !!response.error || !!response.message || !!response.errcode || !!response.name || !!response.stack || (statusCode !== null && statusCode >= 400);\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRoom: resolved.usedRoom || null,\n    usedHomeserverUrl: resolved.usedHomeserverUrl || null,\n    usedAuth: 'credential',\n    response\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4432,
-        704
+        5808,
+        944
       ],
-      "id": "bfc5ad67-9989-416a-a34a-207834b5d047",
+      "id": "0ee89186-2456-4be9-9cbb-70003787f7d0",
       "name": "Evaluate credential attempt"
     },
     {
@@ -258,10 +258,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        4640,
-        704
+        6016,
+        944
       ],
-      "id": "beb4cd02-1043-4a44-8ac3-caffc414e5fd",
+      "id": "db196f55-7994-4769-8b23-18496079a9dd",
       "name": "If credential send succeeded"
     },
     {
@@ -277,24 +277,24 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4912,
-        720
+        6240,
+        960
       ],
-      "id": "f2b62813-5d95-43c4-ae66-ce5625362a39",
+      "id": "d8f292a2-e996-4b00-8cfa-588f2d9e7590",
       "name": "Send Matrix message (Token/No Auth)",
-      "onError": "continueErrorOutput"
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst hasError = !!response.error || !!response.message || !!response.errcode || (statusCode !== null && statusCode >= 400);\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRoom: resolved.usedRoom || null,\n    usedHomeserverUrl: resolved.usedHomeserverUrl || null,\n    usedAuth: resolved.hasFallbackToken ? 'fallbackToken' : 'none',\n    response\n  }\n}];"
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst hasError = !!response.error || !!response.message || !!response.errcode || !!response.name || !!response.stack || (statusCode !== null && statusCode >= 400);\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\nconst resolved = $('Resolve and validate payload').item.json || {};\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedRoom: resolved.usedRoom || null,\n    usedHomeserverUrl: resolved.usedHomeserverUrl || null,\n    usedAuth: resolved.hasFallbackToken ? 'fallbackToken' : 'none',\n    response\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5184,
-        704
+        6448,
+        960
       ],
-      "id": "9a3415de-86de-4ad8-9be9-6b389ce506e6",
+      "id": "5495ec61-f589-4f1c-ba68-2f35461a6625",
       "name": "Evaluate fallback attempt"
     },
     {
@@ -325,10 +325,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        5392,
-        704
+        6656,
+        960
       ],
-      "id": "603f5c71-6ce4-4ec8-a8b5-24a0226573c0",
+      "id": "37387692-f40c-40df-9905-dcd904a24c9c",
       "name": "If fallback send succeeded"
     },
     {
@@ -338,10 +338,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5664,
-        720
+        6880,
+        976
       ],
-      "id": "a88474ef-d368-417f-b778-abf33fe9024e",
+      "id": "55d6fb56-5237-44e5-8bef-0886a7ac0b2e",
       "name": "Fail send"
     }
   ],
@@ -510,17 +510,17 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 1
   },
-  "versionId": "6add5158-62b8-4709-aaf3-de82df343b97",
+  "versionId": "49364b85-19a6-4929-95d9-227bf48259a5",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "wugbJHW95HgPU4aT",
   "tags": [
     {
-      "name": "Matrix",
-      "id": "22nfFEPAE3H7Nmyn",
       "updatedAt": "2026-03-02T19:00:13.283Z",
-      "createdAt": "2026-03-02T19:00:13.283Z"
+      "createdAt": "2026-03-02T19:00:13.283Z",
+      "id": "22nfFEPAE3H7Nmyn",
+      "name": "Matrix"
     }
   ]
 }
