@@ -1,0 +1,156 @@
+{
+  "name": "Outlook - Received E-Mail",
+  "nodes": [
+    {
+      "parameters": {
+        "event": "messageReceived",
+        "output": "simple",
+        "filters": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.microsoftOutlookTrigger",
+      "typeVersion": 1,
+      "position": [
+        32,
+        352
+      ],
+      "id": "b0d45439-0fab-4dfc-a4f5-f57c2cf2cb9e",
+      "name": "Outlook Trigger",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\n\nconst fromSimple = typeof raw.from === 'string' ? raw.from : '';\nconst toSimple = Array.isArray(raw.to) ? raw.to.join(',') : '';\nconst subjectSimple = typeof raw.subject === 'string' ? raw.subject : '';\nconst snippetSimple = typeof raw.bodyPreview === 'string' ? raw.bodyPreview : '';\n\nconst fromRaw = raw.from?.emailAddress?.address || '';\nconst toRaw = Array.isArray(raw.toRecipients)\n  ? raw.toRecipients.map((r) => r?.emailAddress?.address).filter(Boolean).join(',')\n  : '';\nconst subjectRaw = typeof raw.subject === 'string' ? raw.subject : '';\nconst snippetRaw = typeof raw.bodyPreview === 'string' ? raw.bodyPreview : '';\n\nreturn [{\n  json: {\n    messageId: raw.id || '',\n    threadId: raw.conversationId || '',\n    conversationId: raw.conversationId || '',\n    from: fromSimple || fromRaw,\n    to: toSimple || toRaw,\n    subject: subjectSimple || subjectRaw,\n    date: raw.receivedDateTime || '',\n    snippet: snippetSimple || snippetRaw,\n    text: raw.body?.content || raw.bodyPreview || '',\n    html: raw.body?.contentType === 'html' ? (raw.body?.content || '') : '',\n    folders: raw.parentFolderId ? [raw.parentFolderId] : [],\n    categories: Array.isArray(raw.categories) ? raw.categories : [],\n    raw\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        352
+      ],
+      "id": "067fcf0c-8508-4b07-9c56-d3a64efd53e6",
+      "name": "Normalize incoming email"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_OUTLOOK_ROUTER_WORKFLOW_ID",
+          "mode": "list",
+          "cachedResultName": "Outlook - E-Mail Router"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        352
+      ],
+      "id": "2f69981f-b1cb-4119-ab2d-f037efca2f5c",
+      "name": "Outlook - E-Mail Router",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize incoming email').item.json || {};\nconst routeResponse = $json || {};\n\nconst statusCode = Number(routeResponse.statusCode || 0) || null;\nconst hasError = !!routeResponse.error || !!routeResponse.message;\nconst routeOk = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok: routeOk,\n    action: 'receiveAndRoute',\n    messageId: normalized.messageId || null,\n    threadId: normalized.threadId || null,\n    conversationId: normalized.conversationId || null,\n    from: normalized.from || '',\n    subject: normalized.subject || '',\n    routeResponse\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        336
+      ],
+      "id": "af70b7ee-b4ce-4f84-89da-3fd6de18e0f4",
+      "name": "Build receive result"
+    },
+    {
+      "parameters": {
+        "content": "# Konfiguration\n\n- Dieser Workflow reagiert auf neue Outlook E-Mails und ruft den Router-Subworkflow auf.\n- In Outlook gibt es keine Gmail-Labels: Routing/Status erfolgt ueber Kategorien oder Ordner.\n- Nachgelagerte Aktionen wie Verschieben oder Loeschen erfolgen ueber eigene Subworkflows.",
+        "height": 208,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        96
+      ],
+      "id": "f0056cb8-61f1-4ee6-ac3a-9a312810fbe8",
+      "name": "Config note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Outlook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize incoming email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize incoming email": {
+      "main": [
+        [
+          {
+            "node": "Outlook - E-Mail Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outlook - E-Mail Router": {
+      "main": [
+        [
+          {
+            "node": "Build receive result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "5e4a0863-a0fd-4d67-8d2a-f9698d95767d",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "NFW8Avn4nRq0Vdlo",
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
+}

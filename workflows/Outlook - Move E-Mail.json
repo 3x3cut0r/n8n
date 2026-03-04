@@ -1,0 +1,262 @@
+{
+  "name": "Outlook - Move E-Mail",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -640,
+        96
+      ],
+      "id": "bbf162f8-7dc6-454d-82f0-bce657ad0816",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        304
+      ],
+      "id": "c6b8c4f1-c39c-4002-b8a2-d8fd3cb5e7dc",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f6853599-bf35-4dd7-9f9d-bcc0dfde12a2",
+              "name": "messageId",
+              "value": "outlook_message_id_here",
+              "type": "string"
+            },
+            {
+              "id": "54dd9ba3-c3ec-4f25-a220-8dd3b1578b86",
+              "name": "folderId",
+              "value": "outlook_folder_id_here",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        304
+      ],
+      "id": "96b1f68f-7606-4291-b282-3c32ea33da09",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst folderId = typeof raw.folderId === 'string' ? raw.folderId.trim() : '';\n\nlet error = '';\nif (!messageId) {\n  error = 'Input field messageId is required and must be a non-empty string.';\n} else if (!folderId) {\n  error = 'Input field folderId is required and must be a non-empty string.';\n}\n\nreturn [{\n  json: {\n    messageId,\n    folderId,\n    okToMove: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        96
+      ],
+      "id": "a4e87a9d-0395-45a6-a816-0866908be0ad",
+      "name": "Normalize and validate input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fdf94e20-a4ea-4f90-a188-0f0f2f6615d5",
+              "leftValue": "={{ $json.okToMove }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        96
+      ],
+      "id": "ff2e4898-2cf6-4f3d-9777-24877d8b7e1f",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "move",
+        "messageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.messageId }}"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.folderId }}"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "d4ce31ec-bdb5-4978-8da1-838f88f71d0c",
+      "name": "Move Outlook message",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    action: 'move',\n    messageId: $('Normalize and validate input').item.json.messageId || null,\n    folderId: $('Normalize and validate input').item.json.folderId || null,\n    statusCode,\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        -32
+      ],
+      "id": "29cbfe4c-bfc7-4f1f-a0c8-80904eba89b1",
+      "name": "Build move result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    action: 'move',\n    messageId: $json.messageId || null,\n    folderId: $json.folderId || null,\n    statusCode: null,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        208
+      ],
+      "id": "97ef2af2-2007-42ad-8b1a-2120e54f084d",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and validate input": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Move Outlook message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move Outlook message": {
+      "main": [
+        [
+          {
+            "node": "Build move result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "7149f28f-0d35-4f62-8f47-cad0117dab9f",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "mCYv7QwkY6Bf1Icl",
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
+}

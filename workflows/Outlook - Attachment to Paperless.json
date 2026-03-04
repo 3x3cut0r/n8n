@@ -1,0 +1,449 @@
+{
+  "name": "Outlook - Attachment to Paperless",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1328,
+        176
+      ],
+      "id": "fd4f9ca0-dbc2-4f34-b6c5-b9d5354f1d97",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        368
+      ],
+      "id": "cf1bcbe3-c8ff-4307-b6e0-c6a66a79f2fd",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a94d0455-175a-4f6d-9f8c-48f548db29eb",
+              "name": "messageId",
+              "value": "outlook_message_id_here",
+              "type": "string"
+            },
+            {
+              "id": "f44c927d-aca5-412f-8aa4-ef8507700667",
+              "name": "allowedExtensions",
+              "value": "pdf,png,jpg,jpeg,tif,tiff,gif,webp,txt,doc,docx,odt,ppt,pptx,odp,xls,xlsx,ods,eml",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1328,
+        368
+      ],
+      "id": "584a7007-3a0b-4bc7-9d37-1fbe9bd9fdc2",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\n\nconst normalizeList = (value) => {\n  if (Array.isArray(value)) {\n    return [...new Set(value.map((v) => String(v).toLowerCase().trim()).filter(Boolean))];\n  }\n\n  if (typeof value === 'string') {\n    return [...new Set(value.split(',').map((v) => v.toLowerCase().trim()).filter(Boolean))];\n  }\n\n  return [];\n};\n\nconst defaultAllowed = [\n  'pdf', 'png', 'jpg', 'jpeg', 'tif', 'tiff', 'gif', 'webp', 'txt',\n  'doc', 'docx', 'odt', 'ppt', 'pptx', 'odp', 'xls', 'xlsx', 'ods', 'eml'\n];\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst allowedExtensions = normalizeList(raw.allowedExtensions);\nconst usedAllowedExtensions = allowedExtensions.length > 0 ? allowedExtensions : defaultAllowed;\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    allowedExtensions: usedAllowedExtensions,\n    okToProcess: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        176
+      ],
+      "id": "abbf0c1c-b43a-45e5-8ad7-76d129f1024e",
+      "name": "Normalize and validate input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "908f66dc-d3cf-4bac-b63d-9f707feff994",
+              "leftValue": "={{ $json.okToProcess }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -912,
+        176
+      ],
+      "id": "7f7db2a1-4927-43ca-b11d-4443d90d11fc",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "get",
+        "messageId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.messageId }}"
+        },
+        "output": "raw",
+        "options": {
+          "downloadAttachments": true,
+          "attachmentsPrefix": "attachment_"
+        }
+      },
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        64
+      ],
+      "id": "2021f9e8-e125-43f4-8fd0-28934b65418d",
+      "name": "Get Outlook message with attachments",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "Microsoft Outlook account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $json || {};\nconst binary = $binary || {};\nconst allowed = new Set(($('Normalize and validate input').item.json.allowedExtensions || []).map((v) => String(v).toLowerCase()));\nconst messageId = $('Normalize and validate input').item.json.messageId || source.id || '';\n\nconst keys = Object.keys(binary);\nif (keys.length === 0) {\n  return [{\n    json: {\n      messageId,\n      filename: null,\n      extension: null,\n      status: 'skipped',\n      reason: 'no_attachments',\n      eligible: false\n    }\n  }];\n}\n\nconst results = [];\nfor (const key of keys) {\n  const file = binary[key] || {};\n  const filename = file.fileName || key;\n  const extension = filename.includes('.') ? filename.split('.').pop().toLowerCase() : '';\n  const isSupported = !!extension && allowed.has(extension);\n\n  if (!isSupported) {\n    results.push({\n      json: {\n        messageId,\n        filename,\n        extension: extension || null,\n        status: 'skipped',\n        reason: 'unsupported_extension',\n        eligible: false\n      }\n    });\n    continue;\n  }\n\n  results.push({\n    json: {\n      messageId,\n      filename,\n      extension,\n      status: 'pending_upload',\n      reason: null,\n      eligible: true\n    },\n    binary: {\n      data: file\n    }\n  });\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        48
+      ],
+      "id": "5fd2af7f-bf7d-4536-a9d9-92e01ac3d93a",
+      "name": "Extract and classify attachments"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6f67a6c6-27f6-4ff8-8f3f-3733f6bf2cd4",
+              "leftValue": "={{ $json.eligible }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -192,
+        48
+      ],
+      "id": "5eac4e92-86d9-430f-9538-74ec2640bd34",
+      "name": "If attachment supported"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "VY97ocet0nc0Lkpr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/VY97ocet0nc0Lkpr",
+          "cachedResultName": "Paperless-ngx - Upload Document"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -64
+      ],
+      "id": "fd4ac4ce-a3c0-4acc-b261-d7cb5ffed39b",
+      "name": "Paperless-ngx - Upload Document",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $('Extract and classify attachments').item.json || {};\nconst upload = $json || {};\n\nconst success = upload.isSuccess === true || upload.status === 'success';\n\nreturn [{\n  json: {\n    messageId: source.messageId || null,\n    filename: source.filename || null,\n    extension: source.extension || null,\n    status: success ? 'uploaded' : 'failed',\n    reason: success ? null : (upload.errorReason || upload.message || 'paperless_upload_failed'),\n    paperless: upload\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -80
+      ],
+      "id": "7fa8d4cc-b0f1-4931-aabf-c0ca6839fc4e",
+      "name": "Build upload item result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        160
+      ],
+      "id": "917e66cd-b7e4-4f8f-8cec-fe3c0f1577a8",
+      "name": "Pass skipped item"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        560,
+        144
+      ],
+      "id": "f9d10f6c-57d8-4bd4-95e0-244ca9fb9fa1",
+      "name": "Merge item results"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json || {});\n\nconst totalAttachments = rows.length;\nconst uploadedCount = rows.filter((r) => r.status === 'uploaded').length;\nconst skippedCount = rows.filter((r) => r.status === 'skipped').length;\nconst failedCount = rows.filter((r) => r.status === 'failed').length;\nconst eligibleAttachments = rows.filter((r) => r.status !== 'skipped').length;\n\nconst messageId = rows.find((r) => r.messageId)?.messageId || $('Normalize and validate input').item.json.messageId || null;\n\nlet note = '';\nif (eligibleAttachments === 0) {\n  note = 'nothing_to_upload';\n}\n\nreturn [{\n  json: {\n    ok: failedCount === 0,\n    action: 'uploadAttachmentsToPaperless',\n    messageId,\n    totalAttachments,\n    eligibleAttachments,\n    uploadedCount,\n    skippedCount,\n    failedCount,\n    note,\n    results: rows\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        768,
+        144
+      ],
+      "id": "a9a9cb2d-324a-4148-8d55-f90ce6ec754f",
+      "name": "Build final summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    action: 'uploadAttachmentsToPaperless',\n    messageId: $json.messageId || null,\n    totalAttachments: 0,\n    eligibleAttachments: 0,\n    uploadedCount: 0,\n    skippedCount: 0,\n    failedCount: 0,\n    note: null,\n    results: [],\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -688,
+        304
+      ],
+      "id": "76165a9f-3f38-4ec4-bca7-f9fce4f22714",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize and validate input": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Get Outlook message with attachments",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Outlook message with attachments": {
+      "main": [
+        [
+          {
+            "node": "Extract and classify attachments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract and classify attachments": {
+      "main": [
+        [
+          {
+            "node": "If attachment supported",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If attachment supported": {
+      "main": [
+        [
+          {
+            "node": "Paperless-ngx - Upload Document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pass skipped item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paperless-ngx - Upload Document": {
+      "main": [
+        [
+          {
+            "node": "Build upload item result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build upload item result": {
+      "main": [
+        [
+          {
+            "node": "Merge item results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass skipped item": {
+      "main": [
+        [
+          {
+            "node": "Merge item results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge item results": {
+      "main": [
+        [
+          {
+            "node": "Build final summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 3
+  },
+  "versionId": "21df8bd9-08be-4efd-bf8a-f7f58ccf6aaf",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "6lVrhW8QPhG3mjk0",
+  "tags": [
+    {
+      "name": "E-Mail",
+      "id": "v5C7aIIdCywI2YKe",
+      "updatedAt": "2026-03-01T20:36:05.002Z",
+      "createdAt": "2026-03-01T20:36:05.002Z"
+    }
+  ]
+}
