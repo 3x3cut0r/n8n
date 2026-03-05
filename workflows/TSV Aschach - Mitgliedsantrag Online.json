@@ -5,66 +5,66 @@
       "parameters": {
         "inputSource": "passthrough"
       },
-      "id": "967f647a-350a-4949-bbb8-ff47a167e4c3",
+      "id": "e62b95d0-14b1-411d-b91d-82c9a4998694",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        848,
-        256
+        8288,
+        2240
       ]
     },
     {
       "parameters": {},
-      "id": "7b017d6a-de79-46fb-bf75-b328a17d03c8",
+      "id": "b227e5d8-eab9-4f9c-9148-2142a2dca31f",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        656,
-        432
+        8096,
+        2416
       ]
     },
     {
       "parameters": {
-        "jsCode": "return [{\n  json: {\n    dict: {\n      applicant: {\n        firstName: 'Max',\n        lastName: 'Mustermann',\n        email: 'max.mustermann@example.com',\n        emailRepeat: 'max.mustermann@example.com',\n        phone: '+4917612345678',\n        role: '0'\n      },\n      member: {\n        firstName: 'Max',\n        lastName: 'Mustermann',\n        street: 'Musterstrasse 1',\n        zip: '63739',\n        city: 'Aschaffenburg',\n        birthDate: '01.01.2010',\n        entryDate: '01.03.2026',\n        salutationValue: '2',\n        titleValue: '',\n        countryValue: 'DE',\n        genderValue: '1',\n        familyStatusValue: '1'\n      },\n      communication: {\n        description: 'Privat',\n        email: 'max.mustermann@example.com',\n        phone: '',\n        mobile: '+4917612345678'\n      },\n      departments: [],\n      bank: {\n        accountHolder: 'Max Mustermann',\n        iban: 'DE89370400440532013000',\n        bic: ''\n      },\n      declarations: {\n        sepaMandate: true,\n        privacy: true,\n        consent: true,\n        statutes: true\n      },\n      captchaToken: '',\n      captchaSolver: {\n        enabled: false\n      }\n    }\n  }\n}];"
+        "jsCode": "return [{\n  json: {\n    dict: {\n      applicant: {\n        firstName: 'Max',\n        lastName: 'Mustermann',\n        email: 'max.mustermann@email.de',\n        emailRepeat: 'max.mustermann@email.de',\n        phone: '+4917612345678',\n        role: '0'\n      },\n      member: {\n        firstName: 'Max',\n        lastName: 'Mustermann',\n        street: 'Musterstrasse 1',\n        zip: '63739',\n        city: 'Aschaffenburg',\n        birthDate: '01.01.2010',\n        entryDate: '01.01.2026',\n        salutationValue: '2',\n        titleValue: '',\n        countryValue: 'DE',\n        genderValue: '1',\n        familyStatusValue: '1'\n      },\n      communication: {\n        description: 'Privat',\n        email: 'max.mustermann@email.de',\n        phone: '',\n        mobile: '+4917612345678'\n      },\n      departments: [],\n      bank: {\n        accountHolder: 'Max Mustermann',\n        iban: 'DE89370400440532013000',\n        bic: ''\n      },\n      declarations: {\n        sepaMandate: true,\n        privacy: true,\n        consent: true,\n        statutes: true\n      },\n      captchaToken: '',\n      captchaSolver: {\n        enabled: false\n      }\n    }\n  }\n}];"
       },
-      "id": "df95d070-ba69-4123-93b1-b5637ccb1001",
+      "id": "183a7b4f-e427-45a5-918f-bb33353420d5",
       "name": "Manual Test Dict",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        848,
-        432
+        8288,
+        2416
       ]
     },
     {
       "parameters": {
-        "content": "Dieser Workflow ist als Sub-Workflow fuer den TSV Aschach Mitgliedsantrag gedacht.\n\nInput:\n- Entweder direkt als JSON-Objekt mit den Feldern applicant/member/communication/bank/...\n- Oder als Wrapper in dict, payload oder data\n\nAblauf:\n1) Pflichtfelder werden lokal validiert (vor dem ersten Webaufruf).\n2) Set Antrag Config legt Start-/Form-URL zentral fest.\n3) Set Captcha Solver Config konfiguriert SolveCaptcha Friendly Captcha.\n4) Ohne Captcha-Token wird vor dem Absenden hart abgebrochen (kein Blind-Submit).\n5) API-Key fuer SolveCaptcha kommt aus HTTP Query Auth Credential (key=<API_KEY>).\n6) HTTP-Fehler enthalten Status + HTML-Snippet fuer Debugging.\n\nZum Testen: Manual Trigger startet mit einem vorausgefuellten dict-Beispiel.",
-        "height": 318,
-        "width": 760,
+        "content": "Dieser Workflow ist als Sub-Workflow fuer den TSV Aschach Mitgliedsantrag gedacht.\n\nInput:\n- Entweder direkt als JSON-Objekt mit den Feldern applicant/member/communication/bank/...\n- Oder als Wrapper in dict, payload oder data\n\nAblauf:\n1) Pflichtfelder werden lokal validiert (vor dem ersten Webaufruf).\n2) Set Antrag Config legt Start-/Form-URL zentral fest.\n3) Set Captcha Solver Config konfiguriert SolveCaptcha Friendly Captcha.\n4) Ohne Captcha-Token wird vor dem Absenden hart abgebrochen (kein Blind-Submit).\n5) API-Key fuer SolveCaptcha kommt aus HTTP Query Auth Credential (key=<API_KEY>).\n6) HTTP-Fehler enthalten Status + HTML-Snippet fuer Debugging.\n\nSolveCaptcha Credential in n8n erstellen (HTTP Query Auth):\n1) In n8n: Credentials -> New Credential -> HTTP Query Auth\n2) Query Parameter Name: key\n3) Query Parameter Value: <DEIN_SOLVECAPTCHA_API_KEY>\n4) Credential speichern (z. B. SolveCaptcha)\n5) Credential in den Nodes 'SolveCaptcha Create Task' und 'SolveCaptcha Get Result' auswaehlen\n\nZum Testen: Manual Trigger startet mit einem vorausgefuellten dict-Beispiel.",
+        "height": 478,
+        "width": 696,
         "color": 7
       },
-      "id": "6e63c4ec-7a70-4f7c-838b-20e9cd83b674",
+      "id": "239ca98b-22b2-4d37-a076-3447cfc634b0",
       "name": "Workflow Kommentar",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        656,
-        -64
+        8464,
+        1728
       ]
     },
     {
       "parameters": {
         "jsCode": "const rawInput = $json;\n\nfunction pickObject(value) {\n  return value && typeof value === 'object' && !Array.isArray(value);\n}\n\nconst input = pickObject(rawInput?.dict)\n  ? rawInput.dict\n  : pickObject(rawInput?.payload)\n    ? rawInput.payload\n    : pickObject(rawInput?.data)\n      ? rawInput.data\n      : rawInput;\n\nif (!pickObject(input)) {\n  throw new Error('Input muss ein JSON-Objekt (dict) sein. Optional als dict, payload oder data uebergeben.');\n}\n\nfunction get(path) {\n  return path.split('.').reduce((acc, key) => (acc == null ? undefined : acc[key]), input);\n}\n\nconst requiredPaths = [\n  'applicant.firstName',\n  'applicant.lastName',\n  'applicant.email',\n  'applicant.emailRepeat',\n  'applicant.phone',\n  'member.firstName',\n  'member.lastName',\n  'member.street',\n  'member.zip',\n  'member.city',\n  'member.birthDate',\n  'member.entryDate',\n  'member.salutationValue',\n  'member.countryValue',\n  'member.genderValue',\n  'member.familyStatusValue',\n  'communication.email',\n  'communication.mobile',\n  'bank.accountHolder',\n  'bank.iban'\n];\n\nconst missing = requiredPaths.filter((p) => {\n  const v = get(p);\n  return v === undefined || v === null || String(v).trim() === '';\n});\n\nconst email = String(get('applicant.email') || '').trim();\nconst emailRepeat = String(get('applicant.emailRepeat') || '').trim();\nconst iban = String(get('bank.iban') || '').replace(/\\s+/g, '').toUpperCase();\n\nconst formatErrors = [];\nif (email && emailRepeat && email !== emailRepeat) {\n  formatErrors.push('applicant.email und applicant.emailRepeat muessen identisch sein.');\n}\nif (iban && !/^[A-Z]{2}[0-9A-Z]{13,32}$/.test(iban)) {\n  formatErrors.push('bank.iban hat ein ungueltiges Format.');\n}\n\nif (missing.length || formatErrors.length) {\n  throw new Error(\n    [\n      missing.length ? `Fehlende Pflichtfelder: ${missing.join(', ')}` : '',\n      formatErrors.length ? `Formatfehler: ${formatErrors.join(' | ')}` : ''\n    ]\n      .filter(Boolean)\n      .join(' || ')\n  );\n}\n\nconst normalized = {\n  applicant: {\n    firstName: String(input.applicant.firstName).trim(),\n    lastName: String(input.applicant.lastName).trim(),\n    email,\n    emailRepeat,\n    phone: String(input.applicant.phone).trim(),\n    role: String(input.applicant.role ?? '0')\n  },\n  member: {\n    firstName: String(input.member.firstName).trim(),\n    lastName: String(input.member.lastName).trim(),\n    street: String(input.member.street).trim(),\n    zip: String(input.member.zip).trim(),\n    city: String(input.member.city).trim(),\n    birthDate: String(input.member.birthDate).trim(),\n    entryDate: String(input.member.entryDate).trim(),\n    salutationValue: String(input.member.salutationValue).trim(),\n    titleValue: input.member.titleValue == null ? '' : String(input.member.titleValue).trim(),\n    countryValue: String(input.member.countryValue).trim(),\n    genderValue: String(input.member.genderValue).trim(),\n    familyStatusValue: String(input.member.familyStatusValue).trim()\n  },\n  communication: {\n    description: String(input.communication.description ?? 'Privat').trim(),\n    email: String(input.communication.email).trim(),\n    phone: String(input.communication.phone ?? '').trim(),\n    mobile: String(input.communication.mobile).trim()\n  },\n  departments: Array.isArray(input.departments) ? input.departments.map((v) => String(v)) : [],\n  bank: {\n    accountHolder: String(input.bank.accountHolder).trim(),\n    iban: iban,\n    bic: String(input.bank.bic ?? '').trim()\n  },\n  declarations: {\n    sepaMandate: input.declarations?.sepaMandate !== false,\n    privacy: input.declarations?.privacy !== false,\n    consent: input.declarations?.consent !== false,\n    statutes: input.declarations?.statutes !== false\n  },\n  captchaToken: input.captchaToken ? String(input.captchaToken).trim() : '',\n  captchaSolver: input.captchaSolver ?? {}\n};\n\nreturn [{ json: normalized }];"
       },
-      "id": "93aaaec4-2d26-4284-9cd7-63c084191083",
+      "id": "80afab51-3f06-46ad-9c59-7bb59b281917",
       "name": "Validate Mandatory Inputs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1040,
-        256
+        8480,
+        2240
       ]
     },
     {
@@ -87,13 +87,13 @@
         },
         "options": {}
       },
-      "id": "759cdf76-bbfa-4b26-8e07-ba94be0d8da4",
+      "id": "fc7d7e32-bd5a-43f5-9190-f9f7f15bd56f",
       "name": "Set Antrag Config",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1232,
-        256
+        8672,
+        2240
       ]
     },
     {
@@ -152,39 +152,39 @@
         },
         "options": {}
       },
-      "id": "8f27532a-4d93-4edc-9d52-66190094e3e0",
+      "id": "4a06b310-613d-4598-824d-7c951e376bed",
       "name": "Set Captcha Solver Config",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1424,
-        256
+        8864,
+        2240
       ]
     },
     {
       "parameters": {
         "jsCode": "const data = $('Validate Mandatory Inputs').item.json;\nconst antragConfig = $('Set Antrag Config').item.json;\n\nconst START_URL = String(antragConfig.startUrl || '').trim();\nconst FORM_URL = String(antragConfig.formUrl || '').trim();\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\n\nif (!START_URL || !FORM_URL) {\n  throw new Error('workflow_error: startUrl/formUrl fehlen in Set Antrag Config.');\n}\n\nfunction parseSetCookie(cookieLine) {\n  const first = String(cookieLine || '').split(';')[0];\n  const idx = first.indexOf('=');\n  if (idx === -1) return null;\n  return {\n    name: first.slice(0, idx).trim(),\n    value: first.slice(idx + 1).trim()\n  };\n}\n\nfunction cookieHeader(jar) {\n  return Object.entries(jar)\n    .map(([k, v]) => `${k}=${v}`)\n    .join('; ');\n}\n\nfunction extractSetCookies(headers) {\n  const raw = headers?.['set-cookie'] ?? headers?.['Set-Cookie'];\n  if (!raw) return [];\n  return Array.isArray(raw) ? raw : [String(raw)];\n}\n\nfunction toFormUrlEncoded(form) {\n  return Object.entries(form || {})\n    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v == null ? '' : String(v))}`)\n    .join('&');\n}\n\nfunction shortHtmlSnippet(html) {\n  return String(html || '')\n    .replace(/\\s+/g, ' ')\n    .slice(0, 260);\n}\n\nfunction ensureHttpOk(response, label) {\n  const status = Number(response?.status || 0);\n  if (!Number.isFinite(status) || status < 200 || status >= 400) {\n    const snippet = shortHtmlSnippet(response?.text);\n    throw new Error(`${label} fehlgeschlagen: HTTP ${status}, snippet=${snippet}`);\n  }\n}\n\nasync function requestHtml({ method, url, form, jar }) {\n  const headers = {\n    'User-Agent': 'n8n-tsv-aschach-workflow/1.0',\n    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'\n  };\n\n  const cookie = cookieHeader(jar);\n  if (cookie) headers.Cookie = cookie;\n\n  const options = {\n    method,\n    url,\n    headers,\n    returnFullResponse: true,\n    ignoreHttpStatusErrors: true\n  };\n\n  if (form) {\n    headers['Content-Type'] = 'application/x-www-form-urlencoded';\n    options.body = toFormUrlEncoded(form);\n  }\n\n  const response = await httpRequest(options);\n  const setCookies = extractSetCookies(response.headers);\n  for (const line of setCookies) {\n    const parsed = parseSetCookie(line);\n    if (parsed) jar[parsed.name] = parsed.value;\n  }\n\n  const text = typeof response.body === 'string' ? response.body : String(response.body || '');\n  return {\n    status: Number(response.statusCode || 0),\n    text,\n    finalUrl: response.request?.res?.responseUrl || response.request?.href || url\n  };\n}\n\nfunction activeStep(html) {\n  const m = html.match(/<li class=\"active\">([\\s\\S]*?)<\\/li>/i);\n  if (!m) return 'unknown';\n  return m[1].replace(/<[^>]+>/g, '').trim();\n}\n\nfunction hiddenFields(html) {\n  const out = {};\n  const re = /<input[^>]*type=\"hidden\"[^>]*name=\"([^\"]+)\"[^>]*value=\"([^\"]*)\"[^>]*>/gi;\n  let m;\n  while ((m = re.exec(html)) !== null) {\n    out[m[1]] = m[2];\n  }\n  return out;\n}\n\nfunction firstSelectableOption(html, selectName) {\n  const escaped = selectName.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');\n  const blockRe = new RegExp(`<select[^>]*name=\"${escaped}\"[^>]*>([\\\\s\\\\S]*?)<\\\\/select>`, 'i');\n  const block = html.match(blockRe);\n  if (!block) return '';\n\n  const optionRe = /<option([^>]*)>/gi;\n  let selected = '';\n  let fallback = '';\n  let m;\n  while ((m = optionRe.exec(block[1])) !== null) {\n    const attrs = m[1];\n    const vm = attrs.match(/value=\"([^\"]*)\"/i);\n    const value = vm ? vm[1] : '';\n    if (!fallback && value !== '') fallback = value;\n    if (/\\bselected\\b/i.test(attrs)) {\n      selected = value;\n      break;\n    }\n  }\n  return selected || fallback;\n}\n\nconst jar = {};\n\nlet page = await requestHtml({ method: 'GET', url: START_URL, jar });\nensureHttpOk(page, 'Initialer Seitenaufruf');\nlet hidden = hiddenFields(page.text);\n\nlet payload = {\n  ...hidden,\n  strVorname: data.applicant.firstName,\n  strNachname: data.applicant.lastName,\n  strEmail: data.applicant.email,\n  strEmail2: data.applicant.emailRepeat,\n  strTelefono: data.applicant.phone,\n  Antragsteller: data.applicant.role || '0',\n  iOperation: '1'\n};\n\npage = await requestHtml({ method: 'POST', url: FORM_URL, form: payload, jar });\nensureHttpOk(page, 'Schritt 1');\nif (activeStep(page.text) !== 'Mitgliedsdaten') {\n  throw new Error(`Schritt 1 fehlgeschlagen, aktiver Schritt: ${activeStep(page.text)}`);\n}\n\nhidden = hiddenFields(page.text);\nconst titleValue = data.member.titleValue || firstSelectableOption(page.text, 'aAdressdaten[4]') || '';\n\npayload = {\n  ...hidden,\n  'aAdressdaten[Vorname]': data.member.firstName,\n  'aAdressdaten[Nachname]': data.member.lastName,\n  'aAdressdaten[Strasse]': data.member.street,\n  'aAdressdaten[Plz]': data.member.zip,\n  'aAdressdaten[Ort]': data.member.city,\n  Geburtsdatum: data.member.birthDate,\n  Vereinseintrittsdatum: data.member.entryDate,\n  'aAdressdaten[2]': data.member.salutationValue,\n  'aAdressdaten[4]': titleValue,\n  'aAdressdaten[Land]': data.member.countryValue,\n  'aAdressdaten[Geschlecht]': data.member.genderValue,\n  'aAdressdaten[6]': data.member.familyStatusValue,\n  'aKom[1][Beschreibung]': data.communication.description || 'Privat',\n  'aKom[1][7]': data.communication.email,\n  'aKom[1][8]': data.communication.phone || '',\n  'aKom[1][9]': data.communication.mobile,\n  iOperation: '1'\n};\n\nif (Array.isArray(data.departments)) {\n  for (const dep of data.departments) {\n    payload[`aAbt[${dep}]`] = String(dep);\n  }\n}\n\npage = await requestHtml({ method: 'POST', url: FORM_URL, form: payload, jar });\nensureHttpOk(page, 'Schritt 2');\nif (activeStep(page.text) !== 'Zahlungsart') {\n  throw new Error(`Schritt 2 fehlgeschlagen, aktiver Schritt: ${activeStep(page.text)}`);\n}\n\nhidden = hiddenFields(page.text);\npayload = {\n  ...hidden,\n  iZahlungsart: '4',\n  'aBankData[Kontoinhaber]': data.bank.accountHolder,\n  'aBankData[IBAN]': data.bank.iban,\n  iOperation: '1'\n};\n\nif (data.bank.bic) payload['aBankData[BIC]'] = data.bank.bic;\nif (data.declarations.sepaMandate) payload['Text[11]'] = '1';\n\npage = await requestHtml({ method: 'POST', url: FORM_URL, form: payload, jar });\nensureHttpOk(page, 'Schritt 3');\nif (activeStep(page.text) !== 'Zusatzdaten') {\n  throw new Error(`Schritt 3 fehlgeschlagen, aktiver Schritt: ${activeStep(page.text)}`);\n}\n\nhidden = hiddenFields(page.text);\npayload = {\n  ...hidden,\n  iOperation: '1'\n};\nif (data.declarations.privacy) payload['aTexts[13]'] = '1';\nif (data.declarations.consent) payload['aTexts[14]'] = '1';\nif (data.declarations.statutes) payload['aTexts[5733]'] = '1';\n\npage = await requestHtml({ method: 'POST', url: FORM_URL, form: payload, jar });\nensureHttpOk(page, 'Schritt 4');\nif (activeStep(page.text) !== 'Kontrolle/Absenden') {\n  throw new Error(`Schritt 4 fehlgeschlagen, aktiver Schritt: ${activeStep(page.text)}`);\n}\n\nreturn [{\n  json: {\n    data,\n    jar,\n    formUrl: FORM_URL,\n    pageAfterStep4Html: page.text,\n    activeStepAfterStep4: activeStep(page.text)\n  }\n}];"
       },
-      "id": "e8b90d09-f03b-4d1b-a660-cf563a04fb33",
+      "id": "c3151411-999a-4f16-aa9f-d87929512d28",
       "name": "Fill Steps 1-4",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1616,
-        256
+        9056,
+        2240
       ]
     },
     {
       "parameters": {
-        "jsCode": "const prep = $('Fill Steps 1-4').item.json;\nconst solver = $('Set Captcha Solver Config').item.json || {};\nconst data = prep.data || {};\nconst html = prep.pageAfterStep4Html || '';\n\nfunction extractSiteKey(pageHtml) {\n  const m = pageHtml.match(/<div class=\\\"frc-captcha\\\"[^>]*data-sitekey=\\\"([^\\\"]+)\\\"/i);\n  return m ? m[1] : '';\n}\n\nif (data.captchaToken && String(data.captchaToken).trim()) {\n  return [{ json: { needsSolver: false, captchaToken: String(data.captchaToken).trim(), captchaSource: 'input' } }];\n}\n\nif (solver.captchaRequired === false) {\n  return [{ json: { needsSolver: false, captchaToken: '', captchaSource: 'none' } }];\n}\n\nif (!solver.enabled) {\n  throw new Error('workflow_error: Captcha ist erforderlich, aber Solver ist deaktiviert.');\n}\n\nconst sitekey = String(data.captchaSolver?.siteKey || solver.siteKey || extractSiteKey(html) || '').trim();\nif (!sitekey) {\n  throw new Error('workflow_error: FriendlyCaptcha sitekey konnte nicht ermittelt werden.');\n}\n\nconst pageurl = prep.formUrl;\nif (!pageurl) {\n  throw new Error('workflow_error: pageurl/formUrl fehlt fuer SolveCaptcha.');\n}\n\nreturn [{\n  json: {\n    needsSolver: true,\n    sitekey,\n    pageurl\n  }\n}];"
+        "jsCode": "const prep = $('Fill Steps 1-4').item.json;\nconst solver = $('Set Captcha Solver Config').item.json || {};\nconst antragConfig = $('Set Antrag Config').item.json || {};\nconst data = prep.data || {};\nconst html = prep.pageAfterStep4Html || '';\n\nfunction extractSiteKey(pageHtml) {\n  const m = pageHtml.match(/<div class=\\\"frc-captcha\\\"[^>]*data-sitekey=\\\"([^\\\"]+)\\\"/i);\n  return m ? m[1] : '';\n}\n\nif (data.captchaToken && String(data.captchaToken).trim()) {\n  return [{ json: { needsSolver: false, captchaToken: String(data.captchaToken).trim(), captchaSource: 'input' } }];\n}\n\nif (solver.captchaRequired === false) {\n  return [{ json: { needsSolver: false, captchaToken: '', captchaSource: 'none' } }];\n}\n\nif (!solver.enabled) {\n  throw new Error('workflow_error: Captcha ist erforderlich, aber Solver ist deaktiviert.');\n}\n\nconst sitekey = String(data.captchaSolver?.siteKey || solver.siteKey || extractSiteKey(html) || '').trim();\nif (!sitekey) {\n  throw new Error('workflow_error: FriendlyCaptcha sitekey konnte nicht ermittelt werden.');\n}\n\nconst pageurl = String(antragConfig.startUrl || prep.formUrl || '').trim();\nif (!pageurl) {\n  throw new Error('workflow_error: pageurl fehlt fuer SolveCaptcha.');\n}\n\nreturn [{\n  json: {\n    needsSolver: true,\n    sitekey,\n    pageurl\n  }\n}];"
       },
-      "id": "3756a178-d765-401f-a7c5-0b74a3eed2bc",
+      "id": "5440220a-757d-4cac-a61a-d1499f514082",
       "name": "Resolve Captcha Token",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1808,
-        256
+        9248,
+        2240
       ]
     },
     {
@@ -212,13 +212,13 @@
         },
         "options": {}
       },
-      "id": "50d4dbb5-a5d7-43ac-a748-bc020d4527e8",
+      "id": "5dea25ac-e74e-41d3-8039-ae563ee9a6e8",
       "name": "If SolveCaptcha needed",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2000,
-        256
+        9440,
+        2240
       ]
     },
     {
@@ -251,39 +251,45 @@
         },
         "options": {}
       },
-      "id": "f269deb6-ef06-4fdf-bdd5-449842f36c21",
+      "id": "b5a68a6a-27ac-4092-ba01-009957973d3c",
       "name": "SolveCaptcha Create Task",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2208,
-        160
-      ]
+        9648,
+        2144
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "Pg1PItCmI3HFPQve",
+          "name": "SolveCaptcha"
+        }
+      }
     },
     {
       "parameters": {
         "jsCode": "const r = $json || {};\nif (Number(r.status) !== 1 || !r.request) {\n  throw new Error(`workflow_error: SolveCaptcha in.php Fehler: ${JSON.stringify(r).slice(0, 260)}`);\n}\nreturn [{ json: { captchaId: String(r.request) } }];"
       },
-      "id": "6621f810-4f3c-457f-a471-9e57343e53e5",
+      "id": "0010bd15-bd23-4321-a145-f652fdcb0d2f",
       "name": "Parse SolveCaptcha Task",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2416,
-        160
+        9856,
+        2144
       ]
     },
     {
       "parameters": {
         "amount": "={{ $('Set Captcha Solver Config').item.json.pollDelaySeconds || 20 }}"
       },
-      "id": "8ac39ad0-1d1b-4f2d-aa39-342db3f5a50f",
+      "id": "379aa1f5-a611-4a72-9d29-bcc059caa90d",
       "name": "Wait for SolveCaptcha",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2624,
-        160
+        10064,
+        2144
       ],
       "webhookId": "b481d37b-e7b7-46fb-a761-4a41056d3a0e"
     },
@@ -311,39 +317,45 @@
         },
         "options": {}
       },
-      "id": "4c5a5943-d335-4faa-9082-831423e2e3e1",
+      "id": "87561bd1-ed58-4d99-9c4f-9ee8594e8692",
       "name": "SolveCaptcha Get Result",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2832,
-        160
-      ]
+        10272,
+        2144
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "Pg1PItCmI3HFPQve",
+          "name": "SolveCaptcha"
+        }
+      }
     },
     {
       "parameters": {
         "jsCode": "const r = $json || {};\nif (Number(r.status) === 1 && r.request) {\n  return [{ json: { captchaToken: String(r.request), captchaSource: 'solvecaptcha' } }];\n}\nif (String(r.request || '').toUpperCase() === 'CAPCHA_NOT_READY') {\n  throw new Error('workflow_error: SolveCaptcha antwortet CAPCHA_NOT_READY. Erhoehe pollDelaySeconds oder fuehre erneut aus.');\n}\nthrow new Error(`workflow_error: SolveCaptcha res.php Fehler: ${JSON.stringify(r).slice(0, 260)}`);"
       },
-      "id": "e87411ae-5f47-4f94-97b1-2093cdf20431",
+      "id": "64039b8c-8264-4f2b-a4fb-048aa05f664d",
       "name": "Parse SolveCaptcha Result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3040,
-        160
+        10480,
+        2144
       ]
     },
     {
       "parameters": {
-        "jsCode": "const prep = $('Fill Steps 1-4').item.json;\nconst tokenInput = $json || {};\n\nconst data = prep.data || {};\nconst jar = prep.jar || {};\nconst FORM_URL = prep.formUrl;\nconst pageHtml = prep.pageAfterStep4Html || '';\nconst token = String(tokenInput.captchaToken || '').trim();\nconst captchaSource = String(tokenInput.captchaSource || 'unknown');\n\nif (!FORM_URL) {\n  throw new Error('workflow_error: formUrl aus Step 1-4 fehlt.');\n}\nif (!token) {\n  throw new Error('workflow_error: Captcha-Token fehlt. Abbruch vor Absenden.');\n}\n\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\n\nfunction parseSetCookie(cookieLine) {\n  const first = String(cookieLine || '').split(';')[0];\n  const idx = first.indexOf('=');\n  if (idx === -1) return null;\n  return {\n    name: first.slice(0, idx).trim(),\n    value: first.slice(idx + 1).trim()\n  };\n}\n\nfunction cookieHeader(localJar) {\n  return Object.entries(localJar)\n    .map(([k, v]) => `${k}=${v}`)\n    .join('; ');\n}\n\nfunction extractSetCookies(headers) {\n  const raw = headers?.['set-cookie'] ?? headers?.['Set-Cookie'];\n  if (!raw) return [];\n  return Array.isArray(raw) ? raw : [String(raw)];\n}\n\nfunction toFormUrlEncoded(form) {\n  return Object.entries(form || {})\n    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v == null ? '' : String(v))}`)\n    .join('&');\n}\n\nfunction shortHtmlSnippet(html) {\n  return String(html || '')\n    .replace(/\\s+/g, ' ')\n    .slice(0, 260);\n}\n\nfunction activeStep(html) {\n  const m = html.match(/<li class=\"active\">([\\s\\S]*?)<\\/li>/i);\n  if (!m) return 'unknown';\n  return m[1].replace(/<[^>]+>/g, '').trim();\n}\n\nfunction hiddenFields(html) {\n  const out = {};\n  const re = /<input[^>]*type=\"hidden\"[^>]*name=\"([^\"]+)\"[^>]*value=\"([^\"]*)\"[^>]*>/gi;\n  let m;\n  while ((m = re.exec(html)) !== null) {\n    out[m[1]] = m[2];\n  }\n  return out;\n}\n\nasync function requestHtml({ method, url, form, localJar }) {\n  const headers = {\n    'User-Agent': 'n8n-tsv-aschach-workflow/1.0',\n    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'\n  };\n\n  const cookie = cookieHeader(localJar);\n  if (cookie) headers.Cookie = cookie;\n\n  const options = {\n    method,\n    url,\n    headers,\n    returnFullResponse: true,\n    ignoreHttpStatusErrors: true\n  };\n\n  if (form) {\n    headers['Content-Type'] = 'application/x-www-form-urlencoded';\n    options.body = toFormUrlEncoded(form);\n  }\n\n  const response = await httpRequest(options);\n  const setCookies = extractSetCookies(response.headers);\n  for (const line of setCookies) {\n    const parsed = parseSetCookie(line);\n    if (parsed) localJar[parsed.name] = parsed.value;\n  }\n\n  const text = typeof response.body === 'string' ? response.body : String(response.body || '');\n  return {\n    status: Number(response.statusCode || 0),\n    text\n  };\n}\n\nconst hidden = hiddenFields(pageHtml);\nconst payload = {\n  ...hidden,\n  checkPreservedData: 'on',\n  iOperation: '1',\n  'frc-captcha-solution': token,\n  friendly_captcha_solution: token\n};\n\nconst submitResult = await requestHtml({ method: 'POST', url: FORM_URL, form: payload, localJar: jar });\nif (submitResult.status < 200 || submitResult.status >= 400) {\n  throw new Error(`Schritt 5 (Absenden) fehlgeschlagen: HTTP ${submitResult.status}, snippet=${shortHtmlSnippet(submitResult.text)}`);\n}\n\nconst finalStep = activeStep(submitResult.text);\nif (finalStep === 'Kontrolle/Absenden' || finalStep === 'unknown') {\n  throw new Error(`Absenden fehlgeschlagen, finalStep=${finalStep}, snippet=${shortHtmlSnippet(submitResult.text)}`);\n}\n\nreturn [{\n  json: {\n    success: true,\n    message: 'Mitgliedsantrag wurde abgeschickt.',\n    captchaSource,\n    finalStep,\n    submittedWithoutCaptcha: false,\n    statusCode: submitResult.status\n  }\n}];"
+        "jsCode": "const prep = $('Fill Steps 1-4').item.json;\nconst tokenInput = $json || {};\n\nconst jar = prep.jar || {};\nconst FORM_URL = prep.formUrl;\nconst pageHtml = prep.pageAfterStep4Html || '';\nconst token = String(tokenInput.captchaToken || '').trim();\nconst captchaSource = String(tokenInput.captchaSource || 'unknown');\n\nif (!FORM_URL) {\n  throw new Error('workflow_error: formUrl aus Step 1-4 fehlt.');\n}\nif (!token) {\n  throw new Error('workflow_error: Captcha-Token fehlt. Abbruch vor Absenden.');\n}\n\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\n\nfunction parseSetCookie(cookieLine) {\n  const first = String(cookieLine || '').split(';')[0];\n  const idx = first.indexOf('=');\n  if (idx === -1) return null;\n  return {\n    name: first.slice(0, idx).trim(),\n    value: first.slice(idx + 1).trim()\n  };\n}\n\nfunction cookieHeader(localJar) {\n  return Object.entries(localJar)\n    .map(([k, v]) => `${k}=${v}`)\n    .join('; ');\n}\n\nfunction extractSetCookies(headers) {\n  const raw = headers?.['set-cookie'] ?? headers?.['Set-Cookie'];\n  if (!raw) return [];\n  return Array.isArray(raw) ? raw : [String(raw)];\n}\n\nfunction shortHtmlSnippet(html) {\n  return String(html || '')\n    .replace(/\\s+/g, ' ')\n    .slice(0, 260);\n}\n\nfunction activeStep(html) {\n  const m = html.match(/<li class=\"active\">([\\s\\S]*?)<\\/li>/i);\n  if (!m) return 'unknown';\n  return m[1].replace(/<[^>]+>/g, '').trim();\n}\n\nfunction extractInputValues(html) {\n  const out = {};\n  const tagRe = /<input\\b[^>]*>/gi;\n  let tagMatch;\n  while ((tagMatch = tagRe.exec(html)) !== null) {\n    const tag = tagMatch[0];\n    const nameMatch = tag.match(/\\bname\\s*=\\s*\"([^\"]+)\"/i);\n    if (!nameMatch) continue;\n    const valueMatch = tag.match(/\\bvalue\\s*=\\s*\"([^\"]*)\"/i);\n    out[nameMatch[1]] = valueMatch ? valueMatch[1] : '';\n  }\n  return out;\n}\n\nasync function submitMultipart({ url, formData, localJar }) {\n  const headers = {\n    'User-Agent': 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36',\n    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',\n    Origin: 'https://verein.dfbnet.org',\n    Referer: FORM_URL\n  };\n\n  const cookie = cookieHeader(localJar);\n  if (cookie) headers.Cookie = cookie;\n\n  const response = await httpRequest({\n    method: 'POST',\n    url,\n    headers,\n    formData,\n    returnFullResponse: true,\n    ignoreHttpStatusErrors: true\n  });\n\n  const setCookies = extractSetCookies(response.headers);\n  for (const line of setCookies) {\n    const parsed = parseSetCookie(line);\n    if (parsed) localJar[parsed.name] = parsed.value;\n  }\n\n  const text = typeof response.body === 'string' ? response.body : String(response.body || '');\n  return {\n    status: Number(response.statusCode || 0),\n    text,\n    headers: response.headers || {}\n  };\n}\n\nconst inputs = extractInputValues(pageHtml);\nconst iStep = String(inputs.iStep || '').trim();\nif (!iStep) {\n  throw new Error('workflow_error: iStep konnte aus Schritt 4 nicht ermittelt werden.');\n}\n\nconst payload = {\n  'frc-captcha-solution': token,\n  iStep,\n  iOperation: '1'\n};\n\nconst submitResult = await submitMultipart({ url: FORM_URL, formData: payload, localJar: jar });\nif (submitResult.status < 200 || submitResult.status >= 400) {\n  throw new Error(\n    `Schritt 5 (Absenden) fehlgeschlagen: HTTP ${submitResult.status}, iStep=${iStep}, keys=${Object.keys(payload).join(',')}, snippet=${shortHtmlSnippet(submitResult.text)}`\n  );\n}\n\nconst finalStep = activeStep(submitResult.text);\nif (finalStep === 'Kontrolle/Absenden' || finalStep === 'unknown') {\n  throw new Error(\n    `Absenden fehlgeschlagen, finalStep=${finalStep}, iStep=${iStep}, keys=${Object.keys(payload).join(',')}, snippet=${shortHtmlSnippet(submitResult.text)}`\n  );\n}\n\nreturn [{\n  json: {\n    success: true,\n    message: 'Mitgliedsantrag wurde abgeschickt.',\n    captchaSource,\n    finalStep,\n    submittedWithoutCaptcha: false,\n    statusCode: submitResult.status\n  }\n}];"
       },
-      "id": "ac72503a-5a4e-4c62-80ff-64402cb095a5",
+      "id": "e1c9e63f-50b0-40a3-8b91-2245dc036255",
       "name": "Submit Antrag (Step 5)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2208,
-        368
+        10688,
+        2256
       ]
     }
   ],
@@ -511,23 +523,28 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 10
   },
-  "versionId": "25cb787f-30d8-4dbb-ada6-0b45bc6942e6",
+  "versionId": "7c15f6a1-83c2-4610-9ad6-e19058966a18",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "mIEveW7DASpRiBrr",
   "tags": [
     {
-      "name": "TSV Aschach",
-      "id": "llh5BWKLF28hyZE3",
       "updatedAt": "2026-03-04T20:49:01.854Z",
-      "createdAt": "2026-03-04T20:49:01.854Z"
+      "createdAt": "2026-03-04T20:49:01.854Z",
+      "id": "llh5BWKLF28hyZE3",
+      "name": "TSV Aschach"
     }
   ]
 }
