@@ -1,0 +1,328 @@
+{
+  "name": "Airbus - MyPayslip",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        48,
+        352
+      ],
+      "id": "38ed6efc-7c49-4f39-8c6f-c1a5f7af9fed",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "content": "# Airbus MyPayslip Setup\n\nDieses Workflow nutzt die MyPayslip-API direkt und schickt neue Downloads an den Subworkflow **Paperless-ngx - Upload Document**.\n\nKonfiguration im Node **Set workflow config**:\n- `email` ist vorbelegt\n- `maxDocuments`: `1` = neuestes neues Dokument, `0` = alle neuen Dokumente, `N` = letzte `N` neue Dokumente\n- `password`: Standardmaessig aus `AIRBUS_MYPAYSLIP_PASSWORD`\n- `totpSecret`: Standardmaessig aus `AIRBUS_MYPAYSLIP_TOTP_SECRET`\n\nDeduplication:\n- Bereits erfolgreich verarbeitete `documentId`s werden in `workflow static data` unter `processedDocumentIds` gespeichert\n- Nur noch nicht gespeicherte Dokumente werden heruntergeladen\n\nHinweis:\n- Wenn du statt Env-Variablen lieber n8n-Expressions oder Secrets nutzen willst, passe die beiden Felder im Set-Node an.",
+        "height": 420,
+        "width": 768
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        -128
+      ],
+      "id": "c475fbb8-720a-4330-a53e-b8788660a7a6",
+      "name": "Setup note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "467a1f8a-b372-4cc7-8aa7-1fbf9996b133",
+              "name": "email",
+              "value": "julian.j.reith@airbus.com",
+              "type": "string"
+            },
+            {
+              "id": "04039bc5-480e-4ac0-96ee-f3d4d85fa5bf",
+              "name": "maxDocuments",
+              "value": 1,
+              "type": "number"
+            },
+            {
+              "id": "2be17707-22db-4d7d-b9e1-f4ad4e258b61",
+              "name": "password",
+              "value": "={{ $env.AIRBUS_MYPAYSLIP_PASSWORD || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "2301f064-d279-400d-a204-bdf40444a759",
+              "name": "totpSecret",
+              "value": "={{ $env.AIRBUS_MYPAYSLIP_TOTP_SECRET || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "18a3f30d-4e6a-4814-a967-642c3df1f665",
+              "name": "baseUrl",
+              "value": "https://mypayslip.airbus.com",
+              "type": "string"
+            },
+            {
+              "id": "7e9367e6-735b-45fd-8121-9e32ae6ba63d",
+              "name": "apiBase",
+              "value": "https://mypayslip.airbus.com/api/mobileview2/v1",
+              "type": "string"
+            },
+            {
+              "id": "cf0277bd-a44f-445a-860e-c6a2b63f0cc4",
+              "name": "userAgent",
+              "value": "n8n-airbus-mypayslip/1.0",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        352
+      ],
+      "id": "7cae1db1-3ff1-4a62-bc0c-5b53c67534b0",
+      "name": "Set workflow config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $json || {};\nconst httpRequest = this.helpers.httpRequest.bind(this.helpers);\n\nconst email = typeof cfg.email === 'string' ? cfg.email.trim() : '';\nconst password = typeof cfg.password === 'string' ? cfg.password : '';\nconst totpSecret = typeof cfg.totpSecret === 'string' ? cfg.totpSecret.trim() : '';\nconst apiBase = typeof cfg.apiBase === 'string' ? cfg.apiBase.replace(/\\/+$/, '') : '';\nconst userAgent = typeof cfg.userAgent === 'string' && cfg.userAgent.trim() ? cfg.userAgent.trim() : 'n8n-airbus-mypayslip/1.0';\n\nlet maxDocuments = Number(cfg.maxDocuments);\nif (!Number.isFinite(maxDocuments)) maxDocuments = NaN;\nif (Number.isFinite(maxDocuments)) maxDocuments = Math.trunc(maxDocuments);\n\nconst validationErrors = [];\nif (!email) validationErrors.push('email fehlt.');\nif (!password) validationErrors.push('password fehlt. Setze AIRBUS_MYPAYSLIP_PASSWORD oder trage den Wert im Set-Node ein.');\nif (!totpSecret) validationErrors.push('totpSecret fehlt. Setze AIRBUS_MYPAYSLIP_TOTP_SECRET oder trage den Wert im Set-Node ein.');\nif (!apiBase) validationErrors.push('apiBase fehlt.');\nif (!Number.isInteger(maxDocuments) || maxDocuments < 0) {\n  validationErrors.push('maxDocuments muss eine ganze Zahl >= 0 sein.');\n}\n\nif (validationErrors.length) {\n  return [{\n    json: {\n      kind: 'error',\n      ok: false,\n      status: 'validation_error',\n      action: 'downloadPayslipsToPaperless',\n      message: validationErrors.join(' '),\n      totalAvailable: 0,\n      unseenAvailable: 0,\n      selectedCount: 0,\n      results: []\n    }\n  }];\n}\n\nfunction parseSetCookie(cookieLine) {\n  const first = String(cookieLine || '').split(';')[0];\n  const idx = first.indexOf('=');\n  if (idx === -1) return null;\n  return {\n    name: first.slice(0, idx).trim(),\n    value: first.slice(idx + 1).trim()\n  };\n}\n\nfunction extractSetCookies(headers) {\n  const raw = headers?.['set-cookie'] ?? headers?.['Set-Cookie'];\n  if (!raw) return [];\n  return Array.isArray(raw) ? raw : [String(raw)];\n}\n\nfunction applySetCookies(jar, headers) {\n  for (const line of extractSetCookies(headers)) {\n    const parsed = parseSetCookie(line);\n    if (parsed) jar[parsed.name] = parsed.value;\n  }\n}\n\nfunction shortText(value) {\n  return String(value == null ? '' : value)\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .slice(0, 260);\n}\n\nfunction cookieHeader(jar) {\n  return Object.entries(jar)\n    .filter(([, value]) => value != null && value !== '')\n    .map(([name, value]) => `${name}=${value}`)\n    .join('; ');\n}\n\nfunction toJsonIfPossible(value) {\n  if (value == null) return null;\n  if (typeof value === 'object' && !Buffer.isBuffer(value) && !(value instanceof Uint8Array)) return value;\n  const text = Buffer.isBuffer(value) ? value.toString('utf8') : String(value);\n  if (!text.trim()) return null;\n  try {\n    return JSON.parse(text);\n  } catch (error) {\n    return null;\n  }\n}\n\nfunction getResponseStatus(response) {\n  return Number(response?.statusCode || response?.status || 0);\n}\n\nfunction getResponseText(response) {\n  const body = response?.body ?? response?.text;\n  if (body == null) return '';\n  if (Buffer.isBuffer(body)) return body.toString('utf8');\n  if (typeof body === 'string') return body;\n  if (typeof body === 'object') return JSON.stringify(body);\n  return String(body);\n}\n\nfunction ensureHttpOk(response, label) {\n  const status = getResponseStatus(response);\n  if (!Number.isFinite(status) || status < 200 || status >= 300) {\n    throw new Error(`${label} fehlgeschlagen: HTTP ${status}. Antwort: ${shortText(getResponseText(response))}`);\n  }\n}\n\nasync function requestJson({ method, url, body, jar }) {\n  const headers = {\n    Accept: 'application/json, text/plain, */*',\n    'User-Agent': userAgent\n  };\n\n  const cookie = cookieHeader(jar);\n  if (cookie) headers.Cookie = cookie;\n\n  const options = {\n    method,\n    url,\n    headers,\n    returnFullResponse: true,\n    ignoreHttpStatusErrors: true\n  };\n\n  if (body !== undefined) {\n    headers['Content-Type'] = 'application/json';\n    options.body = JSON.stringify(body);\n  }\n\n  const response = await httpRequest(options);\n  applySetCookies(jar, response.headers);\n  return {\n    status: getResponseStatus(response),\n    headers: response.headers || {},\n    body: response.body,\n    text: getResponseText(response),\n    json: toJsonIfPossible(response.body)\n  };\n}\n\nasync function requestBinary({ url, jar }) {\n  const headers = {\n    Accept: 'application/octet-stream, application/pdf, */*',\n    'User-Agent': userAgent\n  };\n\n  const cookie = cookieHeader(jar);\n  if (cookie) headers.Cookie = cookie;\n\n  const response = await httpRequest({\n    method: 'GET',\n    url,\n    headers,\n    returnFullResponse: true,\n    ignoreHttpStatusErrors: true,\n    encoding: null\n  });\n\n  applySetCookies(jar, response.headers);\n\n  let body = response.body;\n  if (!Buffer.isBuffer(body)) {\n    if (body instanceof Uint8Array) {\n      body = Buffer.from(body);\n    } else if (typeof body === 'string') {\n      body = Buffer.from(body, 'binary');\n    } else if (body == null) {\n      body = Buffer.from('');\n    } else {\n      body = Buffer.from(body);\n    }\n  }\n\n  return {\n    status: getResponseStatus(response),\n    headers: response.headers || {},\n    body\n  };\n}\n\nfunction base32ToBytes(input) {\n  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';\n  const cleaned = String(input || '').toUpperCase().replace(/[^A-Z2-7]/g, '');\n  let bits = '';\n\n  for (const char of cleaned) {\n    const index = alphabet.indexOf(char);\n    if (index === -1) continue;\n    bits += index.toString(2).padStart(5, '0');\n  }\n\n  const bytes = [];\n  for (let i = 0; i + 8 <= bits.length; i += 8) {\n    bytes.push(parseInt(bits.slice(i, i + 8), 2));\n  }\n\n  return Uint8Array.from(bytes);\n}\n\nasync function generateTotp(secret) {\n  const secretBytes = base32ToBytes(secret);\n  if (!secretBytes.length) {\n    throw new Error('TOTP-Secret ist leer oder kein gueltiges Base32-Secret.');\n  }\n\n  const subtle = globalThis.crypto?.subtle;\n  if (!subtle) {\n    throw new Error('WebCrypto ist in diesem n8n-Code-Node nicht verfuegbar.');\n  }\n\n  const counter = Math.floor(Date.now() / 1000 / 30);\n  const msg = new Uint8Array(8);\n  let value = counter;\n  for (let i = 7; i >= 0; i--) {\n    msg[i] = value & 0xff;\n    value = Math.floor(value / 256);\n  }\n\n  const key = await subtle.importKey('raw', secretBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);\n  const signature = new Uint8Array(await subtle.sign('HMAC', key, msg));\n  const offset = signature[signature.length - 1] & 0x0f;\n  const binary = ((signature[offset] & 0x7f) << 24) | ((signature[offset + 1] & 0xff) << 16) | ((signature[offset + 2] & 0xff) << 8) | (signature[offset + 3] & 0xff);\n  return String(binary % 1000000).padStart(6, '0');\n}\n\nfunction safeFilePart(value) {\n  return String(value || '')\n    .replace(/[\\/:*?\"<>|]+/g, '-')\n    .replace(/\\s+/g, ' ')\n    .trim();\n}\n\nfunction extractHeader(headers, name) {\n  const wanted = String(name || '').toLowerCase();\n  for (const [key, value] of Object.entries(headers || {})) {\n    if (String(key).toLowerCase() === wanted) return Array.isArray(value) ? value[0] : value;\n  }\n  return '';\n}\n\nfunction filenameFromDisposition(headers) {\n  const contentDisposition = String(extractHeader(headers, 'content-disposition') || '');\n  if (!contentDisposition) return '';\n\n  const utf8Match = contentDisposition.match(/filename\\*=UTF-8''([^;]+)/i);\n  if (utf8Match) {\n    try {\n      return decodeURIComponent(utf8Match[1]).trim();\n    } catch (error) {\n      return utf8Match[1].trim();\n    }\n  }\n\n  const plainMatch = contentDisposition.match(/filename=\"?([^\";]+)\"?/i);\n  return plainMatch ? plainMatch[1].trim() : '';\n}\n\nfunction extensionFromMimeType(mimeType) {\n  const normalized = String(mimeType || '').toLowerCase();\n  if (normalized.includes('pdf')) return 'pdf';\n  if (normalized.includes('png')) return 'png';\n  if (normalized.includes('jpeg') || normalized.includes('jpg')) return 'jpg';\n  return 'bin';\n}\n\nfunction fallbackFilename(doc, headers) {\n  const preferredName = safeFilePart(doc.name || '');\n  const contentType = String(extractHeader(headers, 'content-type') || '');\n  const ext = extensionFromMimeType(contentType);\n  if (preferredName && /\\.[A-Za-z0-9]{2,5}$/.test(preferredName)) return preferredName;\n  if (preferredName) return `${preferredName}.${ext}`;\n  return `airbus-payslip-${safeFilePart(doc.documentId || doc.itemId || 'document')}.${ext}`;\n}\n\nfunction getStaticData() {\n  if (typeof getWorkflowStaticData === 'function') return getWorkflowStaticData('global');\n  if (typeof this.getWorkflowStaticData === 'function') return this.getWorkflowStaticData('global');\n  throw new Error('workflow static data ist in diesem Kontext nicht verfuegbar.');\n}\n\nconst jar = {};\nconst loginUrl = `${apiBase}/Account/Login`;\nconst twoFactorUrl = `${apiBase}/Account/TwoFactor/Login`;\nconst documentsUrl = `${apiBase}/Document`;\n\nconst loginResponse = await requestJson({\n  method: 'POST',\n  url: loginUrl,\n  body: {\n    loginName: email,\n    password\n  },\n  jar\n});\nensureHttpOk(loginResponse, 'Login');\n\nconst totpToken = await generateTotp(totpSecret);\nconst twoFactorResponse = await requestJson({\n  method: 'POST',\n  url: twoFactorUrl,\n  body: { token: totpToken },\n  jar\n});\nensureHttpOk(twoFactorResponse, 'TOTP-Login');\n\nconst documentsResponse = await requestJson({\n  method: 'GET',\n  url: documentsUrl,\n  jar\n});\nensureHttpOk(documentsResponse, 'Dokumentenliste laden');\n\nconst rawDocuments = Array.isArray(documentsResponse.json)\n  ? documentsResponse.json\n  : Array.isArray(documentsResponse.json?.data)\n    ? documentsResponse.json.data\n    : Array.isArray(documentsResponse.json?.results)\n      ? documentsResponse.json.results\n      : [];\n\nconst documents = rawDocuments\n  .filter((doc) => doc && doc.itemId != null && doc.documentId != null)\n  .slice()\n  .sort((a, b) => {\n    const left = new Date(b?.insertTime || 0).getTime();\n    const right = new Date(a?.insertTime || 0).getTime();\n    return left - right;\n  });\n\nconst staticData = getStaticData.call(this);\nif (!staticData.processedDocumentIds || typeof staticData.processedDocumentIds !== 'object') {\n  staticData.processedDocumentIds = {};\n}\nconst processedDocumentIds = staticData.processedDocumentIds;\n\nconst unseenDocuments = documents.filter((doc) => !processedDocumentIds[String(doc.documentId)]);\nconst selectedDocuments = maxDocuments === 0 ? unseenDocuments : unseenDocuments.slice(0, maxDocuments);\n\nif (selectedDocuments.length === 0) {\n  return [{\n    json: {\n      kind: 'noop',\n      ok: true,\n      status: 'nothing_new',\n      action: 'downloadPayslipsToPaperless',\n      message: 'Keine neuen Dokumente gefunden.',\n      totalAvailable: documents.length,\n      unseenAvailable: unseenDocuments.length,\n      selectedCount: 0,\n      results: []\n    }\n  }];\n}\n\nconst output = [];\nfor (const doc of selectedDocuments) {\n  const downloadUrl = `${documentsUrl}/${encodeURIComponent(String(doc.itemId))}/${encodeURIComponent(String(doc.documentId))}`;\n  const downloadResponse = await requestBinary({ url: downloadUrl, jar });\n  ensureHttpOk(downloadResponse, `Dokument ${doc.documentId} herunterladen`);\n\n  const fileName = filenameFromDisposition(downloadResponse.headers) || fallbackFilename(doc, downloadResponse.headers);\n  const mimeType = String(extractHeader(downloadResponse.headers, 'content-type') || 'application/octet-stream').split(';')[0].trim() || 'application/octet-stream';\n\n  output.push({\n    json: {\n      kind: 'document',\n      ok: true,\n      status: 'downloaded',\n      action: 'downloadPayslipsToPaperless',\n      totalAvailable: documents.length,\n      unseenAvailable: unseenDocuments.length,\n      selectedCount: selectedDocuments.length,\n      email,\n      maxDocuments,\n      itemId: String(doc.itemId),\n      documentId: String(doc.documentId),\n      documentName: doc.name || null,\n      insertTime: doc.insertTime || null,\n      isNew: doc.isNew === true,\n      customFields: Array.isArray(doc.customFields) ? doc.customFields : [],\n      fileName\n    },\n    binary: {\n      data: {\n        data: downloadResponse.body.toString('base64'),\n        fileName,\n        mimeType\n      }\n    }\n  });\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        352
+      ],
+      "id": "f70606d2-a3d8-447c-b42a-6f3ea0813c6e",
+      "name": "Fetch and download selected documents"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5b028788-243c-47e4-bf87-a54b89c75c77",
+              "leftValue": "={{ $json.kind }}",
+              "rightValue": "document",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        352
+      ],
+      "id": "6d0911a9-e405-4617-b7a9-6c70f9d1c3ee",
+      "name": "If document downloaded"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "VY97ocet0nc0Lkpr",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/VY97ocet0nc0Lkpr",
+          "cachedResultName": "Paperless-ngx - Upload Document"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        240
+      ],
+      "id": "be3e06bb-ce0a-4f2a-b5c6-b8a1a5f40d37",
+      "name": "Paperless-ngx - Upload Document",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $('Fetch and download selected documents').item.json || {};\nconst upload = $json || {};\n\nconst success = upload.isSuccess === true || upload.status === 'success';\n\nreturn [{\n  json: {\n    kind: 'result',\n    ok: success,\n    status: success ? 'uploaded' : 'failed',\n    action: 'downloadPayslipsToPaperless',\n    documentId: source.documentId || null,\n    itemId: source.itemId || null,\n    filename: source.fileName || upload.filename || null,\n    documentName: source.documentName || null,\n    insertTime: source.insertTime || null,\n    customFields: source.customFields || [],\n    totalAvailable: source.totalAvailable || 0,\n    unseenAvailable: source.unseenAvailable || 0,\n    selectedCount: source.selectedCount || 0,\n    paperless: upload,\n    errorReason: success ? null : (upload.errorReason || upload.message || 'paperless_upload_failed')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        240
+      ],
+      "id": "8141f9a5-0811-4c04-9625-bf4325d5bc58",
+      "name": "Build upload item result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $json || {};\n\nfunction getStaticData() {\n  if (typeof getWorkflowStaticData === 'function') return getWorkflowStaticData('global');\n  if (typeof this.getWorkflowStaticData === 'function') return this.getWorkflowStaticData('global');\n  throw new Error('workflow static data ist in diesem Kontext nicht verfuegbar.');\n}\n\nconst staticData = getStaticData.call(this);\nif (!staticData.processedDocumentIds || typeof staticData.processedDocumentIds !== 'object') {\n  staticData.processedDocumentIds = {};\n}\n\nif (row.status === 'uploaded' && row.documentId) {\n  staticData.processedDocumentIds[String(row.documentId)] = new Date().toISOString();\n}\n\nconst entries = Object.entries(staticData.processedDocumentIds);\nif (entries.length > 500) {\n  entries.sort((a, b) => new Date(b[1]).getTime() - new Date(a[1]).getTime());\n  staticData.processedDocumentIds = Object.fromEntries(entries.slice(0, 500));\n}\n\nreturn [{ json: row }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        240
+      ],
+      "id": "96ed0d4d-d6ce-4176-bb90-49b373f9e381",
+      "name": "Mark processed documentIds"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json || {});\n\nconst uploadedCount = rows.filter((row) => row.status === 'uploaded').length;\nconst failedCount = rows.filter((row) => row.status === 'failed').length;\nconst totalAvailable = rows[0]?.totalAvailable || 0;\nconst unseenAvailable = rows[0]?.unseenAvailable || 0;\nconst selectedCount = rows[0]?.selectedCount || rows.length;\n\nreturn [{\n  json: {\n    ok: failedCount === 0,\n    status: failedCount === 0 ? 'success' : 'partial_failure',\n    action: 'downloadPayslipsToPaperless',\n    message: failedCount === 0\n      ? `${uploadedCount} Dokument(e) erfolgreich an Paperless uebergeben.`\n      : `${uploadedCount} Dokument(e) erfolgreich, ${failedCount} fehlgeschlagen.`,\n    totalAvailable,\n    unseenAvailable,\n    selectedCount,\n    uploadedCount,\n    failedCount,\n    results: rows.map((row) => ({\n      documentId: row.documentId || null,\n      itemId: row.itemId || null,\n      filename: row.filename || null,\n      status: row.status || null,\n      errorReason: row.errorReason || null\n    }))\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        240
+      ],
+      "id": "69356b54-551f-401b-ae91-634ae6b0b0a1",
+      "name": "Build upload summary"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json || {};\n\nreturn [{\n  json: {\n    ok: data.ok !== false,\n    status: data.status || data.kind || 'noop',\n    action: data.action || 'downloadPayslipsToPaperless',\n    message: data.message || null,\n    totalAvailable: data.totalAvailable || 0,\n    unseenAvailable: data.unseenAvailable || 0,\n    selectedCount: data.selectedCount || 0,\n    uploadedCount: 0,\n    failedCount: data.ok === false ? 1 : 0,\n    results: Array.isArray(data.results) ? data.results : []\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        464
+      ],
+      "id": "8fdcd993-0e14-43ad-9c6d-6bcf9e1d26d7",
+      "name": "Return non-document result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set workflow config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set workflow config": {
+      "main": [
+        [
+          {
+            "node": "Fetch and download selected documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch and download selected documents": {
+      "main": [
+        [
+          {
+            "node": "If document downloaded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If document downloaded": {
+      "main": [
+        [
+          {
+            "node": "Paperless-ngx - Upload Document",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Return non-document result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paperless-ngx - Upload Document": {
+      "main": [
+        [
+          {
+            "node": "Build upload item result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build upload item result": {
+      "main": [
+        [
+          {
+            "node": "Mark processed documentIds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark processed documentIds": {
+      "main": [
+        [
+          {
+            "node": "Build upload summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 3
+  },
+  "versionId": "07f0d830-5f31-4ff8-926f-2f18d3f29583",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "DwMi5ywRbXvxyNVN",
+  "tags": [
+    {
+      "updatedAt": "2026-03-01T07:53:37.792Z",
+      "createdAt": "2026-03-01T07:53:37.792Z",
+      "id": "26zzfx1aLFPZLhVr",
+      "name": "Paperless"
+    }
+  ]
+}
