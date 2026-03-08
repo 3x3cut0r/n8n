@@ -270,7 +270,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return items.map((item) => ({\n  json: {\n    status: item.json.status || (item.json.isSuccess ? 'success' : 'failure'),\n    filename: item.json.filename || null,\n    taskId: item.json.taskId || null,\n    taskStatus: item.json.taskStatus || null,\n    documentId: item.json.documentId || null,\n    errorReason: item.json.errorReason || null\n  }\n}));"
+        "jsCode": "const inputItems = $input.all();\nconst prepared = $('Prepare Signal payload').all();\n\nreturn inputItems.map((item, index) => {\n  const source = prepared[index]?.json || prepared[0]?.json || {};\n  const signal = item.json || {};\n\n  return {\n    json: {\n      status: source.status || (source.isSuccess ? 'success' : 'failure'),\n      filename: source.filename || null,\n      taskId: source.taskId || null,\n      taskStatus: source.taskStatus || null,\n      documentId: source.documentId || null,\n      errorReason: source.errorReason || null,\n      signal\n    }\n  };\n});"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
