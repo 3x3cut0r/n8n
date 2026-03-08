@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        1104,
-        704
+        5152,
+        1312
       ],
-      "id": "62d37d6f-be82-4022-8768-a9fca1e7166a",
+      "id": "063bc12f-1ff5-4af6-86c3-08ba6aa42a9d",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -23,23 +23,23 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1104,
-        256
+        5152,
+        864
       ],
-      "id": "90e1e1b5-ec2e-4cd8-a121-31e1b51d3040",
+      "id": "59885cfa-158c-4bf2-b8be-10a627e50f51",
       "name": "Credential setup note"
     },
     {
       "parameters": {
-        "jsCode": "const allowedExtensions = new Set([\n  'pdf', 'png', 'jpg', 'jpeg', 'tif', 'tiff', 'gif', 'webp', 'txt',\n  'doc', 'docx', 'odt', 'ppt', 'pptx', 'odp', 'xls', 'xlsx', 'ods', 'eml'\n]);\n\nconst binary = $binary ?? {};\nconst binaryKeys = Object.keys(binary);\nconst binaryFieldName = binary.data ? 'data' : binaryKeys[0];\nconst file = binaryFieldName ? binary[binaryFieldName] : null;\nconst fallbackName = binaryFieldName ? `datei-aus-${binaryFieldName}` : 'unbekannt';\nconst filename = file?.fileName || fallbackName;\nconst extension = filename.includes('.') ? filename.split('.').pop().toLowerCase() : '';\n\nif (!file) {\n  return [{\n    json: {\n      isValid: false,\n      done: true,\n      isSuccess: false,\n      status: 'failure',\n      filename: 'unbekannt',\n      errorReason: 'Keine Binary-Datei im Input gefunden.',\n      signalMessage: 'Paperless: unbekannt konnte nicht hochgeladen werden'\n    }\n  }];\n}\n\nif (!extension || !allowedExtensions.has(extension)) {\n  return [{\n    json: {\n      isValid: false,\n      done: true,\n      isSuccess: false,\n      status: 'failure',\n      filename,\n      errorReason: `Dateityp .${extension || 'unbekannt'} wird von diesem Workflow nicht unterstuetzt.`,\n      signalMessage: `Paperless: ${filename} konnte nicht hochgeladen werden`\n    },\n    binary,\n  }];\n}\n\nreturn [{\n  json: {\n    isValid: true,\n    done: false,\n    isSuccess: false,\n    status: 'ready',\n    filename,\n    extension,\n    binaryFieldName\n  },\n  binary,\n}];"
+        "jsCode": "const allowedExtensions = new Set([\n  'pdf', 'png', 'jpg', 'jpeg', 'tif', 'tiff', 'gif', 'webp', 'txt',\n  'doc', 'docx', 'odt', 'ppt', 'pptx', 'odp', 'xls', 'xlsx', 'ods', 'eml'\n]);\n\nconst item = $input.first();\nconst binary = item?.binary ?? {};\nconst binaryKeys = Object.keys(binary);\nconst binaryFieldName = binary.data ? 'data' : binaryKeys[0];\nconst file = binaryFieldName ? binary[binaryFieldName] : null;\nconst fallbackName = binaryFieldName ? `datei-aus-${binaryFieldName}` : 'unbekannt';\nconst filename = file?.fileName || fallbackName;\nconst extension = filename.includes('.') ? filename.split('.').pop().toLowerCase() : '';\n\nif (!file) {\n  return [{\n    json: {\n      isValid: false,\n      done: true,\n      isSuccess: false,\n      status: 'failure',\n      filename: 'unbekannt',\n      errorReason: 'Keine Binary-Datei im Input gefunden.',\n      signalMessage: 'Paperless: unbekannt konnte nicht hochgeladen werden'\n    }\n  }];\n}\n\nif (!extension || !allowedExtensions.has(extension)) {\n  return [{\n    json: {\n      isValid: false,\n      done: true,\n      isSuccess: false,\n      status: 'failure',\n      filename,\n      errorReason: `Dateityp .${extension || 'unbekannt'} wird von diesem Workflow nicht unterstuetzt.`,\n      signalMessage: `Paperless: ${filename} konnte nicht hochgeladen werden`\n    },\n    binary,\n  }];\n}\n\nreturn [{\n  json: {\n    isValid: true,\n    done: false,\n    isSuccess: false,\n    status: 'ready',\n    filename,\n    extension,\n    binaryFieldName\n  },\n  binary,\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1312,
-        704
+        5360,
+        1312
       ],
-      "id": "c952cc82-bd26-4fa9-953b-5ba34a2161ee",
+      "id": "ae6cf406-6553-490a-8986-6af214206779",
       "name": "Prepare input"
     },
     {
@@ -70,10 +70,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1520,
-        704
+        5568,
+        1312
       ],
-      "id": "255c515a-92db-491f-831a-75105fa0bcc2",
+      "id": "1a90ab3b-cf82-465c-b6a7-1ab2a9e6e1f9",
       "name": "If input valid"
     },
     {
@@ -93,15 +93,21 @@
             }
           ]
         },
-        "options": {}
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1776,
-        688
+        5776,
+        1296
       ],
-      "id": "1928ba23-0576-4835-ac5e-4631ac91ce2d",
+      "id": "50dca91c-69ad-4cb6-a370-91cc664594e8",
       "name": "Upload to Paperless",
       "credentials": {
         "httpHeaderAuth": {
@@ -118,23 +124,23 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2016,
-        800
+        6000,
+        1408
       ],
-      "id": "5644c74b-2b9e-4c72-a673-1cf3a764d4bb",
+      "id": "c3d31ebe-8fea-4ef6-9b5f-0d12dc6617f2",
       "name": "Build upload failure"
     },
     {
       "parameters": {
-        "jsCode": "const source = $('Prepare input').item.json;\nconst filename = source.filename || 'unbekannt';\nconst payload = $json;\n\nlet taskId = payload?.task_id ?? payload?.taskId ?? payload?.id ?? payload?.uuid ?? null;\nif (!taskId && typeof payload === 'string') taskId = payload;\nif (!taskId && typeof payload?.data === 'string') taskId = payload.data;\nif (!taskId && payload?.data?.task_id) taskId = payload.data.task_id;\n\nif (!taskId) {\n  return [{\n    json: {\n      done: true,\n      isSuccess: false,\n      status: 'failure',\n      filename,\n      errorReason: 'Paperless hat keine task_id fuer den Upload geliefert.',\n      signalMessage: `Paperless: ${filename} konnte nicht hochgeladen werden`\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    done: false,\n    isSuccess: false,\n    status: 'running',\n    filename,\n    taskId,\n    taskStatus: 'PENDING',\n    attempts: 0,\n    maxAttempts: 36,\n    pollDelaySeconds: 5\n  }\n}];"
+        "jsCode": "const source = $('Prepare input').item.json;\nconst filename = source.filename || 'unbekannt';\nconst payload = $json;\n\nlet taskId = payload?.task_id ?? payload?.taskId ?? payload?.id ?? payload?.uuid ?? null;\nif (!taskId && typeof payload === 'string') taskId = payload;\nif (!taskId && typeof payload?.data === 'string') taskId = payload.data;\nif (!taskId && payload?.data?.task_id) taskId = payload.data.task_id;\n\nif (!taskId) {\n  return [{\n    json: {\n      done: true,\n      isSuccess: false,\n      status: 'failure',\n      filename,\n      errorReason: 'Paperless hat keine task_id fuer den Upload geliefert.',\n      signalMessage: `Paperless: ${filename} konnte nicht hochgeladen werden`\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    done: true,\n    isSuccess: true,\n    status: 'success',\n    filename,\n    taskId,\n    taskStatus: 'ACCEPTED',\n    attempts: 0,\n    maxAttempts: 36,\n    pollDelaySeconds: 5,\n    signalMessage: `Paperless: Upload fuer ${filename} wurde angenommen`\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2016,
-        576
+        6000,
+        1184
       ],
-      "id": "9d0c5c71-5087-401c-8c5f-f574aee84376",
+      "id": "8a7a242e-b412-400b-a434-fab1115112cb",
       "name": "Extract task metadata"
     },
     {
@@ -165,10 +171,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2240,
-        576
+        6208,
+        1184
       ],
-      "id": "38755c1c-96e5-464c-9f2d-a1b3057a5b94",
+      "id": "6e8130a3-9139-4812-aabe-de0ec92d5fd5",
       "name": "If processing finished"
     },
     {
@@ -178,10 +184,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2464,
-        592
+        6416,
+        1200
       ],
-      "id": "33520431-d799-4213-9036-6c6f83d40f08",
+      "id": "95fb1f72-a350-44b1-a01b-50f3028585e9",
       "name": "Wait before polling",
       "webhookId": "ca1dd12d-a83f-4cdb-967e-5c45c281e300"
     },
@@ -195,10 +201,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2672,
-        592
+        6624,
+        1200
       ],
-      "id": "62646d61-7f8e-4a04-a18b-ca64bb2838a3",
+      "id": "f8ceb54d-f148-4ef0-8d17-38aa2b862853",
       "name": "Get Paperless task status",
       "credentials": {
         "httpHeaderAuth": {
@@ -214,10 +220,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2880,
-        592
+        6832,
+        1200
       ],
-      "id": "977ab6fd-7563-4846-9100-6c129eb5c116",
+      "id": "a4016b2a-bd56-4741-9181-76251dadfd6c",
       "name": "Evaluate task status"
     },
     {
@@ -227,10 +233,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2464,
-        800
+        6416,
+        1408
       ],
-      "id": "4ed477f0-66ee-4b76-87d9-98b17dcac552",
+      "id": "91c629b6-f52e-4e92-8303-119af18d1576",
       "name": "Prepare Signal payload"
     },
     {
@@ -255,10 +261,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        2672,
-        800
+        6624,
+        1408
       ],
-      "id": "077fab15-2485-4ab6-8c63-f6ba92aba397",
+      "id": "34c281a0-4361-442c-849a-9573a3e55d5f",
       "name": "Signal - Send Message",
       "alwaysOutputData": true
     },
@@ -269,10 +275,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3104,
-        704
+        7056,
+        1312
       ],
-      "id": "baf6eaf0-e74b-43f1-b631-5951d840d8e0",
+      "id": "ca38cc2d-7bc3-4f7f-9d26-592eb1278794",
       "name": "Return result"
     },
     {
@@ -303,10 +309,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2880,
-        800
+        6832,
+        1408
       ],
-      "id": "481d86ec-e8e5-42ae-bb96-0bafae284d9f",
+      "id": "1391c54f-bd79-4afe-8709-6993b4e422fb",
       "name": "If final result succeeded"
     },
     {
@@ -316,10 +322,10 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        3104,
-        896
+        7056,
+        1504
       ],
-      "id": "d70b7670-c573-4a02-9ce9-1a02384d2626",
+      "id": "70230d6a-ab49-4c17-b669-f484c49df7b4",
       "name": "Stop workflow on upload failure"
     }
   ],
@@ -507,7 +513,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 3
   },
-  "versionId": "d42b5079-827e-4188-beb3-cb450c556160",
+  "versionId": "78c0eefe-de2e-4ed5-8f63-93a657f9a206",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
