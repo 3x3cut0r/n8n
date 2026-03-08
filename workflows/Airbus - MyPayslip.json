@@ -459,14 +459,6 @@
           "cachedResultUrl": "/workflow/VY97ocet0nc0Lkpr",
           "cachedResultName": "Paperless-ngx - Upload Document"
         },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
-        },
         "options": {}
       },
       "type": "n8n-nodes-base.executeWorkflow",

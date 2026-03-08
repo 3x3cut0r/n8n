@@ -8,25 +8,25 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        32,
-        464
+        1104,
+        704
       ],
-      "id": "6aad79b7-ca7b-4224-a208-4902fc6df302",
+      "id": "62d37d6f-be82-4022-8768-a9fca1e7166a",
       "name": "Execute Workflow Trigger"
     },
     {
       "parameters": {
         "content": "# Paperless API Token als Credential einrichten\n\nIn n8n gibt es kein eigenes \"Paperless\"-Credential im Dropdown.\nNutze stattdessen **Header Auth** mit API-Token:\n\n1) In Paperless-ngx: **My Profile** -> API-Token erzeugen/kopieren.\n2) In n8n ein Credential anlegen: **Header Auth** (`httpHeaderAuth`).\n3) Header-Name: `Authorization`\n4) Header-Wert: `Token <DEIN_PAPERLESS_TOKEN>`\n   (wichtig: Praefix `Token ` inklusive Leerzeichen)\n5) In den beiden HTTP-Request-Nodes \"Upload to Paperless\" und\n   \"Get Paperless task status\" dieses Header-Auth-Credential auswaehlen.\n\nUpload-Endpoint:\n`POST https://paperless.3x3cut0r.de/api/documents/post_document/`\nals `multipart/form-data` mit Feld `document` (Binary).",
         "height": 400,
-        "width": 784
+        "width": 768
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        32,
-        16
+        1104,
+        256
       ],
-      "id": "18766847-54c6-4f6c-81be-3b2440c99326",
+      "id": "90e1e1b5-ec2e-4cd8-a121-31e1b51d3040",
       "name": "Credential setup note"
     },
     {
@@ -36,10 +36,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        464
+        1312,
+        704
       ],
-      "id": "eb28f131-15e8-4c6a-8799-4279818bea78",
+      "id": "c952cc82-bd26-4fa9-953b-5ba34a2161ee",
       "name": "Prepare input"
     },
     {
@@ -70,10 +70,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        448,
-        464
+        1520,
+        704
       ],
-      "id": "d98e9f93-2e34-4231-9280-f25d135c1643",
+      "id": "255c515a-92db-491f-831a-75105fa0bcc2",
       "name": "If input valid"
     },
     {
@@ -98,10 +98,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        704,
-        448
+        1776,
+        688
       ],
-      "id": "1f5c847e-37d0-4430-90f4-8cb18f81e13e",
+      "id": "1928ba23-0576-4835-ac5e-4631ac91ce2d",
       "name": "Upload to Paperless",
       "credentials": {
         "httpHeaderAuth": {
@@ -118,10 +118,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        944,
-        560
+        2016,
+        800
       ],
-      "id": "bcb5dcd1-6751-4a4b-a9df-b8ef40eff690",
+      "id": "5644c74b-2b9e-4c72-a673-1cf3a764d4bb",
       "name": "Build upload failure"
     },
     {
@@ -131,10 +131,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        944,
-        336
+        2016,
+        576
       ],
-      "id": "caa51662-f1c8-4cd6-8f4d-eaa658e693e7",
+      "id": "9d0c5c71-5087-401c-8c5f-f574aee84376",
       "name": "Extract task metadata"
     },
     {
@@ -165,10 +165,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1168,
-        336
+        2240,
+        576
       ],
-      "id": "2a4e9217-e176-4c47-90af-965fd1c77d4c",
+      "id": "38755c1c-96e5-464c-9f2d-a1b3057a5b94",
       "name": "If processing finished"
     },
     {
@@ -178,10 +178,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        1360,
-        576
+        2464,
+        592
       ],
-      "id": "f1c9cde2-d6cc-44f3-9b55-e6bab4f94391",
+      "id": "33520431-d799-4213-9036-6c6f83d40f08",
       "name": "Wait before polling",
       "webhookId": "ca1dd12d-a83f-4cdb-967e-5c45c281e300"
     },
@@ -195,10 +195,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1552,
-        576
+        2672,
+        592
       ],
-      "id": "e00aac9b-8933-4d41-9390-1d688511204e",
+      "id": "62646d61-7f8e-4a04-a18b-ca64bb2838a3",
       "name": "Get Paperless task status",
       "credentials": {
         "httpHeaderAuth": {
@@ -214,10 +214,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1744,
-        576
+        2880,
+        592
       ],
-      "id": "31510d5e-ed59-42f6-9718-7c5d8fb2c4b8",
+      "id": "977ab6fd-7563-4846-9100-6c129eb5c116",
       "name": "Evaluate task status"
     },
     {
@@ -227,10 +227,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1744,
-        400
+        2464,
+        800
       ],
-      "id": "c0ffaa32-b08e-4ad7-a37f-da616bc9a28c",
+      "id": "4ed477f0-66ee-4b76-87d9-98b17dcac552",
       "name": "Prepare Signal payload"
     },
     {
@@ -255,10 +255,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        2000,
-        288
+        2672,
+        800
       ],
-      "id": "9dd3808c-a74a-481c-932d-5d69a809e1cc",
+      "id": "077fab15-2485-4ab6-8c63-f6ba92aba397",
       "name": "Signal - Send Message",
       "alwaysOutputData": true
     },
@@ -269,11 +269,58 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2000,
-        512
+        3104,
+        704
       ],
-      "id": "dad0be3b-d215-45b6-8c1b-8936d0817e92",
+      "id": "baf6eaf0-e74b-43f1-b631-5951d840d8e0",
       "name": "Return result"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "727c3138-c137-4df1-b37a-522d17a9eba4",
+              "leftValue": "={{ $('Prepare Signal payload').item.json.isSuccess }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2880,
+        800
+      ],
+      "id": "481d86ec-e8e5-42ae-bb96-0bafae284d9f",
+      "name": "If final result succeeded"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $('Prepare Signal payload').item.json.errorReason || `Paperless-Upload fuer ${$('Prepare Signal payload').item.json.filename || 'unbekannt'} ist fehlgeschlagen.` }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        3104,
+        896
+      ],
+      "id": "d70b7670-c573-4a02-9ce9-1a02384d2626",
+      "name": "Stop workflow on upload failure"
     }
   ],
   "pinData": {},
@@ -416,9 +463,33 @@
             "node": "Signal - Send Message",
             "type": "main",
             "index": 0
-          },
+          }
+        ]
+      ]
+    },
+    "Signal - Send Message": {
+      "main": [
+        [
+          {
+            "node": "If final result succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If final result succeeded": {
+      "main": [
+        [
           {
             "node": "Return result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop workflow on upload failure",
             "type": "main",
             "index": 0
           }
@@ -434,13 +505,19 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "timeSavedPerExecution": 3,
-    "executionTimeout": -1
+    "timeSavedPerExecution": 3
   },
-  "versionId": "e929ffd0-f838-4a1d-b47c-357bd83dae80",
+  "versionId": "d42b5079-827e-4188-beb3-cb450c556160",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "VY97ocet0nc0Lkpr",
-  "tags": []
+  "tags": [
+    {
+      "updatedAt": "2026-03-01T07:53:37.792Z",
+      "createdAt": "2026-03-01T07:53:37.792Z",
+      "id": "26zzfx1aLFPZLhVr",
+      "name": "Paperless"
+    }
+  ]
 }
