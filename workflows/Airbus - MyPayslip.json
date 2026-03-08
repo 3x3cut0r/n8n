@@ -6,25 +6,25 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        3552,
-        1104
+        8144,
+        2000
       ],
-      "id": "71523d94-789c-418d-981b-ae5b0560cd93",
+      "id": "b65677da-a43c-45db-b60f-77db928145b3",
       "name": "Manual Trigger"
     },
     {
       "parameters": {
-        "content": "# Airbus MyPayslip Setup\n\nDieses Workflow nutzt native HTTP-Request-Nodes fuer Login, 2FA, Dokumentenliste und Download und schickt neue Downloads an den Subworkflow **Paperless-ngx - Upload Document**.\n\nKonfiguration im Node **Set workflow config**:\n- `email` ist vorbelegt\n- `maxDocuments`: `1` = neuestes Dokument, `0` = alle Dokumente, `N` = letzte `N` Dokumente\n- `password`: Standardmaessig aus `AIRBUS_MYPAYSLIP_PASSWORD`\n\nTOTP:\n- Im Node **Generate TOTP** ein TOTP-Credential mit deinem Airbus-Secret hinterlegen\n- Der Node erzeugt bei jedem Lauf den aktuellen 6-stelligen Code fuer den 2FA-Login\n\nData Table fuer Dedup:\n- Eine Data Table **Airbus Processed Documents** anlegen\n- Empfohlene Spalten: `documentId` (Text), `filename` (Text)\n- `createdAt` und `updatedAt` kommen bereits als Systemspalten von n8n\n- Bereits vorhandene `documentId`s werden vor dem Download uebersprungen\n",
+        "content": "# Airbus MyPayslip Setup\n\nDieses Workflow nutzt native HTTP-Request-Nodes fuer Login, 2FA, Dokumentenliste und Download und schickt neue Downloads an den Subworkflow **Paperless-ngx - Upload Document**.\n\nKonfiguration im Node **Set workflow config**:\n- `email` ist vorbelegt\n- `maxDocuments`: `1` = neuestes Dokument, `0` = alle Dokumente, `N` = letzte `N` Dokumente\n- `password`: Standardmaessig aus `AIRBUS_MYPAYSLIP_PASSWORD`\n\nTOTP:\n- Im Node **Generate TOTP** ein TOTP-Credential mit deinem Airbus-Secret hinterlegen\n- Der Node erzeugt bei jedem Lauf den aktuellen 6-stelligen Code fuer den 2FA-Login\n\nData Table fuer Dedup:\n- Eine Data Table **Airbus Processed Documents** anlegen\n- Empfohlene Spalten: `documentId` (Text), `filename` (Text)\n- `createdAt` und `updatedAt` kommen bereits als Systemspalten von n8n\n- Bereits vorhandene `documentId`s werden vor dem Download uebersprungen\n\nSubworkflow:\n- Dieser Workflow kann ueber **Execute Workflow** aufgerufen werden\n- Optionale Inputs: `email`, `password`, `maxDocuments`, `baseUrl`, `apiBase`, `userAgent`\n- Ohne Inputs verwendet der Workflow die hinterlegten Default-Werte\n",
         "height": 452,
         "width": 928
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3552,
-        608
+        8144,
+        1312
       ],
-      "id": "498793f7-eb54-4822-bef7-7acb4dabdaf0",
+      "id": "1745ce8f-98e7-494d-a411-18e92972c4be",
       "name": "Setup note"
     },
     {
@@ -34,37 +34,37 @@
             {
               "id": "467a1f8a-b372-4cc7-8aa7-1fbf9996b133",
               "name": "email",
-              "value": "julianreith@gmx.de",
+              "value": "={{ $json.email || 'julianreith@gmx.de' }}",
               "type": "string"
             },
             {
               "id": "04039bc5-480e-4ac0-96ee-f3d4d85fa5bf",
               "name": "maxDocuments",
-              "value": 1,
+              "value": "={{ Number.isFinite(Number($json.maxDocuments)) ? Math.trunc(Number($json.maxDocuments)) : 1 }}",
               "type": "number"
             },
             {
               "id": "2be17707-22db-4d7d-b9e1-f4ad4e258b61",
               "name": "password",
-              "value": "={{ $env.AIRBUS_MYPAYSLIP_PASSWORD }}",
+              "value": "={{ $json.password || $env.AIRBUS_MYPAYSLIP_PASSWORD }}",
               "type": "string"
             },
             {
               "id": "18a3f30d-4e6a-4814-a967-642c3df1f665",
               "name": "baseUrl",
-              "value": "https://mypayslip.airbus.com",
+              "value": "={{ $json.baseUrl || 'https://mypayslip.airbus.com' }}",
               "type": "string"
             },
             {
               "id": "7e9367e6-735b-45fd-8121-9e32ae6ba63d",
               "name": "apiBase",
-              "value": "https://mypayslip.airbus.com/api/mobileview2/v1",
+              "value": "={{ $json.apiBase || 'https://mypayslip.airbus.com/api/mobileview2/v1' }}",
               "type": "string"
             },
             {
               "id": "cf0277bd-a44f-445a-860e-c6a2b63f0cc4",
               "name": "userAgent",
-              "value": "n8n-airbus-mypayslip/1.0",
+              "value": "={{ $json.userAgent || 'n8n-airbus-mypayslip/1.0' }}",
               "type": "string"
             }
           ]
@@ -74,10 +74,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        3760,
-        1104
+        8352,
+        1808
       ],
-      "id": "400280cc-d652-4fbe-8055-f02e30b56b29",
+      "id": "1cffc550-5850-45af-8ea3-f20390b7419d",
       "name": "Set workflow config"
     },
     {
@@ -91,10 +91,10 @@
       "type": "n8n-nodes-base.totp",
       "typeVersion": 1,
       "position": [
-        3968,
-        1104
+        8560,
+        1808
       ],
-      "id": "2cec1106-cae4-4b94-996a-67c85ac5b885",
+      "id": "a0064043-7c5e-4ef8-8a0a-77f1921cd8d5",
       "name": "Generate TOTP",
       "credentials": {
         "totpApi": {
@@ -110,10 +110,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4176,
-        1104
+        8768,
+        1808
       ],
-      "id": "77f0c34f-5af3-4abe-a9f9-9850a9a765c4",
+      "id": "d6cdcb72-8d81-4ce5-aa4a-c69a959d12c9",
       "name": "Validate workflow config"
     },
     {
@@ -143,10 +143,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        4384,
-        1104
+        8976,
+        1808
       ],
-      "id": "eb3a3c8c-7423-4319-a762-ff82ed4fb312",
+      "id": "9fd3b583-d770-4a5a-bade-1da8a919a59b",
       "name": "If config valid"
     },
     {
@@ -183,10 +183,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4576,
-        944
+        9168,
+        1648
       ],
-      "id": "8d119b1a-1898-4ea8-b1c4-f714a57c284e",
+      "id": "8dfd6acd-2f89-41d7-ac4b-fe47d95ab6e4",
       "name": "Login request"
     },
     {
@@ -196,10 +196,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4784,
-        944
+        9376,
+        1648
       ],
-      "id": "86a58220-d367-4010-9506-050e00c8e9b9",
+      "id": "6d528ae9-0732-49e3-b418-01e48a459aee",
       "name": "Build login session"
     },
     {
@@ -240,10 +240,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        4992,
-        944
+        9584,
+        1648
       ],
-      "id": "4ba3e71a-b5b5-4d5a-acf1-f9d9de838508",
+      "id": "4c22d1f9-0033-4ee3-9369-db626c29a0b8",
       "name": "Two-factor request"
     },
     {
@@ -253,10 +253,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5200,
-        944
+        9792,
+        1648
       ],
-      "id": "c674b1b6-cc04-4b86-9d73-83a5b194c72c",
+      "id": "dad88b18-d533-4e5d-8be3-976214f671d3",
       "name": "Build authenticated session"
     },
     {
@@ -292,10 +292,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        5408,
-        944
+        10000,
+        1648
       ],
-      "id": "864326a4-be55-4719-ac29-f5f17034718a",
+      "id": "d18b14c3-4e90-47d3-b346-1120a50551e1",
       "name": "List documents"
     },
     {
@@ -305,10 +305,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        5616,
-        944
+        10208,
+        1648
       ],
-      "id": "d1bdb0c7-64b6-40af-be6a-8e6ca4733134",
+      "id": "d52c3eea-6351-4414-920a-b96f358624f0",
       "name": "Select documents"
     },
     {
@@ -338,10 +338,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        5824,
-        944
+        10416,
+        1648
       ],
-      "id": "0d12885e-f656-4561-abcb-06328c8a7c3f",
+      "id": "efbc2824-7a35-4807-ad35-bc65b7812f0d",
       "name": "If document downloaded"
     },
     {
@@ -365,10 +365,10 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        6048,
-        736
+        10640,
+        1440
       ],
-      "id": "72e1432e-89bd-49e7-8a4e-fa27a764b62e",
+      "id": "36585a2c-6bb3-43e3-820c-068bedb0554f",
       "name": "Filter new documents"
     },
     {
@@ -392,10 +392,10 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        6048,
-        928
+        10640,
+        1632
       ],
-      "id": "3d4c982f-2026-4906-a0f1-d4441eb76b7d",
+      "id": "fe8c183b-44fc-42cb-b31b-bc338b52452a",
       "name": "Filter existing documents"
     },
     {
@@ -431,10 +431,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        6256,
-        736
+        10848,
+        1440
       ],
-      "id": "ea22cb4a-1fc3-4cba-8f90-08cac1788cd9",
+      "id": "3eda5e33-3ef2-4184-b882-fb0ac311d194",
       "name": "Download document"
     },
     {
@@ -444,10 +444,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6464,
-        736
+        11056,
+        1440
       ],
-      "id": "33ec4e26-2d50-456f-87f5-68106aa91d16",
+      "id": "69c02d3a-1ac8-4a23-a9c2-40810e52312d",
       "name": "Prepare downloaded document"
     },
     {
@@ -464,10 +464,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        6672,
-        736
+        11264,
+        1440
       ],
-      "id": "5fab42b9-55ff-4916-96b3-b2538768a634",
+      "id": "90e12e3d-e408-41f9-972d-076e0974eb25",
       "name": "Paperless-ngx - Upload Document",
       "alwaysOutputData": true
     },
@@ -478,10 +478,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6880,
-        736
+        11472,
+        1440
       ],
-      "id": "0bc6bd92-f9c3-4bc6-b623-17445a73300b",
+      "id": "69b4e587-96a7-4121-8c29-2e0ca4443fcd",
       "name": "Build upload item result"
     },
     {
@@ -491,10 +491,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6256,
-        928
+        10848,
+        1632
       ],
-      "id": "623f8145-1f54-40b1-a14b-095b8ff6d13a",
+      "id": "0c25e689-b2b0-4aac-a1dd-55598fdbfe7f",
       "name": "Build skipped duplicate result"
     },
     {
@@ -524,10 +524,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        7120,
-        736
+        11712,
+        1440
       ],
-      "id": "b2763a7e-41f1-425f-a069-5c50d8beede6",
+      "id": "1740fe59-0518-4164-8f8c-7eb8cebb9c97",
       "name": "If upload succeeded"
     },
     {
@@ -549,10 +549,10 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        7328,
-        608
+        11920,
+        1312
       ],
-      "id": "c0451c00-e000-40fc-9ec4-5dad14a6f454",
+      "id": "c4c2e5b1-0557-4527-a989-a2bd3205c122",
       "name": "Insert processed document"
     },
     {
@@ -560,10 +560,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        7120,
-        912
+        11712,
+        1616
       ],
-      "id": "d7876ff2-b227-49d7-bb70-a68e1c655251",
+      "id": "ed80e7f3-c8e1-43a5-9903-5c432fd7792e",
       "name": "Merge item results"
     },
     {
@@ -573,10 +573,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        7328,
-        912
+        11920,
+        1616
       ],
-      "id": "b7455a92-793b-4d39-9b2d-b75a3390a096",
+      "id": "367a4502-486e-4e6e-addf-a70bcaa18b9a",
       "name": "Build upload summary"
     },
     {
@@ -586,11 +586,24 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        6048,
-        1120
+        10640,
+        1824
       ],
-      "id": "499fd0e0-47a1-4e74-9568-ba43aa9f63e7",
+      "id": "b5165ee6-3c39-41be-86fb-1fc9ca2c786e",
       "name": "Return non-document result"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        8144,
+        1808
+      ],
+      "id": "6ff07cb4-3ef5-4d0d-904a-10288f288b43",
+      "name": "Execute Workflow Trigger"
     }
   ],
   "pinData": {},
@@ -849,9 +862,20 @@
           }
         ]
       ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set workflow config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -861,7 +885,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 3
   },
-  "versionId": "03649a78-e701-4c6b-a3a6-1098219a3d98",
+  "versionId": "315e9b4f-397d-409e-a774-d75fd54c696d",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
