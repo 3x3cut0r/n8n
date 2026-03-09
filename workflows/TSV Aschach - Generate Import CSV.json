@@ -1,0 +1,128 @@
+{
+  "name": "TSV Aschach - Generate Import CSV",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Dieser Workflow erzeugt eine DFBnet-Import-CSV (UTF-8 mit BOM) fuer TSV Aschach als Sub-Workflow.\n\nInput (ein Datensatz oder mehrere):\n- bevorzugt: members: [ ... ]\n- alternativ: records/items/data\n- Datensatz als Objekt ODER Liste mit key/value Paaren\n\nPflichtlogik TSV Aschach:\n- Abteilung_1 ist immer Hauptverein\n- mindestens eine zweite Sportart ist Pflicht\n- Beitraege nur in Hauptverein\n- Eintritt < 01.07.JJJJ: Jahresbeitrag\n- Eintritt >= 01.07.JJJJ: Halbjahresbeitrag bis 31.12.JJJJ + Jahresbeitrag ab 01.01.Folgejahr\n\nOutput:\n- binary.data als CSV\n- Dateiname: import.csv (Sub-Workflow) bzw. example.csv (Manual Trigger)\n- Trennzeichen ;",
+        "height": 400,
+        "width": 760,
+        "color": 7
+      },
+      "id": "95e6e5ad-fad6-451a-9e2e-cf237008eb86",
+      "name": "Workflow Kommentar",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "59f173cf-eef5-410d-84ed-c35f3f19629d",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f55f94f7-a522-4c72-9754-5ee497f4a127",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    outputFileName: 'example.csv',\n    members: [\n      {\n        vorname: 'Mia',\n        nachname: 'Musterfrau',\n        strasse: 'Hauptstrasse 10',\n        plz: '63739',\n        ort: 'Aschaffenburg',\n        geburtsdatum: '13.02.2012',\n        eintrittsdatum: '15.08.2026',\n        geschlecht: 'weiblich',\n        status: 'Aktiv',\n        beitragsart: 'Jugendlich',\n        sportart: ['Volleyball', 'Radsport'],\n        anrede: 'Frau',\n        land: 'Deutschland',\n        email: 'mia.musterfrau@example.de',\n        mobil: '+491701234567',\n        zahlungsart: 'Lastschrift',\n        kontoinhaber: 'Petra Musterfrau',\n        iban: 'DE12500105170648489890',\n        bic: 'INGDDEFFXXX',\n        kreditinstitut: 'ING-DiBa'\n      },\n      {\n        vorname: 'Noah',\n        nachname: 'Beispiel',\n        strasse: 'Ringweg 5',\n        plz: '63741',\n        ort: 'Aschaffenburg',\n        geburtsdatum: '22.09.2008',\n        eintrittsdatum: '20.03.2026',\n        geschlecht: 'maennlich',\n        status: 'Aktiv',\n        beitragsart: 'Aktiv',\n        sportart: 'Fussball',\n        anrede: 'Herr',\n        land: 'Deutschland',\n        email: 'noah.beispiel@example.de',\n        zahlungsart: 'Ueberweisung'\n      }\n    ]\n  }\n}];"
+      },
+      "id": "4f85e138-cf31-4fdb-87fa-838f7f4064c9",
+      "name": "Manual Test Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json || {};\n\nconst csvColumns = [\n  'Nachname',\n  'Vorname',\n  'Straße',\n  'Ort',\n  'Status',\n  'Zahlungsart',\n  'Eintrittsdatum',\n  'PLZ',\n  'Geburtsdatum',\n  'Geschlecht',\n  'Mitglieds-Nr',\n  'Anrede',\n  'Land',\n  'Telefon_P1',\n  'Mobil_P1',\n  'E-Mail_P1',\n  'Titel',\n  'Kontoinhaber',\n  'IBAN',\n  'BIC',\n  'Kreditinstitut',\n  'SEPA-Mandatstyp_1',\n  'SEPA-Unterschriftsdatum_1',\n  'SEPA-Merkmal_1',\n  'SEPA-Gültigkeitsdatum_1',\n  'SEPA-Benachrichtigungsdatum_1',\n  'Abteilung_1',\n  'Abteilungseintritt_1',\n  'Abteilung_2',\n  'Abteilungseintritt_2',\n  'Abteilung_3',\n  'Abteilungseintritt_3',\n  'Abteilung_4',\n  'Abteilungseintritt_4',\n  'Abteilung_5',\n  'Abteilungseintritt_5',\n  'Abteilung_6',\n  'Abteilungseintritt_6',\n  'Abteilung_7',\n  'Abteilungseintritt_7',\n  'Abteilung_8',\n  'Abteilungseintritt_8',\n  'Abteilung_9',\n  'Abteilungseintritt_9',\n  'Beitragsbezeichnung_1_1',\n  'Beitragsstart_1_1',\n  'Beitragsende_1_1',\n  'Beitragsbezeichnung_1_2',\n  'Beitragsstart_1_2',\n  'Beitragsende_1_2'\n];\n\nconst allowedSports = new Set([\n  'Fußball',\n  'Volleyball',\n  'Tischtennis',\n  'Gymnastik',\n  'Karate',\n  'Radsport',\n  'Walking'\n]);\n\nconst sportAliases = {\n  fussball: 'Fußball',\n  fußball: 'Fußball',\n  volleyball: 'Volleyball',\n  tischtennis: 'Tischtennis',\n  gymnastik: 'Gymnastik',\n  karate: 'Karate',\n  radsport: 'Radsport',\n  walking: 'Walking'\n};\n\nconst valueMap = {\n  status: {\n    aktiv: 'Aktiv',\n    passiv: 'Passiv'\n  },\n  geschlecht: {\n    maennlich: 'männlich',\n    männlich: 'männlich',\n    weiblich: 'weiblich',\n    divers: 'divers',\n    juristischeperson: 'jur. Person',\n    jurperson: 'jur. Person',\n    sachlich: 'sächlich'\n  },\n  zahlungsart: {\n    lastschrift: 'Lastschrift',\n    ueberweisung: 'Überweisung',\n    überweisung: 'Überweisung',\n    bar: 'Bar'\n  },\n  sepamandatstyp: {\n    erstlastschrift: 'Erstlastschrift',\n    folgelastschrift: 'Folgelastschrift'\n  },\n  sepamerkmal: {\n    wiederkehrend: 'wiederkehrend',\n    einmalig: 'einmalig'\n  }\n};\n\nconst contributionMap = {\n  Aktiv: { half: 'Aktiv (halbjahr)' },\n  Passiv: { half: 'Passiv (halbjahr)' },\n  Jugendlich: { half: 'Jugendlich (halbjahr)' },\n  Familie: { half: 'Familie (halbjahr)' },\n  'Familie (nicht Zahlender)': { half: null },\n  Beitragsfrei: { half: null }\n};\n\nconst reverseHalfYearMap = {\n  'Aktiv (halbjahr)': 'Aktiv',\n  'Passiv (halbjahr)': 'Passiv',\n  'Jugendlich (halbjahr)': 'Jugendlich',\n  'Familie (halbjahr)': 'Familie'\n};\n\nfunction isObject(v) {\n  return !!v && typeof v === 'object' && !Array.isArray(v);\n}\n\nfunction toLowerKey(k) {\n  return String(k || '').trim().toLowerCase();\n}\n\nfunction normalizeKey(k) {\n  return toLowerKey(k)\n    .replace(/[ä]/g, 'ae')\n    .replace(/[ö]/g, 'oe')\n    .replace(/[ü]/g, 'ue')\n    .replace(/[ß]/g, 'ss')\n    .replace(/[^a-z0-9]+/g, '');\n}\n\nfunction parseKeyValueList(list) {\n  const obj = {};\n  for (const entry of list) {\n    if (!isObject(entry)) continue;\n    const rawKey = entry.key ?? entry.name ?? entry.field ?? entry.k;\n    if (!rawKey) continue;\n    const rawValue = entry.value ?? entry.v ?? '';\n    obj[String(rawKey)] = rawValue;\n  }\n  return obj;\n}\n\nfunction splitSports(value) {\n  if (Array.isArray(value)) return value;\n  const text = String(value || '').trim();\n  if (!text) return [];\n  return text\n    .split(/[|,;]+/)\n    .map((v) => v.trim())\n    .filter(Boolean);\n}\n\nfunction normalizeSport(s) {\n  const key = normalizeKey(s);\n  if (!key) return '';\n  const mapped = sportAliases[key] || String(s).trim();\n  return mapped;\n}\n\nfunction normalizeChoice(kind, value) {\n  const raw = String(value ?? '').trim();\n  if (!raw) return '';\n  if (kind === 'zahlungsart') {\n    if (/^lastschrift/i.test(raw)) return 'Lastschrift';\n    if (/^ueberweisung/i.test(raw) || /^überweisung/i.test(raw)) return 'Überweisung';\n    if (/^bar/i.test(raw)) return 'Bar';\n  }\n  const map = valueMap[kind] || {};\n  const key = normalizeKey(raw);\n  return map[key] || raw;\n}\n\nfunction parseDate(value) {\n  const raw = String(value || '').trim();\n  if (!raw) return null;\n  const m = raw.match(/^(\\d{2})\\.(\\d{2})\\.(\\d{4})$/);\n  if (!m) return null;\n  const day = Number(m[1]);\n  const month = Number(m[2]);\n  const year = Number(m[3]);\n  const d = new Date(Date.UTC(year, month - 1, day));\n  if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) return null;\n  return { day, month, year, text: raw };\n}\n\nfunction formatDate(day, month, year) {\n  const dd = String(day).padStart(2, '0');\n  const mm = String(month).padStart(2, '0');\n  return `${dd}.${mm}.${year}`;\n}\n\nfunction csvEscape(value) {\n  const str = String(value ?? '');\n  if (/[\";\\r\\n]/.test(str)) {\n    return `\"${str.replace(/\"/g, '\"\"')}\"`;\n  }\n  return str;\n}\n\nfunction pickSourceItems(root) {\n  if (Array.isArray(root?.members)) return root.members;\n  if (Array.isArray(root?.records)) return root.records;\n  if (Array.isArray(root?.items)) return root.items;\n  if (Array.isArray(root?.data)) return root.data;\n  if (Array.isArray(root)) return root;\n  return [root];\n}\n\nfunction normalizeRecord(rawItem) {\n  let source = rawItem;\n  if (Array.isArray(source)) {\n    source = parseKeyValueList(source);\n  }\n\n  if (!isObject(source)) {\n    throw new Error('Jeder Datensatz muss ein Objekt oder eine key/value Liste sein.');\n  }\n\n  if (Array.isArray(source.keyValuePairs)) {\n    source = { ...source, ...parseKeyValueList(source.keyValuePairs) };\n  }\n\n  const member = isObject(source.member) ? source.member : {};\n  const bank = isObject(source.bank) ? source.bank : {};\n  const communication = isObject(source.communication) ? source.communication : {};\n\n  const normalizedByKey = {};\n  for (const [k, v] of Object.entries(source)) {\n    normalizedByKey[normalizeKey(k)] = v;\n  }\n\n  function get(...keys) {\n    for (const key of keys) {\n      const normalized = normalizeKey(key);\n      if (normalizedByKey[normalized] !== undefined) return normalizedByKey[normalized];\n    }\n    return undefined;\n  }\n\n  const sportsRaw = get('sportart', 'sportarten', 'abteilung', 'abteilungen', 'sport')\n    ?? source.sportart\n    ?? source.sportarten\n    ?? source.abteilungen\n    ?? member.sportart\n    ?? member.departments\n    ?? [];\n\n  const result = {\n    Vorname: String(get('vorname', 'firstname', 'first_name') ?? member.firstName ?? source.firstName ?? '').trim(),\n    Nachname: String(get('nachname', 'lastname', 'last_name') ?? member.lastName ?? source.lastName ?? '').trim(),\n    Straße: String(get('strasse', 'straße', 'street') ?? member.street ?? source.street ?? '').trim(),\n    PLZ: String(get('plz', 'zip', 'postalcode') ?? member.zip ?? source.zip ?? '').trim(),\n    Ort: String(get('ort', 'city') ?? member.city ?? source.city ?? '').trim(),\n    Geburtsdatum: String(get('geburtsdatum', 'birthdate') ?? member.birthDate ?? source.birthDate ?? '').trim(),\n    Eintrittsdatum: String(get('eintrittsdatum', 'entrydate') ?? member.entryDate ?? source.entryDate ?? '').trim(),\n    Geschlecht: normalizeChoice('geschlecht', get('geschlecht', 'gender') ?? member.gender ?? member.genderValue ?? source.gender ?? ''),\n    Status: normalizeChoice('status', get('status') ?? source.status ?? ''),\n    Beitragsart: String(get('beitragsart', 'beitrag', 'tarif', 'contributiontype') ?? source.beitragsart ?? source.contributionType ?? '').trim(),\n    Sportarten: splitSports(sportsRaw).map(normalizeSport).filter(Boolean),\n    Anrede: String(get('anrede', 'salutation') ?? member.salutation ?? source.salutation ?? '').trim(),\n    Land: String(get('land', 'country') ?? member.country ?? member.countryValue ?? source.country ?? 'Deutschland').trim(),\n    Telefon_P1: String(get('telefon', 'telefon_p1', 'phone') ?? communication.phone ?? source.phone ?? '').trim(),\n    Mobil_P1: String(get('mobil', 'mobil_p1', 'mobile') ?? communication.mobile ?? source.mobile ?? '').trim(),\n    'E-Mail_P1': String(get('e-mail', 'email', 'email_p1') ?? communication.email ?? source.email ?? '').trim(),\n    Titel: String(get('titel', 'title') ?? member.title ?? source.title ?? '').trim(),\n    'Mitglieds-Nr': String(get('mitglieds-nr', 'mitgliedsnummer', 'mitgliedsnr', 'membernumber') ?? source.memberNumber ?? '').trim(),\n    Zahlungsart: normalizeChoice('zahlungsart', get('zahlungsart', 'paymentmethod') ?? source.zahlungsart ?? source.paymentMethod ?? ''),\n    Kontoinhaber: String(get('kontoinhaber', 'accountholder') ?? bank.accountHolder ?? source.accountHolder ?? '').trim(),\n    IBAN: String(get('iban') ?? bank.iban ?? source.iban ?? '').trim(),\n    BIC: String(get('bic') ?? bank.bic ?? source.bic ?? '').trim(),\n    Kreditinstitut: String(get('kreditinstitut', 'bankname') ?? bank.bankName ?? source.bankName ?? '').trim(),\n    'SEPA-Mandatstyp_1': normalizeChoice('sepamandatstyp', get('sepa-mandatstyp_1', 'sepa_mandatstyp', 'sepamandatstyp') ?? source.sepaMandatstyp ?? 'Folgelastschrift'),\n    'SEPA-Unterschriftsdatum_1': String(get('sepa-unterschriftsdatum_1', 'unterschriftsdatum') ?? source.unterschriftsdatum ?? '').trim(),\n    'SEPA-Merkmal_1': normalizeChoice('sepamerkmal', get('sepa-merkmal_1', 'mandatsmerkmal') ?? source.mandatsmerkmal ?? 'wiederkehrend'),\n    'SEPA-Gültigkeitsdatum_1': String(get('sepa-gueltigkeitsdatum_1', 'gültigkeitsdatum') ?? source.gueltigkeitsdatum ?? source.gültigkeitsdatum ?? '').trim(),\n    'SEPA-Benachrichtigungsdatum_1': String(get('sepa-benachrichtigungsdatum_1', 'benachrichtigung') ?? source.benachrichtigung ?? '').trim()\n  };\n\n  if (!result.Zahlungsart) result.Zahlungsart = 'Lastschrift';\n\n  return result;\n}\n\nfunction normalizeContributionType(inputValue) {\n  const raw = String(inputValue || '').trim();\n  if (!raw) return '';\n  if (contributionMap[raw]) return raw;\n  if (reverseHalfYearMap[raw]) return reverseHalfYearMap[raw];\n\n  const normalizedRaw = normalizeKey(raw);\n  for (const key of Object.keys(contributionMap)) {\n    if (normalizeKey(key) === normalizedRaw) return key;\n  }\n  for (const [half, annual] of Object.entries(reverseHalfYearMap)) {\n    if (normalizeKey(half) === normalizedRaw) return annual;\n  }\n  return raw;\n}\n\nfunction validateRecord(r, index) {\n  const errors = [];\n  const required = [\n    'Vorname',\n    'Nachname',\n    'Straße',\n    'PLZ',\n    'Ort',\n    'Geburtsdatum',\n    'Eintrittsdatum',\n    'Geschlecht',\n    'Status',\n    'Beitragsart'\n  ];\n\n  for (const field of required) {\n    if (!String(r[field] || '').trim()) errors.push(`Pflichtfeld fehlt: ${field}`);\n  }\n\n  const sports = Array.from(new Set(r.Sportarten.map((s) => s.trim()).filter(Boolean)));\n  if (sports.length === 0) errors.push('Mindestens eine zweite Sportart ist Pflicht.');\n\n  const invalidSports = sports.filter((s) => !allowedSports.has(s));\n  if (invalidSports.length) {\n    errors.push(`Unbekannte Sportart(en): ${invalidSports.join(', ')}`);\n  }\n\n  const dBirth = parseDate(r.Geburtsdatum);\n  const dEntry = parseDate(r.Eintrittsdatum);\n  if (!dBirth) errors.push('Geburtsdatum muss im Format TT.MM.JJJJ vorliegen.');\n  if (!dEntry) errors.push('Eintrittsdatum muss im Format TT.MM.JJJJ vorliegen.');\n\n  if (!['Aktiv', 'Passiv'].includes(r.Status)) {\n    errors.push(`Status ungueltig: ${r.Status}. Erlaubt: Aktiv, Passiv.`);\n  }\n\n  if (!['männlich', 'weiblich', 'divers', 'jur. Person', 'sächlich'].includes(r.Geschlecht)) {\n    errors.push(`Geschlecht ungueltig: ${r.Geschlecht}.`);\n  }\n\n  r.Beitragsart = normalizeContributionType(r.Beitragsart);\n  if (!contributionMap[r.Beitragsart]) {\n    errors.push(`Beitragsart ungueltig: ${r.Beitragsart}.`);\n  }\n\n  if (errors.length) {\n    throw new Error(`Datensatz ${index + 1}: ${errors.join(' | ')}`);\n  }\n}\n\nfunction buildRow(record, index) {\n  validateRecord(record, index);\n\n  const row = {};\n  for (const col of csvColumns) row[col] = '';\n\n  row.Nachname = record.Nachname;\n  row.Vorname = record.Vorname;\n  row['Straße'] = record['Straße'];\n  row.Ort = record.Ort;\n  row.Status = record.Status;\n  row.Zahlungsart = record.Zahlungsart;\n  row.Eintrittsdatum = record.Eintrittsdatum;\n  row.PLZ = record.PLZ;\n  row.Geburtsdatum = record.Geburtsdatum;\n  row.Geschlecht = record.Geschlecht;\n  row['Mitglieds-Nr'] = record['Mitglieds-Nr'];\n  row.Anrede = record.Anrede;\n  row.Land = record.Land || 'Deutschland';\n  row['Telefon_P1'] = record['Telefon_P1'];\n  row['Mobil_P1'] = record['Mobil_P1'];\n  row['E-Mail_P1'] = record['E-Mail_P1'];\n  row.Titel = record.Titel;\n\n  row.Kontoinhaber = record.Kontoinhaber;\n  row.IBAN = record.IBAN;\n  row.BIC = record.BIC;\n  row.Kreditinstitut = record.Kreditinstitut;\n\n  if (row.Zahlungsart === 'Lastschrift') {\n    row['SEPA-Mandatstyp_1'] = record['SEPA-Mandatstyp_1'] || 'Folgelastschrift';\n    row['SEPA-Merkmal_1'] = record['SEPA-Merkmal_1'] || 'wiederkehrend';\n    row['SEPA-Unterschriftsdatum_1'] = record['SEPA-Unterschriftsdatum_1'];\n    row['SEPA-Gültigkeitsdatum_1'] = record['SEPA-Gültigkeitsdatum_1'];\n    row['SEPA-Benachrichtigungsdatum_1'] = record['SEPA-Benachrichtigungsdatum_1'];\n  }\n\n  row['Abteilung_1'] = 'Hauptverein';\n  row['Abteilungseintritt_1'] = record.Eintrittsdatum;\n\n  const uniqueSports = Array.from(new Set(record.Sportarten));\n  for (let i = 0; i < Math.min(uniqueSports.length, 8); i++) {\n    const idx = i + 2;\n    row[`Abteilung_${idx}`] = uniqueSports[i];\n    row[`Abteilungseintritt_${idx}`] = record.Eintrittsdatum;\n  }\n\n  const entry = parseDate(record.Eintrittsdatum);\n  const year = entry.year;\n  const startsAfterHalfYearCutoff = entry.month > 7 || (entry.month === 7 && entry.day >= 1);\n\n  const annualType = record.Beitragsart;\n  const halfType = contributionMap[annualType]?.half || null;\n\n  if (startsAfterHalfYearCutoff && halfType) {\n    row['Beitragsbezeichnung_1_1'] = halfType;\n    row['Beitragsstart_1_1'] = record.Eintrittsdatum;\n    row['Beitragsende_1_1'] = formatDate(31, 12, year);\n\n    row['Beitragsbezeichnung_1_2'] = annualType;\n    row['Beitragsstart_1_2'] = formatDate(1, 1, year + 1);\n    row['Beitragsende_1_2'] = '';\n  } else {\n    row['Beitragsbezeichnung_1_1'] = annualType;\n    row['Beitragsstart_1_1'] = record.Eintrittsdatum;\n    row['Beitragsende_1_1'] = '';\n  }\n\n  return row;\n}\n\nconst sourceItems = pickSourceItems(input);\nif (!sourceItems.length) {\n  throw new Error('Keine Eingabedaten gefunden. Erwartet: members/records/items/data oder ein Datensatz.');\n}\n\nconst records = sourceItems.map((item) => normalizeRecord(item));\nconst rows = records.map((record, index) => buildRow(record, index));\n\nconst headerLine = csvColumns.map(csvEscape).join(';');\nconst dataLines = rows.map((row) => csvColumns.map((col) => csvEscape(row[col] || '')).join(';'));\nconst csvContent = ['\\uFEFF' + headerLine, ...dataLines].join('\\n');\nconst base64Data = Buffer.from(csvContent, 'utf8').toString('base64');\n\nconst fileName = typeof input.outputFileName === 'string' && input.outputFileName.trim()\n  ? input.outputFileName.trim()\n  : 'import.csv';\n\nreturn [{\n  json: {\n    ok: true,\n    records: rows.length,\n    fileName\n  },\n  binary: {\n    data: {\n      data: base64Data,\n      fileName,\n      mimeType: 'text/csv; charset=utf-8'\n    }\n  }\n}];"
+      },
+      "id": "29823b35-6bd5-437e-abd4-d2ed704fb8ce",
+      "name": "Generate Import CSV",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate Import CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Manual Test Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Test Data": {
+      "main": [
+        [
+          {
+            "node": "Generate Import CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "a49f5d8e-f6d7-4d74-ad39-4aa129f0ae26",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "TSVAschachGenerateImportCsv",
+  "tags": [
+    {
+      "name": "TSV Aschach"
+    }
+  ]
+}
