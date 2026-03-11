@@ -53,7 +53,14 @@
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "messageId": "={{ $json.messageId }}",
+            "threadId": "={{ $json.threadId }}",
+            "from": "={{ $json.from }}",
+            "subject": "={{ $json.subject }}",
+            "snippet": "={{ $json.snippet }}",
+            "text": "={{ $json.text }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -74,7 +81,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const normalized = $('Normalize incoming email').item.json || {};\nconst routeResponse = $json || {};\n\nconst statusCode = Number(routeResponse.statusCode || 0) || null;\nconst hasError = !!routeResponse.error || !!routeResponse.message;\nconst routeOk = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok: routeOk,\n    action: 'receiveAndRoute',\n    messageId: normalized.messageId || null,\n    threadId: normalized.threadId || null,\n    from: normalized.from || '',\n    subject: normalized.subject || '',\n    routeResponse\n  }\n}];"
+        "jsCode": "const normalized = $('Normalize incoming email').item.json || {};\nconst routeResponse = $json || {};\n\nconst routeOk = routeResponse.ok === true;\nconst executed = routeResponse.executed === true;\n\nreturn [{\n  json: {\n    ok: routeOk,\n    executed,\n    action: 'receiveAndRoute',\n    messageId: normalized.messageId || null,\n    threadId: normalized.threadId || null,\n    from: normalized.from || '',\n    subject: normalized.subject || '',\n    routeResponse\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

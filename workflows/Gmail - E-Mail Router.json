@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -1344,
-        176
+        -4448,
+        256
       ],
-      "id": "aed1cb47-1700-4dd1-a801-8264043d18db",
+      "id": "2159c9e1-060d-4029-8879-6f3719527032",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,11 +19,11 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1536,
-        368
+        -4640,
+        448
       ],
-      "id": "5ccbd6b4-91b7-4489-a547-0aaee13e0e01",
-      "name": "Manual Trigger"
+      "id": "ee42fca9-7fc8-422c-ac5b-52b1dacf4b75",
+      "name": "Manual Trigger Airbus"
     },
     {
       "parameters": {
@@ -32,37 +32,37 @@
             {
               "id": "15de4f4b-6e46-4f5c-be8f-5b07f59bd2f5",
               "name": "messageId",
-              "value": "gmail_message_id_here",
+              "value": "gmail_message_id_airbus",
               "type": "string"
             },
             {
               "id": "cc922d24-3dc4-4452-b3f4-2613f34ec9ec",
               "name": "threadId",
-              "value": "gmail_thread_id_here",
+              "value": "gmail_thread_id_airbus",
               "type": "string"
             },
             {
               "id": "dfc9184d-eabc-4b3e-beb7-7cbc0cf34cad",
               "name": "from",
-              "value": "billing@example.com",
+              "value": "NOREPLY@mypayslip.airbus.com",
               "type": "string"
             },
             {
               "id": "f5293465-14e0-4b77-86dd-88a5adef0f4b",
               "name": "subject",
-              "value": "Invoice 2026-03",
+              "value": "MyPayslip bereit",
               "type": "string"
             },
             {
               "id": "42f4fb9e-f22b-4454-8f49-62d70d47f206",
               "name": "snippet",
-              "value": "Please find attached the latest invoice",
+              "value": "Ihr neues Gehaltsdokument ist verfuegbar",
               "type": "string"
             },
             {
               "id": "f87585e8-1862-448f-80e5-c1eec88ff9ea",
               "name": "text",
-              "value": "Please process this invoice.",
+              "value": "Bitte im Portal einloggen.",
               "type": "string"
             },
             {
@@ -78,23 +78,141 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1344,
-        368
+        -4448,
+        448
       ],
-      "id": "f2d0fc3a-9302-4d2d-850c-fd7387bd4657",
-      "name": "Set test input"
+      "id": "e73f85e9-d413-4d88-a8cc-127b0215bb54",
+      "name": "Set test input Airbus"
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json || {};\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst threadId = typeof raw.threadId === 'string' ? raw.threadId.trim() : '';\nconst from = typeof raw.from === 'string' ? raw.from.trim() : '';\nconst subject = typeof raw.subject === 'string' ? raw.subject.trim() : '';\nconst snippet = typeof raw.snippet === 'string' ? raw.snippet.trim() : '';\nconst text = typeof raw.text === 'string' ? raw.text : '';\nconst executeSubworkflow = raw.executeSubworkflow === true;\nconst routeWorkflowIds = typeof raw.routeWorkflowIds === 'object' && raw.routeWorkflowIds !== null ? raw.routeWorkflowIds : {};\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    threadId,\n    from,\n    subject,\n    snippet,\n    text,\n    executeSubworkflow,\n    routeWorkflowIds,\n    okToRoute: !error,\n    error\n  }\n}];"
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f8cd0ca-803d-4f2f-9732-e32f7398ce3f",
+              "name": "messageId",
+              "value": "gmail_message_id_newsletter",
+              "type": "string"
+            },
+            {
+              "id": "b6ec83ed-c67d-4f86-8b7e-3155f50e4956",
+              "name": "threadId",
+              "value": "gmail_thread_id_newsletter",
+              "type": "string"
+            },
+            {
+              "id": "f5f3b4ee-bdab-4cb8-b0c7-0cb9c1fba311",
+              "name": "from",
+              "value": "news@example.org",
+              "type": "string"
+            },
+            {
+              "id": "8e14fdc6-48c8-4361-93f4-902ed6f2587d",
+              "name": "subject",
+              "value": "Newsletter April",
+              "type": "string"
+            },
+            {
+              "id": "a4765d1e-6cb8-415d-930d-3e5b6d0d6325",
+              "name": "snippet",
+              "value": "Unser Newsletter fuer diese Woche",
+              "type": "string"
+            },
+            {
+              "id": "6e4b2603-7524-4edb-b6f2-3d0a02a70ec5",
+              "name": "text",
+              "value": "Newsletter mit neuen Angeboten.",
+              "type": "string"
+            },
+            {
+              "id": "d77b40b2-b087-4bf1-8653-a85daa0f89a8",
+              "name": "executeSubworkflow",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4448,
+        640
+      ],
+      "id": "ff1a74b5-5df5-4ed5-9cf7-ac399925d357",
+      "name": "Set test input Newsletter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "58da8303-f5ea-47e4-a97a-fe75187afd65",
+              "name": "messageId",
+              "value": "gmail_message_id_no_match",
+              "type": "string"
+            },
+            {
+              "id": "a7fb26be-6002-4f76-b5c7-d0de5b0ff76c",
+              "name": "threadId",
+              "value": "gmail_thread_id_no_match",
+              "type": "string"
+            },
+            {
+              "id": "4f10b0e5-c724-4475-8895-f9502d335d7a",
+              "name": "from",
+              "value": "hello@example.net",
+              "type": "string"
+            },
+            {
+              "id": "51de63f5-2a2f-4fd4-ad30-c2fb7f2cefa8",
+              "name": "subject",
+              "value": "Kurze Rueckfrage",
+              "type": "string"
+            },
+            {
+              "id": "8fefe3a2-8c2d-4f9f-9728-cdd4a20f6f5c",
+              "name": "snippet",
+              "value": "Kannst du mich morgen anrufen?",
+              "type": "string"
+            },
+            {
+              "id": "02f81612-4819-4f2e-8b34-112352f4d85d",
+              "name": "text",
+              "value": "Bitte keine Weiterleitung.",
+              "type": "string"
+            },
+            {
+              "id": "2f046665-c311-4dbc-9d2b-a5b65cdc5bbd",
+              "name": "executeSubworkflow",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4448,
+        832
+      ],
+      "id": "756de9f0-e848-4ecd-9b4e-b8f9a0efb3ea",
+      "name": "Set test input No Match"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json || {};\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst threadId = typeof raw.threadId === 'string' ? raw.threadId.trim() : '';\nconst from = typeof raw.from === 'string' ? raw.from.trim() : '';\nconst subject = typeof raw.subject === 'string' ? raw.subject.trim() : '';\nconst snippet = typeof raw.snippet === 'string' ? raw.snippet.trim() : '';\nconst text = typeof raw.text === 'string' ? raw.text : '';\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    threadId,\n    from,\n    subject,\n    snippet,\n    text,\n    okToRoute: !error,\n    error\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1136,
-        176
+        -4240,
+        256
       ],
-      "id": "ce9bd75a-9e60-406c-b4a5-fcd307e8e296",
+      "id": "315a2bd8-0457-40d9-975d-61556ce760dc",
       "name": "Normalize and validate input"
     },
     {
@@ -125,56 +243,23 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -928,
-        176
+        -4032,
+        256
       ],
-      "id": "7f590269-06d2-4d96-adb0-8b15c3c9c7c7",
+      "id": "191e0032-5e7a-4d10-9a3e-5062bdce1600",
       "name": "If payload valid"
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-5-nano",
-          "mode": "list",
-          "cachedResultName": "GPT-5-NANO"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=Classify this email into one of these categories: invoice, support, newsletter, personal, spam, unknown.\n\nReturn strict JSON with keys: category, confidence, reason.\nconfidence must be a number between 0 and 1.\n\nEmail:\nfrom: {{ $('Normalize and validate input').item.json.from }}\nsubject: {{ $('Normalize and validate input').item.json.subject }}\nsnippet: {{ $('Normalize and validate input').item.json.snippet }}\ntext: {{ $('Normalize and validate input').item.json.text }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
-      "position": [
-        -704,
-        64
-      ],
-      "id": "c041ce0a-11a4-44ea-9815-d66819d4253e",
-      "name": "AI classify email",
-      "credentials": {
-        "openAiApi": {
-          "id": "OpKdnL4SPopfN0cn",
-          "name": "OpenAi account"
-        }
-      },
-      "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "jsCode": "const raw = $json?.message?.content || $json?.text || $json?.output || '';\n\nconst fallback = {\n  category: 'unknown',\n  confidence: 0,\n  reason: 'AI output missing or invalid JSON'\n};\n\nlet parsed = fallback;\nif (typeof raw === 'string' && raw.trim()) {\n  try {\n    parsed = JSON.parse(raw);\n  } catch (error) {\n    parsed = fallback;\n  }\n}\n\nconst allowed = new Set(['invoice', 'support', 'newsletter', 'personal', 'spam', 'unknown']);\nconst category = typeof parsed.category === 'string' ? parsed.category.toLowerCase().trim() : 'unknown';\nconst normalizedCategory = allowed.has(category) ? category : 'unknown';\n\nlet confidence = Number(parsed.confidence);\nif (!Number.isFinite(confidence)) confidence = 0;\nif (confidence < 0) confidence = 0;\nif (confidence > 1) confidence = 1;\n\nconst reason = typeof parsed.reason === 'string' ? parsed.reason : '';\nconst useFallback = confidence < 0.7;\nconst finalCategory = useFallback ? 'unknown' : normalizedCategory;\n\nconst input = $('Normalize and validate input').item.json || {};\nconst routeWorkflowIds = input.routeWorkflowIds || {};\n\nconst workflowIdMap = {\n  invoice: routeWorkflowIds.invoice || '',\n  support: routeWorkflowIds.support || '',\n  newsletter: routeWorkflowIds.newsletter || '',\n  personal: routeWorkflowIds.personal || '',\n  spam: routeWorkflowIds.spam || '',\n  unknown: routeWorkflowIds.unknown || ''\n};\n\nreturn [{\n  json: {\n    ...input,\n    classification: {\n      category: finalCategory,\n      confidence,\n      reason\n    },\n    route: {\n      category: finalCategory,\n      workflowId: workflowIdMap[finalCategory] || '',\n      workflowName: finalCategory\n    },\n    shouldExecuteSubworkflow: input.executeSubworkflow === true && !!workflowIdMap[finalCategory]\n  }\n}];"
+        "jsCode": "const input = $json || {};\n\nconst rawFrom = typeof input.from === 'string' ? input.from.trim() : '';\nconst senderMatch = rawFrom.match(/<([^>]+)>/);\nconst sender = (senderMatch?.[1] || rawFrom).trim().toLowerCase();\n\nconst contentHaystack = [input.subject || '', input.snippet || '', input.text || '']\n  .join('\\n')\n  .toLowerCase();\n\nconst isAirbusSender = sender === 'noreply@mypayslip.airbus.com';\nconst hasNewsletter = contentHaystack.includes('newsletter');\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\n\nlet classification = {\n  category: 'none',\n  confidence: 1,\n  reason: 'No routing rule matched'\n};\n\nconst output = {\n  ...input\n};\n\nif (isAirbusSender) {\n  route = {\n    category: 'airbus_mypayslip',\n    workflowId: 'DwMi5ywRbXvxyNVN',\n    workflowName: 'Airbus - MyPayslip'\n  };\n  classification = {\n    category: 'airbus_mypayslip',\n    confidence: 1,\n    reason: 'Matched sender noreply@mypayslip.airbus.com'\n  };\n} else if (hasNewsletter) {\n  route = {\n    category: 'newsletter',\n    workflowId: 'jEC35MXsssds8HOB',\n    workflowName: 'Signal - Send Message'\n  };\n  classification = {\n    category: 'newsletter',\n    confidence: 1,\n    reason: 'Matched keyword newsletter in email content'\n  };\n  output.message = `Newsletter erhalten von: ${sender || 'unbekannt'}`;\n}\n\nreturn [{\n  json: {\n    ...output,\n    sender,\n    classification,\n    route,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -304,
-        48
+        -3808,
+        160
       ],
-      "id": "48e1b823-e32e-434c-b62e-f42e35ca33b2",
+      "id": "22fa5674-4aca-4113-8ec7-5fa818f470fa",
       "name": "Parse and resolve route"
     },
     {
@@ -205,10 +290,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -96,
-        48
+        -3600,
+        160
       ],
-      "id": "525edda2-7057-4bb7-a0d4-0cd290af4b67",
+      "id": "9d88c4d6-3385-4225-9216-0b3be2d127a5",
       "name": "If sub workflow configured"
     },
     {
@@ -216,7 +301,16 @@
         "workflowId": "={{ $json.route.workflowId }}",
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "messageId": "={{ $json.messageId }}",
+            "threadId": "={{ $json.threadId }}",
+            "from": "={{ $json.from }}",
+            "subject": "={{ $json.subject }}",
+            "snippet": "={{ $json.snippet }}",
+            "text": "={{ $json.text }}",
+            "sender": "={{ $json.sender }}",
+            "message": "={{ $json.message }}"
+          },
           "matchingColumns": [],
           "schema": [],
           "attemptToConvertTypes": false,
@@ -227,25 +321,25 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        144,
-        -32
+        -3360,
+        64
       ],
-      "id": "c41755d1-ebab-4cd2-a19a-852447235d79",
+      "id": "88bde2dd-0b30-4509-9911-52ab8012f785",
       "name": "Execute target sub workflow",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const data = $('Parse and resolve route').item.json || {};\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: false,\n    response: {\n      note: 'No target sub workflow configured for this category. Set routeWorkflowIds and executeSubworkflow=true in caller.'\n    }\n  }\n}];"
+        "jsCode": "const data = $('Parse and resolve route').item.json || {};\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: false,\n    response: {\n      note: 'No routing rule matched. No action executed.'\n    }\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        144,
-        144
+        -3360,
+        256
       ],
-      "id": "056cfe20-33ff-4c1f-983c-58c3684e052f",
+      "id": "2ac6f121-b325-4138-bea7-db87df12db1e",
       "name": "Build pending route result"
     },
     {
@@ -255,10 +349,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        432,
-        -48
+        -3072,
+        48
       ],
-      "id": "c6dfa4e5-216e-47ec-8973-045bd07db7b7",
+      "id": "35c52c43-f043-4b91-8c87-10ab3a455c7f",
       "name": "Build route result"
     },
     {
@@ -268,10 +362,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -704,
-        272
+        -3808,
+        352
       ],
-      "id": "a775bae7-a9f7-4fa0-b008-631357947f62",
+      "id": "23d766ec-60a4-4f20-8973-1ebd48c37504",
       "name": "Build validation error result"
     }
   ],
@@ -288,18 +382,40 @@
         ]
       ]
     },
-    "Manual Trigger": {
+    "Manual Trigger Airbus": {
       "main": [
         [
           {
-            "node": "Set test input",
+            "node": "Set test input Airbus",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Set test input": {
+    "Set test input Airbus": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input Newsletter": {
+      "main": [
+        [
+          {
+            "node": "Normalize and validate input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input No Match": {
       "main": [
         [
           {
@@ -325,7 +441,7 @@
       "main": [
         [
           {
-            "node": "AI classify email",
+            "node": "Parse and resolve route",
             "type": "main",
             "index": 0
           }
@@ -333,17 +449,6 @@
         [
           {
             "node": "Build validation error result",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI classify email": {
-      "main": [
-        [
-          {
-            "node": "Parse and resolve route",
             "type": "main",
             "index": 0
           }
@@ -391,7 +496,7 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -399,20 +504,19 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "executionTimeout": -1,
     "timeSavedPerExecution": 2
   },
-  "versionId": "d040a16e-0a1d-4d7e-8f02-5597fc475590",
+  "versionId": "33bd99b3-981d-442f-bc7c-0a3484a38411",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "m51F9IO2sbOKSlKD",
   "tags": [
     {
-      "name": "E-Mail",
-      "id": "v5C7aIIdCywI2YKe",
       "updatedAt": "2026-03-01T20:36:05.002Z",
-      "createdAt": "2026-03-01T20:36:05.002Z"
+      "createdAt": "2026-03-01T20:36:05.002Z",
+      "id": "v5C7aIIdCywI2YKe",
+      "name": "E-Mail"
     }
   ]
 }
