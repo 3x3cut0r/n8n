@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1200,
-        80
+        512,
+        480
       ],
-      "id": "a89ef267-1f09-4d78-8e9d-8e1545909f4f",
+      "id": "abcda7a5-5759-42b7-b368-b5879f9f9c6f",
       "name": "Manual Trigger"
     },
     {
@@ -17,8 +17,7 @@
         "triggerTimes": {
           "item": [
             {
-              "hour": 7,
-              "minute": 0
+              "hour": 7
             }
           ]
         }
@@ -26,10 +25,10 @@
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
       "position": [
-        -1200,
-        256
+        512,
+        288
       ],
-      "id": "319648e2-31d0-4809-a4d8-0ec1bcf89b4e",
+      "id": "f3133ba8-49fa-4b59-8553-8366e725d3ad",
       "name": "Daily 07:00"
     },
     {
@@ -175,10 +174,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -960,
-        176
+        720,
+        288
       ],
-      "id": "a7a33df6-66e7-40bc-b66f-635d773cced2",
+      "id": "21d5dcf2-9fd6-4fa4-985a-8abaf1d7fa40",
       "name": "Set Runtime Config"
     },
     {
@@ -198,10 +197,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -752,
-        176
+        928,
+        288
       ],
-      "id": "51c88913-cc14-4b45-aeeb-40fb3b5ba36a",
+      "id": "9987ffd5-0990-4230-96de-c3066e30f64f",
       "name": "Set Source Catalog"
     },
     {
@@ -299,10 +298,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -544,
-        176
+        1136,
+        288
       ],
-      "id": "e2119c85-7b11-4012-9099-799a72f7b9a8",
+      "id": "b626843e-7101-4eda-9a62-4e5e257ce24f",
       "name": "Set Format & Scoring Config"
     },
     {
@@ -312,11 +311,12 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -336,
-        176
+        1344,
+        288
       ],
-      "id": "974ace76-76ad-4838-aebc-e095f2844231",
-      "name": "Split Sources"
+      "id": "b2f9f921-d37f-4748-93be-5955c1ab7a0b",
+      "name": "Split Sources",
+      "alwaysOutputData": true
     },
     {
       "parameters": {
@@ -345,10 +345,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -128,
-        176
+        1552,
+        288
       ],
-      "id": "677276cc-b46e-442a-a206-409d9bcb1a3d",
+      "id": "70487e5d-d95e-46fa-a321-c2a28a876991",
       "name": "If NewsAPI Source"
     },
     {
@@ -361,15 +361,15 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        80,
-        80
+        1760,
+        192
       ],
-      "id": "5b01fbef-3f46-4fd8-b075-af18aea35904",
+      "id": "7636908c-92d7-4261-8ed0-f28666fbe81a",
       "name": "HTTP Request NewsAPI",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "REPLACE_ME",
-          "name": "NewsAPI"
+          "id": "MbAMZ55kO8vjDnFQ",
+          "name": "Synapse"
         }
       },
       "onError": "continueErrorOutput"
@@ -381,10 +381,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        288,
-        80
+        2080,
+        176
       ],
-      "id": "a5ccd2e2-f8fe-4a0a-adbe-1d9a34acd07f",
+      "id": "5d09744b-ee2a-4594-9832-d404ca047c73",
       "name": "Normalize NewsAPI Response"
     },
     {
@@ -401,10 +401,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        80,
-        272
+        1760,
+        384
       ],
-      "id": "feb9b114-71bd-49d8-9027-a183d2844564",
+      "id": "1b90eae0-274f-4555-b0d9-2bdc52a59fd4",
       "name": "HTTP Request RSS",
       "onError": "continueErrorOutput"
     },
@@ -415,10 +415,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        288,
-        272
+        2080,
+        368
       ],
-      "id": "0ff04e4d-44ec-45b1-b7a8-e05fc027fce4",
+      "id": "1b66ff55-5514-4ba0-b849-1640c7b64152",
       "name": "Normalize RSS Response"
     },
     {
@@ -426,10 +426,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        496,
-        176
+        2288,
+        272
       ],
-      "id": "5e60b82d-628e-4969-b142-8acb5ac6f497",
+      "id": "1ea50e55-b90b-4502-b63d-63c963468d0c",
       "name": "Merge Source Results"
     },
     {
@@ -439,10 +439,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        704,
-        176
+        2496,
+        272
       ],
-      "id": "4b2c84c7-1806-4fa5-a5a1-046ffad2f1a8",
+      "id": "99f35708-522e-4720-8c79-edb45d31661a",
       "name": "Aggregate Source Results"
     },
     {
@@ -452,10 +452,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        912,
-        176
+        2704,
+        272
       ],
-      "id": "8f1e4f34-5b56-4698-8a4c-c7e99ab4a26d",
+      "id": "cbf0eec4-c8ae-4977-958b-ed258e068936",
       "name": "Select And Format"
     },
     {
@@ -486,10 +486,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1120,
-        176
+        2912,
+        272
       ],
-      "id": "2fb8f3bf-b8bf-4f3f-ac91-ae8e0f90a9f2",
+      "id": "4c655167-7e4a-4fdc-aa3b-6ae2f4e3cce9",
       "name": "If Any News"
     },
     {
@@ -538,10 +538,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1328,
-        80
+        3120,
+        176
       ],
-      "id": "110e4fac-b62e-4ce0-ae91-6466a6dc2602",
+      "id": "3511473b-829a-4468-84a8-4abd0b081764",
       "name": "Signal - Send Message",
       "alwaysOutputData": true
     },
@@ -552,23 +552,25 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        1328,
-        272
+        3120,
+        368
       ],
-      "id": "bfb5778d-b7d5-4668-8848-1f0c4c7d87da",
+      "id": "a286c37d-40da-4d04-944e-3c6f30c7f67a",
       "name": "Fail No News"
     },
     {
       "parameters": {
-        "content": "# Daily News\n\n- Alle Einstellungen in Set-Nodes (Runtime, Quellen, Scoring/Format)\n- Externe Quellen werden ueber HTTP Request-Nodes geladen\n- NewsAPI nutzt HTTP Header Auth Credential \"NewsAPI\"\n- Keine ENV-Abhaengigkeit fuer API-Keys im Workflow-Code"
+        "content": "# Daily News\n\n- Alle Einstellungen in Set-Nodes (Runtime, Quellen, Scoring/Format)\n- Externe Quellen werden ueber HTTP Request-Nodes geladen\n- NewsAPI nutzt HTTP Header Auth Credential \"NewsAPI\"\n- Keine ENV-Abhaengigkeit fuer API-Keys im Workflow-Code",
+        "height": 192,
+        "width": 512
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -960,
-        -48
+        720,
+        32
       ],
-      "id": "8f0e3195-f637-4933-a92b-f63427e1dd88",
+      "id": "8810ef92-e600-41ca-851a-2c47d98d1301",
       "name": "Note"
     }
   ],
@@ -754,20 +756,21 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false,
     "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": -1,
     "timeSavedPerExecution": 5
   },
-  "versionId": "7a0e01f5-fd6d-4deb-b9ab-8a338d5a5ad6",
+  "versionId": "e55362f4-2a68-440a-a109-f9de8a5426fa",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "dailyNewsWorkflow01",
+  "id": "C4D1mJmrgg4j9jp6",
   "tags": []
 }
