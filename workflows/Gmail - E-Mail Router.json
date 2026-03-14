@@ -3,17 +3,17 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Routing-Regeln:**\n- **Airbus MyPayslip** → noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Keyword \"newsletter\" im Betreff/Snippet/Text → Signal-Benachrichtigung\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification).",
+        "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Routing-Regeln:**\n- **Airbus MyPayslip** → noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Keyword \"newsletter\" im Betreff/Snippet/Text → Signal-Benachrichtigung\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification, includeNoMatch).",
         "height": 288,
         "width": 724
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -8512,
-        3472
+        -8640,
+        3536
       ],
-      "id": "5150396e-2c0b-4501-adad-28060c50061d",
+      "id": "b30bf020-0673-4dd7-be2b-06cb87fc07a4",
       "name": "Sticky Note"
     },
     {
@@ -23,10 +23,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -8512,
-        3792
+        -8640,
+        3856
       ],
-      "id": "daec2e2b-dee1-4bbc-87aa-a3b0ab4b96ac",
+      "id": "67a3f872-2b41-4146-920e-2318be0372c3",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -34,10 +34,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -8704,
-        4176
+        -8832,
+        4240
       ],
-      "id": "43876a86-b5ae-4419-bc2f-b693f3328998",
+      "id": "63cd4241-6e06-4ee5-9107-882db1c0faef",
       "name": "Manual Trigger Airbus"
     },
     {
@@ -93,10 +93,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8512,
-        3984
+        -8640,
+        4048
       ],
-      "id": "c40806c9-8b7d-461b-8d1b-086b182e3ee5",
+      "id": "0a275b1e-ec3a-4493-92f3-2daf682280d5",
       "name": "Set test input Airbus"
     },
     {
@@ -152,10 +152,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8512,
-        4176
+        -8640,
+        4240
       ],
-      "id": "5f2bf601-350b-4c4a-b1eb-204e5aec62ff",
+      "id": "5e6ed1ff-e534-482c-a447-261f1880477e",
       "name": "Set test input Newsletter"
     },
     {
@@ -211,10 +211,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8512,
-        4368
+        -8640,
+        4432
       ],
-      "id": "0bc229e2-0f14-496a-8fd0-46f6054bc648",
+      "id": "e849fe5e-774c-4a91-8c51-f7742176fcea",
       "name": "Set test input No Match"
     },
     {
@@ -224,10 +224,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -8304,
-        3792
+        -8432,
+        3856
       ],
-      "id": "8528e8b3-d10e-439b-b093-e38f0b04a416",
+      "id": "00f6b4ee-7967-4db6-874d-8f099c4e7002",
       "name": "Normalize and validate input"
     },
     {
@@ -237,6 +237,12 @@
             {
               "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
               "name": "enableNotification",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "f3f0e435-106f-4eb7-8cc4-9e17f53a42d0",
+              "name": "includeNoMatch",
               "value": false,
               "type": "boolean"
             }
@@ -248,10 +254,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8096,
-        3792
+        -8224,
+        3856
       ],
-      "id": "60d3d966-32cd-48ea-82b5-e791dac34af4",
+      "id": "50b6317b-0dfb-48ba-bb93-2b79d01ee88a",
       "name": "Settings"
     },
     {
@@ -282,10 +288,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -7888,
-        3792
+        -8016,
+        3856
       ],
-      "id": "cd866729-beb1-4228-92a1-c32dc1bd9920",
+      "id": "be0aa0f9-18ab-4631-9ea7-3cbd54054842",
       "name": "If payload valid"
     },
     {
@@ -295,10 +301,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7664,
-        3696
+        -7792,
+        3760
       ],
-      "id": "1e7fa125-d3ad-4062-ad92-a68f0099919d",
+      "id": "5894fdf2-4eda-4e84-98b2-447caefd5e78",
       "name": "Parse and resolve route"
     },
     {
@@ -329,10 +335,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -7408,
-        3840
+        -7536,
+        3904
       ],
-      "id": "d83ec6a9-f8ce-47ec-a64a-3492181f5432",
+      "id": "812842f1-7794-4b81-9caa-8112b2a177ac",
       "name": "If sub workflow configured"
     },
     {
@@ -363,11 +369,54 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -7408,
-        3552
+        -7536,
+        3616
       ],
-      "id": "c6c878d9-e3d6-4ee7-9145-7c8dbf8c9910",
+      "id": "6987391a-52af-4bae-90bb-bea2b8b3d702",
       "name": "If notification enabled"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2d45475d-5861-4d45-9f32-8f9858ec4204",
+              "leftValue": "={{ $json.routeLabel }}",
+              "rightValue": "No Route",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            },
+            {
+              "id": "6ee6f98c-c92d-4a4e-ae4f-c3353be254e2",
+              "leftValue": "={{ $json.includeNoMatch }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7264,
+        3600
+      ],
+      "id": "59bd4a05-bbe1-4dba-8c57-a05dc04e614f",
+      "name": "If include no match"
     },
     {
       "parameters": {
@@ -394,10 +443,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -7136,
-        3744
+        -7264,
+        3808
       ],
-      "id": "054fd64e-ea59-418f-9644-3665fa051c20",
+      "id": "e2a1e88e-89be-40fa-8ab8-f1c0b7a8b7ce",
       "name": "Execute target sub workflow",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -409,10 +458,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7136,
-        3936
+        -7264,
+        4000
       ],
-      "id": "002cde45-d154-4cbb-94bd-0fce2437420c",
+      "id": "da002f15-d1f4-4621-a856-61f72a3a8ca8",
       "name": "Build pending route result"
     },
     {
@@ -439,10 +488,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -7136,
-        3536
+        -7008,
+        3584
       ],
-      "id": "91b443a5-eea5-4119-a4f3-e9d19ac2b092",
+      "id": "42a82fda-47e3-41df-9dfe-5f203b65e8af",
       "name": "Send notification",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -454,10 +503,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -6928,
-        3728
+        -7008,
+        3792
       ],
-      "id": "4989f5ee-ba3f-428c-bbfd-efa5dad12b6e",
+      "id": "85bfdcf9-85a5-4654-9e19-87956c93616a",
       "name": "Build route result"
     },
     {
@@ -467,10 +516,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7664,
-        3888
+        -7792,
+        3952
       ],
-      "id": "f71eaea3-3e46-4f97-bee2-d5d46878f9c6",
+      "id": "7963bfe1-06bb-4219-93bd-6f20117558dc",
       "name": "Build validation error result"
     }
   ],
@@ -609,6 +658,17 @@
       "main": [
         [
           {
+            "node": "If include no match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If include no match": {
+      "main": [
+        [
+          {
             "node": "Send notification",
             "type": "main",
             "index": 0
@@ -638,7 +698,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "746feff9-4d76-441d-90a6-de8c09005f6a",
+  "versionId": "eb148824-dbdd-4551-b4dd-1a5d6c1c25cb",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
