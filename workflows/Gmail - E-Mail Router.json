@@ -427,7 +427,7 @@
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "message": "={{ '[Gmail][' + $json.routeLabel + ']\\n' + $json.from + '\\n' + $json.subject }}"
+            "message": "={{ '[Gmail]\\n[' + $json.routeLabel + ']\\n' + $json.from + '\\n' + $json.subject }}"
           },
           "matchingColumns": [],
           "schema": [],
