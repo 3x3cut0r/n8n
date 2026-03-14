@@ -17,10 +17,10 @@
       "type": "n8n-nodes-base.gmailTrigger",
       "typeVersion": 1.2,
       "position": [
-        32,
-        352
+        800,
+        480
       ],
-      "id": "b48af6c8-ab8f-4060-b063-955affb76dc3",
+      "id": "ea83706d-43da-4d97-9960-bc05437a94be",
       "name": "Gmail Trigger",
       "credentials": {
         "gmailOAuth2": {
@@ -36,10 +36,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        224,
-        352
+        992,
+        480
       ],
-      "id": "0e1967fa-6ef0-4a9f-8b47-e9e90112cde2",
+      "id": "2ea2b4fa-6f7d-4584-9ebf-7534a8298d95",
       "name": "Normalize incoming email"
     },
     {
@@ -71,10 +71,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        432,
-        352
+        1200,
+        480
       ],
-      "id": "03cbbd1e-b809-4642-a274-ed2495ba8ddd",
+      "id": "b470c1b2-a96c-4a6e-ac47-0f61d0603a66",
       "name": "Gmail - E-Mail Router",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -86,10 +86,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        720,
-        336
+        1488,
+        464
       ],
-      "id": "ea767c70-aff3-4686-873d-e50d9ceca6c8",
+      "id": "6dfc1bbc-2040-4726-8712-751fec89afc9",
       "name": "Build receive result"
     },
     {
@@ -101,10 +101,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        64,
-        96
+        832,
+        224
       ],
-      "id": "9d40403c-df45-4f53-965a-79544b95e0e2",
+      "id": "517fe8d0-6c68-46ab-babd-76a70c889d53",
       "name": "Config note"
     }
   ],
@@ -154,17 +154,17 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 1
   },
-  "versionId": "a16ee612-6d09-438b-8b1b-7fe148b99e81",
+  "versionId": "8bb66857-a725-4afa-8577-f9ec36a9476d",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "I8mYvpu9RzbUpDYc",
   "tags": [
     {
-      "name": "E-Mail",
-      "id": "v5C7aIIdCywI2YKe",
       "updatedAt": "2026-03-01T20:36:05.002Z",
-      "createdAt": "2026-03-01T20:36:05.002Z"
+      "createdAt": "2026-03-01T20:36:05.002Z",
+      "id": "v5C7aIIdCywI2YKe",
+      "name": "E-Mail"
     }
   ]
 }
