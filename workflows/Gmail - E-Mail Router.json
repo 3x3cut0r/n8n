@@ -709,6 +709,12 @@
       "createdAt": "2026-03-01T20:36:05.002Z",
       "id": "v5C7aIIdCywI2YKe",
       "name": "E-Mail"
+    },
+    {
+      "updatedAt": "2026-03-01T07:53:25.354Z",
+      "createdAt": "2026-03-01T07:53:25.354Z",
+      "id": "cvyl6jNsflTGCuzz",
+      "name": "Signal"
     }
   ]
 }
