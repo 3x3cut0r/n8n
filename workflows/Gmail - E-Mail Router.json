@@ -3,15 +3,30 @@
   "nodes": [
     {
       "parameters": {
+        "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Routing-Regeln:**\n- **Airbus MyPayslip** → noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Keyword \"newsletter\" im Betreff/Snippet/Text → Signal-Benachrichtigung\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification).",
+        "width": 500,
+        "height": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6320,
+        1200
+      ],
+      "id": "a3f0c8b2-7e14-4d5a-b9c3-8f2e1a6d4b70",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
         "inputSource": "passthrough"
       },
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -4448,
-        256
+        -6096,
+        1424
       ],
-      "id": "2159c9e1-060d-4029-8879-6f3719527032",
+      "id": "e40dbdbc-9b88-4623-b189-b25f82d1d536",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +34,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -4640,
-        448
+        -6288,
+        1808
       ],
-      "id": "ee42fca9-7fc8-422c-ac5b-52b1dacf4b75",
+      "id": "244cac16-06c3-4e82-a66b-4643dda70c04",
       "name": "Manual Trigger Airbus"
     },
     {
@@ -78,10 +93,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -4448,
-        448
+        -6096,
+        1616
       ],
-      "id": "e73f85e9-d413-4d88-a8cc-127b0215bb54",
+      "id": "810d22a8-8487-44c5-b538-6b2966446329",
       "name": "Set test input Airbus"
     },
     {
@@ -137,10 +152,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -4448,
-        640
+        -6096,
+        1808
       ],
-      "id": "ff1a74b5-5df5-4ed5-9cf7-ac399925d357",
+      "id": "3a7f9978-93d4-41e3-bee9-76019ab02b90",
       "name": "Set test input Newsletter"
     },
     {
@@ -196,10 +211,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -4448,
-        832
+        -6096,
+        2000
       ],
-      "id": "756de9f0-e848-4ecd-9b4e-b8f9a0efb3ea",
+      "id": "5f86d267-4aef-49d6-8d9c-0897cd7e6dc3",
       "name": "Set test input No Match"
     },
     {
@@ -209,11 +224,35 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -4240,
-        256
+        -5888,
+        1424
       ],
-      "id": "315a2bd8-0457-40d9-975d-61556ce760dc",
+      "id": "2237206e-4204-4d0e-b006-53b905dee0a5",
       "name": "Normalize and validate input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+              "name": "enableNotification",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5680,
+        1424
+      ],
+      "id": "7ede632e-30f5-48b1-9eb3-9dfed05f25be",
+      "name": "Settings"
     },
     {
       "parameters": {
@@ -243,23 +282,23 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -4032,
-        256
+        -5472,
+        1424
       ],
-      "id": "191e0032-5e7a-4d10-9a3e-5062bdce1600",
+      "id": "82b5d01f-8f51-4bd8-ac28-532f5724e9c1",
       "name": "If payload valid"
     },
     {
       "parameters": {
-        "jsCode": "const input = $json || {};\n\nconst rawFrom = typeof input.from === 'string' ? input.from.trim() : '';\nconst senderMatch = rawFrom.match(/<([^>]+)>/);\nconst sender = (senderMatch?.[1] || rawFrom).trim().toLowerCase();\n\nconst contentHaystack = [input.subject || '', input.snippet || '', input.text || '']\n  .join('\\n')\n  .toLowerCase();\n\nconst isAirbusSender = sender === 'noreply@mypayslip.airbus.com';\nconst hasNewsletter = contentHaystack.includes('newsletter');\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\n\nlet classification = {\n  category: 'none',\n  confidence: 1,\n  reason: 'No routing rule matched'\n};\n\nconst output = {\n  ...input\n};\n\nif (isAirbusSender) {\n  route = {\n    category: 'airbus_mypayslip',\n    workflowId: 'DwMi5ywRbXvxyNVN',\n    workflowName: 'Airbus - MyPayslip'\n  };\n  classification = {\n    category: 'airbus_mypayslip',\n    confidence: 1,\n    reason: 'Matched sender noreply@mypayslip.airbus.com'\n  };\n} else if (hasNewsletter) {\n  route = {\n    category: 'newsletter',\n    workflowId: 'jEC35MXsssds8HOB',\n    workflowName: 'Signal - Send Message'\n  };\n  classification = {\n    category: 'newsletter',\n    confidence: 1,\n    reason: 'Matched keyword newsletter in email content'\n  };\n  output.message = `Newsletter erhalten von: ${sender || 'unbekannt'}`;\n}\n\nreturn [{\n  json: {\n    ...output,\n    sender,\n    classification,\n    route,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
+        "jsCode": "const input = $json || {};\n\nconst rawFrom = typeof input.from === 'string' ? input.from.trim() : '';\nconst senderMatch = rawFrom.match(/<([^>]+)>/);\nconst sender = (senderMatch?.[1] || rawFrom).trim().toLowerCase();\n\nconst contentHaystack = [input.subject || '', input.snippet || '', input.text || '']\n  .join('\\n')\n  .toLowerCase();\n\nconst isAirbusSender = sender === 'noreply@mypayslip.airbus.com';\nconst hasNewsletter = contentHaystack.includes('newsletter');\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\n\nlet classification = {\n  category: 'none',\n  confidence: 1,\n  reason: 'No routing rule matched'\n};\n\nlet routeLabel = 'No Route';\n\nconst output = {\n  ...input\n};\n\nif (isAirbusSender) {\n  route = {\n    category: 'airbus_mypayslip',\n    workflowId: 'DwMi5ywRbXvxyNVN',\n    workflowName: 'Airbus - MyPayslip'\n  };\n  classification = {\n    category: 'airbus_mypayslip',\n    confidence: 1,\n    reason: 'Matched sender noreply@mypayslip.airbus.com'\n  };\n  routeLabel = 'Airbus';\n} else if (hasNewsletter) {\n  route = {\n    category: 'newsletter',\n    workflowId: 'jEC35MXsssds8HOB',\n    workflowName: 'Signal - Send Message'\n  };\n  classification = {\n    category: 'newsletter',\n    confidence: 1,\n    reason: 'Matched keyword newsletter in email content'\n  };\n  routeLabel = 'Newsletter';\n  output.message = `Newsletter erhalten von: ${sender || 'unbekannt'}`;\n}\n\nreturn [{\n  json: {\n    ...output,\n    sender,\n    classification,\n    route,\n    routeLabel,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3808,
-        160
+        -5248,
+        1328
       ],
-      "id": "22fa5674-4aca-4113-8ec7-5fa818f470fa",
+      "id": "29b4668a-eb92-473e-936e-7db8e57d97c5",
       "name": "Parse and resolve route"
     },
     {
@@ -290,11 +329,45 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -3600,
-        160
+        -4992,
+        1472
       ],
-      "id": "9d88c4d6-3385-4225-9216-0b3be2d127a5",
+      "id": "9fdee742-d5d2-4625-898d-a5c9356407df",
       "name": "If sub workflow configured"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b1c2d3e4-f5a6-7b8c-9d0e-f1a2b3c4d5e6",
+              "leftValue": "={{ $json.enableNotification }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4992,
+        1184
+      ],
+      "id": "06c90f90-dd28-4075-8d92-7bc856b58c09",
+      "name": "If notification enabled"
     },
     {
       "parameters": {
@@ -321,10 +394,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -3360,
-        64
+        -4720,
+        1376
       ],
-      "id": "88bde2dd-0b30-4509-9911-52ab8012f785",
+      "id": "68c940fc-5978-467b-b333-cc3546f746d2",
       "name": "Execute target sub workflow",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -336,11 +409,43 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3360,
-        256
+        -4720,
+        1568
       ],
-      "id": "2ac6f121-b325-4138-bea7-db87df12db1e",
+      "id": "29748ece-dbf2-429c-a655-3e00fc114f53",
       "name": "Build pending route result"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "jEC35MXsssds8HOB",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/jEC35MXsssds8HOB",
+          "cachedResultName": "Signal - Send Message"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": "={{ '[Gmail][' + $json.routeLabel + ']\\n' + $json.from + '\\n' + $json.subject }}"
+          },
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -4720,
+        1168
+      ],
+      "id": "efe24cbd-f3ab-490b-9e0a-061435fe78cd",
+      "name": "Send notification",
+      "alwaysOutputData": true,
+      "onError": "continueErrorOutput"
     },
     {
       "parameters": {
@@ -349,10 +454,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3072,
-        48
+        -4512,
+        1360
       ],
-      "id": "35c52c43-f043-4b91-8c87-10ab3a455c7f",
+      "id": "27295ffb-770a-43a0-818d-001330ce9bd6",
       "name": "Build route result"
     },
     {
@@ -362,10 +467,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3808,
-        352
+        -5248,
+        1520
       ],
-      "id": "23d766ec-60a4-4f20-8973-1ebd48c37504",
+      "id": "60b5a5e5-1a2a-4735-bbba-2937af017ce3",
       "name": "Build validation error result"
     }
   ],
@@ -386,7 +491,7 @@
       "main": [
         [
           {
-            "node": "Set test input Airbus",
+            "node": "Set test input Newsletter",
             "type": "main",
             "index": 0
           }
@@ -430,6 +535,17 @@
       "main": [
         [
           {
+            "node": "Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Settings": {
+      "main": [
+        [
+          {
             "node": "If payload valid",
             "type": "main",
             "index": 0
@@ -462,6 +578,11 @@
             "node": "If sub workflow configured",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "If notification enabled",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -478,6 +599,17 @@
         [
           {
             "node": "Build pending route result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If notification enabled": {
+      "main": [
+        [
+          {
+            "node": "Send notification",
             "type": "main",
             "index": 0
           }
@@ -506,7 +638,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "33bd99b3-981d-442f-bc7c-0a3484a38411",
+  "versionId": "cd0a4679-676d-4573-902e-af3af6972f95",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
