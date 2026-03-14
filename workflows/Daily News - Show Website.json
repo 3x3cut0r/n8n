@@ -1,0 +1,187 @@
+{
+  "name": "Daily News - Show Website",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Daily News - Show Website\n\n- Oeffentlicher GET-Webhook fuer Newsseite\n- Liest Daten aus DB \"n8n-data\", Tabelle public.daily_news\n- Validiert pageId + Token + Ablaufzeit\n- Antwortet mit HTML oder Fehlerseite",
+        "height": 192,
+        "width": 512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        16
+      ],
+      "id": "e074ce08-5458-4014-9c25-e4f7d7af0151",
+      "name": "Note"
+    },
+    {
+      "parameters": {
+        "path": "daily-news-show/:pageId",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        240
+      ],
+      "id": "cb67e904-73c2-4558-b5e3-94ed563c9306",
+      "name": "Webhook",
+      "webhookId": "d1f6e8ab-0efb-4d42-87f5-8068f7428f7b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const pageId = String($json.params?.pageId || '').trim();\nconst token = String($json.query?.t || '').trim();\n\nreturn [{\n  json: {\n    pageId,\n    token\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        240
+      ],
+      "id": "2bd0ff6b-9951-44e8-8fb2-3f6e78821991",
+      "name": "Parse Request"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  v.page_id AS requested_page_id,\n  v.token AS provided_token,\n  p.page_id AS stored_page_id,\n  p.token AS stored_token,\n  p.html_base64,\n  p.expires_at\nFROM (VALUES ('{{ $json.pageId }}', '{{ $json.token }}')) AS v(page_id, token)\nLEFT JOIN public.daily_news p ON p.page_id = v.page_id\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        416,
+        240
+      ],
+      "id": "3585afe8-10b1-4aea-b05d-7174c88b4092",
+      "name": "Load Page",
+      "credentials": {
+        "postgres": {
+          "id": "uniQl6xFKrs32oz8",
+          "name": "Postgres n8n-data"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = $input.first().json || {};\n\nconst reqPageId = String(row.requested_page_id || '').trim();\nconst providedToken = String(row.provided_token || '').trim();\nconst storedToken = String(row.stored_token || '').trim();\nconst htmlB64 = String(row.html_base64 || '');\nconst expiresAtRaw = row.expires_at;\n\nconst htmlError = (title, text) => `<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><title>${title}</title><style>body{font-family:ui-sans-serif,-apple-system,Segoe UI,Helvetica,Arial,sans-serif;background:#f4f7fb;color:#1f2937;margin:0;padding:24px}main{max-width:760px;margin:0 auto;background:#fff;border:1px solid #dde5ee;border-radius:12px;padding:18px}h1{margin-top:0;font-size:1.3rem}p{line-height:1.5;color:#4b5563}</style></head><body><main><h1>${title}</h1><p>${text}</p></main></body></html>`;\n\nif (!reqPageId) {\n  return [{\n    json: {\n      statusCode: 400,\n      body: htmlError('Bad Request', 'Fehlende pageId im Pfad.'),\n      contentType: 'text/html; charset=utf-8'\n    }\n  }];\n}\n\nif (!storedToken) {\n  return [{\n    json: {\n      statusCode: 404,\n      body: htmlError('Nicht gefunden', 'Diese News-Seite existiert nicht oder wurde bereits entfernt.'),\n      contentType: 'text/html; charset=utf-8'\n    }\n  }];\n}\n\nif (!providedToken || providedToken !== storedToken) {\n  return [{\n    json: {\n      statusCode: 403,\n      body: htmlError('Zugriff verweigert', 'Der Link ist ungueltig oder unvollstaendig.'),\n      contentType: 'text/html; charset=utf-8'\n    }\n  }];\n}\n\nconst expiresTs = expiresAtRaw ? Date.parse(String(expiresAtRaw)) : NaN;\nif (Number.isFinite(expiresTs) && Date.now() > expiresTs) {\n  return [{\n    json: {\n      statusCode: 410,\n      body: htmlError('Abgelaufen', 'Diese News-Seite ist abgelaufen.'),\n      contentType: 'text/html; charset=utf-8'\n    }\n  }];\n}\n\nlet body = '';\ntry {\n  body = Buffer.from(htmlB64, 'base64').toString('utf8');\n} catch {\n  body = htmlError('Fehler', 'Die gespeicherte News-Seite konnte nicht gelesen werden.');\n  return [{\n    json: {\n      statusCode: 500,\n      body,\n      contentType: 'text/html; charset=utf-8'\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    statusCode: 200,\n    body,\n    contentType: 'text/html; charset=utf-8'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        240
+      ],
+      "id": "8cd92ef8-3e0a-4657-ae97-c696f4539b81",
+      "name": "Build Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.body }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "={{ $json.contentType }}"
+              },
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              },
+              {
+                "name": "X-Robots-Tag",
+                "value": "noindex, nofollow"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        832,
+        240
+      ],
+      "id": "3e8e8261-8b21-4552-97ad-19b4a092f3b8",
+      "name": "Respond"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Request": {
+      "main": [
+        [
+          {
+            "node": "Load Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Page": {
+      "main": [
+        [
+          {
+            "node": "Build Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Response": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "7042abb9-beb1-4cc5-b6bf-db88f6a762e5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "HaXa0PHMhE8JPFkq",
+  "tags": [
+    {
+      "name": "Database",
+      "id": "Pml4vA4PtD8mAMba",
+      "updatedAt": "2026-03-14T21:54:50.056Z",
+      "createdAt": "2026-03-14T21:54:50.056Z"
+    }
+  ]
+}
