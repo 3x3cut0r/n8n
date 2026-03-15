@@ -53,7 +53,7 @@
             {
               "id": "cb3d8104-f7ea-47cd-8fd3-5f7d6ab2a173",
               "name": "publicBaseUrl",
-              "value": "https://n8n.3x3cut0r.de/webhook",
+              "value": "https://n8n.3x3cut0r.de/webhook/d1f6e8ab-0efb-4d42-87f5-8068f7428f7b",
               "type": "string"
             },
             {
@@ -204,7 +204,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "const src = $('Split Sources').item.json.source || {};\nconst config = $('Split Sources').item.json.config || {};\n\nif ($json.error || $json.message) {\n  return {\n    json: {\n      config,\n      sourceResult: {\n        sourceId: src.sourceId || 'unknown',\n        label: src.label || 'Unknown source',\n        topic: src.topic || 'general',\n        status: 'error',\n        error: String($json.message || $json.error || 'HTTP error'),\n        items: []\n      }\n    }\n  };\n}\n\nconst raw = typeof $json === 'string' ? $json : String($json.data || $json.body || $json.response || '');\n\nconst decode = (text) => String(text || '')\n  .replace(/<!\\[CDATA\\[(.*?)\\]\\]>/gs, '$1')\n  .replace(/<[^>]*>/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&quot;/g, '\"')\n  .replace(/&#39;/g, String.fromCharCode(39))\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\nconst getTag = (block, tag) => {\n  const escaped = tag.replace(':', '\\\\:');\n  const match = block.match(new RegExp(`<${escaped}[^>]*>([\\s\\S]*?)<\\/${escaped}>`, 'i'));\n  return decode((match || [])[1] || '');\n};\n\nconst items = [];\n\nconst rssRegex = /<item>([\\s\\S]*?)<\\/item>/gi;\nlet m;\nwhile ((m = rssRegex.exec(raw)) !== null) {\n  const block = m[1];\n  const title = getTag(block, 'title');\n  const url = getTag(block, 'link');\n  const publishedRaw = getTag(block, 'pubDate') || getTag(block, 'dc:date');\n  const summary = getTag(block, 'description') || getTag(block, 'content:encoded');\n  if (!title || !url) continue;\n  const ts = publishedRaw ? Date.parse(publishedRaw) : NaN;\n  items.push({\n    title,\n    url,\n    summary,\n    sourceId: src.sourceId || 'unknown',\n    source: src.label || 'Quelle',\n    topic: src.topic || 'general',\n    publishedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null\n  });\n}\n\nconst atomRegex = /<entry[\\s\\S]*?>([\\s\\S]*?)<\\/entry>/gi;\nwhile ((m = atomRegex.exec(raw)) !== null) {\n  const block = m[1];\n  const title = getTag(block, 'title');\n  const linkMatch = block.match(/<link[^>]*href=\"([^\"]+)\"[^>]*>/i) || block.match(/<link[^>]*href='([^']+)'[^>]*>/i);\n  const url = decode((linkMatch || [])[1] || getTag(block, 'link'));\n  const publishedRaw = getTag(block, 'updated') || getTag(block, 'published');\n  const summary = getTag(block, 'summary') || getTag(block, 'content');\n  if (!title || !url) continue;\n  const ts = publishedRaw ? Date.parse(publishedRaw) : NaN;\n  items.push({\n    title,\n    url,\n    summary,\n    sourceId: src.sourceId || 'unknown',\n    source: src.label || 'Quelle',\n    topic: src.topic || 'general',\n    publishedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null\n  });\n}\n\nreturn {\n  json: {\n    config,\n    sourceResult: {\n      sourceId: src.sourceId || 'unknown',\n      label: src.label || 'Unknown source',\n      topic: src.topic || 'general',\n      status: 'ok',\n      error: null,\n      items\n    }\n  }\n};"
+        "jsCode": "const src = $('Split Sources').item.json.source || {};\nconst config = $('Split Sources').item.json.config || {};\n\nif ($json.error || $json.message) {\n  return {\n    json: {\n      config,\n      sourceResult: {\n        sourceId: src.sourceId || 'unknown',\n        label: src.label || 'Unknown source',\n        topic: src.topic || 'general',\n        status: 'error',\n        error: String($json.message || $json.error || 'HTTP error'),\n        items: []\n      }\n    }\n  };\n}\n\nconst raw = typeof $json === 'string' ? $json : String($json.data || $json.body || $json.response || '');\n\nconst decode = (text) => String(text || '')\n  .replace(/<!\\[CDATA\\[(.*?)\\]\\]>/gs, '$1')\n  .replace(/<[^>]*>/g, ' ')\n  .replace(/&amp;/g, '&')\n  .replace(/&quot;/g, '\"')\n  .replace(/&#39;/g, String.fromCharCode(39))\n  .replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>')\n  .replace(/\\s+/g, ' ')\n  .trim();\n\nconst getTag = (block, tag) => {\n  const escaped = tag.replace(':', '\\\\:');\n  const match = block.match(new RegExp(`<${escaped}[^>]*>([\\\\s\\\\S]*?)<\\/${escaped}>`, 'i'));\n  return decode((match || [])[1] || '');\n};\n\nconst items = [];\n\nconst rssRegex = /<item>([\\s\\S]*?)<\\/item>/gi;\nlet m;\nwhile ((m = rssRegex.exec(raw)) !== null) {\n  const block = m[1];\n  const title = getTag(block, 'title');\n  const url = getTag(block, 'link');\n  const publishedRaw = getTag(block, 'pubDate') || getTag(block, 'dc:date');\n  const summary = getTag(block, 'description') || getTag(block, 'content:encoded');\n  if (!title || !url) continue;\n  const ts = publishedRaw ? Date.parse(publishedRaw) : NaN;\n  items.push({\n    title,\n    url,\n    summary,\n    sourceId: src.sourceId || 'unknown',\n    source: src.label || 'Quelle',\n    topic: src.topic || 'general',\n    publishedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null\n  });\n}\n\nconst atomRegex = /<entry[\\s\\S]*?>([\\s\\S]*?)<\\/entry>/gi;\nwhile ((m = atomRegex.exec(raw)) !== null) {\n  const block = m[1];\n  const title = getTag(block, 'title');\n  const linkMatch = block.match(/<link[^>]*href=\"([^\"]+)\"[^>]*>/i) || block.match(/<link[^>]*href='([^']+)'[^>]*>/i);\n  const url = decode((linkMatch || [])[1] || getTag(block, 'link'));\n  const publishedRaw = getTag(block, 'updated') || getTag(block, 'published');\n  const summary = getTag(block, 'summary') || getTag(block, 'content');\n  if (!title || !url) continue;\n  const ts = publishedRaw ? Date.parse(publishedRaw) : NaN;\n  items.push({\n    title,\n    url,\n    summary,\n    sourceId: src.sourceId || 'unknown',\n    source: src.label || 'Quelle',\n    topic: src.topic || 'general',\n    publishedAt: Number.isFinite(ts) ? new Date(ts).toISOString() : null\n  });\n}\n\nreturn {\n  json: {\n    config,\n    sourceResult: {\n      sourceId: src.sourceId || 'unknown',\n      label: src.label || 'Unknown source',\n      topic: src.topic || 'general',\n      status: 'ok',\n      error: null,\n      items\n    }\n  }\n};"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -417,6 +417,17 @@
       ]
     },
     "Create Public URL": {
+      "main": [
+        [
+          {
+            "node": "Ensure News Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure News Table": {
       "main": [
         [
           {
