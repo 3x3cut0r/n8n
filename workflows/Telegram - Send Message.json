@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -368,
-        208
+        -160,
+        224
       ],
-      "id": "b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "id": "2f672fc1-a77a-4091-9195-7f255c2099b4",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -19,10 +19,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -576,
-        416
+        -368,
+        432
       ],
-      "id": "c2b3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+      "id": "0113fc6c-ba82-4af2-a092-b3e9edddf888",
       "name": "Manual Trigger"
     },
     {
@@ -66,10 +66,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -368,
-        416
+        -160,
+        432
       ],
-      "id": "c8b9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+      "id": "10920a50-4097-4f09-a389-1355928499aa",
       "name": "Set test input"
     },
     {
@@ -79,10 +79,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -160,
-        320
+        48,
+        336
       ],
-      "id": "d9c0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f",
+      "id": "f6793fa8-83d8-4f14-b1be-a3b445b42805",
       "name": "Normalize input"
     },
     {
@@ -92,7 +92,7 @@
             {
               "id": "e0d1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a",
               "name": "defaultRecipient",
-              "value": "",
+              "value": "-5097222584",
               "type": "string"
             }
           ]
@@ -102,25 +102,25 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        48,
-        320
+        256,
+        336
       ],
-      "id": "f1e2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+      "id": "ec5c7114-e2f3-4f69-b262-d72635610a2a",
       "name": "Set default recipient"
     },
     {
       "parameters": {
         "content": "# Konfiguration\n\nTrage im Set-Node \"Set default recipient\" die Telegram chat_id ein\n(z. B. 123456789 oder @meinkanal).\nAlternativ kann der Empfaenger per Input-Feld \"recipient\" uebergeben werden.\n\nOptionale Felder (per Input oder leer lassen):\n- parseMode: HTML (Standard), MarkdownV2, Markdown (Legacy)\n- disableNotification: true/false\n- disableWebPagePreview: true/false\n\nCredentials: Telegram Bot-Token muss in n8n als Telegram Credential hinterlegt sein.",
-        "height": 304,
-        "width": 576
+        "height": 336,
+        "width": 640
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -208,
-        -16
+        48,
+        -32
       ],
-      "id": "a2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+      "id": "28d8e782-dc9e-4fd4-a788-f62fcedfd105",
       "name": "Config note"
     },
     {
@@ -130,10 +130,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        256,
-        320
+        464,
+        336
       ],
-      "id": "b3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
+      "id": "0ae346b2-5935-493e-adc8-f76560bf0883",
       "name": "Resolve and validate payload"
     },
     {
@@ -164,16 +164,14 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        464,
-        320
+        672,
+        336
       ],
-      "id": "d5e6f7a8-b9c0-4d1e-2f3a-4b5c6d7e8f9a",
+      "id": "e901d430-901c-4db2-a1c7-b08a66b3ed2a",
       "name": "If payload valid"
     },
     {
       "parameters": {
-        "resource": "message",
-        "operation": "sendMessage",
         "chatId": "={{ $json.usedRecipient }}",
         "text": "={{ $json.message }}",
         "additionalFields": {
@@ -186,15 +184,16 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        704,
-        208
+        912,
+        224
       ],
-      "id": "e6f7a8b9-c0d1-4e2f-3a4b-5c6d7e8f9a0b",
+      "id": "14a964f7-76cd-4181-ad00-ec7f2b4d57c3",
       "name": "Send Telegram message",
+      "webhookId": "c42eabb7-4034-4f4b-a6b7-36ddae38f768",
       "credentials": {
         "telegramApi": {
-          "id": "",
-          "name": ""
+          "id": "GDgNBbrcug5Zhn5p",
+          "name": "Telegram account"
         }
       },
       "onError": "continueErrorOutput"
@@ -206,10 +205,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1008,
-        192
+        1216,
+        208
       ],
-      "id": "f7a8b9c0-d1e2-4f3a-4b5c-6d7e8f9a0b1c",
+      "id": "16837a28-e229-4039-9758-33e60cce670a",
       "name": "Build send result"
     },
     {
@@ -219,10 +218,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        704,
-        432
+        912,
+        448
       ],
-      "id": "a8b9c0d1-e2f3-4a4b-5c6d-7e8f9a0b1c2d",
+      "id": "afac8e48-baf1-42a2-a87e-17f89f769499",
       "name": "Build validation error result"
     }
   ],
@@ -330,14 +329,16 @@
     "binaryMode": "separate",
     "availableInMCP": false,
     "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": -1,
-    "timeSavedPerExecution": 1
+    "timeSavedPerExecution": 3
   },
-  "versionId": "a1b2c3d4-e5f6-4789-abcd-ef0123456789",
+  "versionId": "aa7ad480-f7fe-4657-aa13-c7d99d3e456d",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "tGm7RsNdKpWx3YqZ",
+  "id": "FmZEMyUH4jsC3Qxf",
   "tags": []
 }
