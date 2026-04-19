@@ -170,19 +170,6 @@
     },
     {
       "parameters": {
-        "jsCode": "const dropped = Array.isArray($json.dropped) ? $json.dropped : [];\nconst message = dropped.length\n  ? `Market drops detected:\n${dropped.map((d) => `- ${d}`).join('\\n')}`\n  : 'No significant drops';\n\nreturn [{\n  json: {\n    message,\n    recipient: ''\n  }\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1088,
-        240
-      ],
-      "id": "03269f3d-9888-4912-996e-5af3f349172e",
-      "name": "Prepare Signal payload"
-    },
-    {
-      "parameters": {
         "workflowId": {
           "__rl": true,
           "value": "jEC35MXsssds8HOB",
@@ -231,6 +218,19 @@
       ],
       "id": "1d01bc9d-e888-4d6a-974a-bb978179603c",
       "name": "Merge all categories"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dropped = Array.isArray($json.dropped) ? $json.dropped : [];\nconst message = dropped.length\n  ? `Market drops detected:\n${dropped.map((d) => `- ${d}`).join('\\n')}`\n  : 'No significant drops';\n\nreturn [{\n  json: {\n    message,\n    recipient: '-5097222584'\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        240
+      ],
+      "id": "03269f3d-9888-4912-996e-5af3f349172e",
+      "name": "Prepare Message payload"
     }
   ],
   "pinData": {},
@@ -347,14 +347,14 @@
       "main": [
         [
           {
-            "node": "Prepare Signal payload",
+            "node": "Prepare Message payload",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Prepare Signal payload": {
+    "Prepare Message payload": {
       "main": [
         [
           {
@@ -374,13 +374,19 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "timeSavedPerExecution": 10,
-    "executionTimeout": -1
+    "timeSavedPerExecution": 10
   },
-  "versionId": "7bed5276-b990-43a6-b34b-9d8372094e7a",
+  "versionId": "143a02b3-b871-40b5-bddb-6259bef138b9",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "zwc5QLQMZHnaRefe",
-  "tags": []
+  "tags": [
+    {
+      "name": "Telegram",
+      "id": "Xm8IXOGX7oofEptt",
+      "updatedAt": "2026-04-19T10:48:56.814Z",
+      "createdAt": "2026-04-19T10:48:56.814Z"
+    }
+  ]
 }

@@ -92,7 +92,7 @@
             {
               "id": "e0d1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a",
               "name": "defaultRecipient",
-              "value": "-5097222584",
+              "value": "-5213840069",
               "type": "string"
             }
           ]
@@ -331,14 +331,20 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "executionTimeout": -1,
     "timeSavedPerExecution": 3
   },
-  "versionId": "aa7ad480-f7fe-4657-aa13-c7d99d3e456d",
+  "versionId": "f1cd1a4c-a4d3-4059-ad8d-5ecfb1679250",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "FmZEMyUH4jsC3Qxf",
-  "tags": []
+  "tags": [
+    {
+      "name": "Telegram",
+      "id": "Xm8IXOGX7oofEptt",
+      "updatedAt": "2026-04-19T10:48:56.814Z",
+      "createdAt": "2026-04-19T10:48:56.814Z"
+    }
+  ]
 }

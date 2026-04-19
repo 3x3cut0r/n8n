@@ -468,10 +468,10 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "jEC35MXsssds8HOB",
+          "value": "FmZEMyUH4jsC3Qxf",
           "mode": "list",
-          "cachedResultUrl": "/workflow/jEC35MXsssds8HOB",
-          "cachedResultName": "Signal - Send Message"
+          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
+          "cachedResultName": "Telegram - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -698,7 +698,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "eb148824-dbdd-4551-b4dd-1a5d6c1c25cb",
+  "versionId": "8bacaa4c-a6aa-4373-be8b-f5f304ed2535",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
@@ -711,10 +711,10 @@
       "name": "E-Mail"
     },
     {
-      "updatedAt": "2026-03-01T07:53:25.354Z",
-      "createdAt": "2026-03-01T07:53:25.354Z",
-      "id": "cvyl6jNsflTGCuzz",
-      "name": "Signal"
+      "name": "Telegram",
+      "id": "Xm8IXOGX7oofEptt",
+      "updatedAt": "2026-04-19T10:48:56.814Z",
+      "createdAt": "2026-04-19T10:48:56.814Z"
     }
   ]
 }
