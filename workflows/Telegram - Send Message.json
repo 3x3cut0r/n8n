@@ -1,0 +1,343 @@
+{
+  "name": "Telegram - Send Message",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -368,
+        208
+      ],
+      "id": "b1a2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        416
+      ],
+      "id": "c2b3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d3c4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+              "name": "message",
+              "value": "n8n: This is a test message",
+              "type": "string"
+            },
+            {
+              "id": "e4d5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+              "name": "recipient",
+              "value": "=",
+              "type": "string"
+            },
+            {
+              "id": "f5e6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b",
+              "name": "parseMode",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "a6f7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c",
+              "name": "disableNotification",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "b7a8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d",
+              "name": "disableWebPagePreview",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -368,
+        416
+      ],
+      "id": "c8b9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rawMessage = $json.message;\nconst rawRecipient = $json.recipient;\nconst rawParseMode = $json.parseMode;\nconst rawDisableNotification = $json.disableNotification;\nconst rawDisableWebPagePreview = $json.disableWebPagePreview;\n\nconst message = typeof rawMessage === 'string' ? rawMessage.trim() : '';\nconst recipient = typeof rawRecipient === 'string' ? rawRecipient.trim() : '';\nconst parseMode = typeof rawParseMode === 'string' ? rawParseMode.trim() : '';\nconst disableNotification = rawDisableNotification === true;\nconst disableWebPagePreview = rawDisableWebPagePreview === true;\n\nreturn [{\n  json: {\n    message,\n    recipient,\n    parseMode,\n    disableNotification,\n    disableWebPagePreview\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        320
+      ],
+      "id": "d9c0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f",
+      "name": "Normalize input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e0d1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a",
+              "name": "defaultRecipient",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        320
+      ],
+      "id": "f1e2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+      "name": "Set default recipient"
+    },
+    {
+      "parameters": {
+        "content": "# Konfiguration\n\nTrage im Set-Node \"Set default recipient\" die Telegram chat_id ein\n(z. B. 123456789 oder @meinkanal).\nAlternativ kann der Empfaenger per Input-Feld \"recipient\" uebergeben werden.\n\nOptionale Felder (per Input oder leer lassen):\n- parseMode: HTML (Standard), MarkdownV2, Markdown (Legacy)\n- disableNotification: true/false\n- disableWebPagePreview: true/false\n\nCredentials: Telegram Bot-Token muss in n8n als Telegram Credential hinterlegt sein.",
+        "height": 304,
+        "width": 576
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -16
+      ],
+      "id": "a2b3c4d5-e6f7-4a8b-9c0d-1e2f3a4b5c6d",
+      "name": "Config note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst recipientConfig = $('Set default recipient').item.json || {};\n\nconst message = typeof normalized.message === 'string' ? normalized.message.trim() : '';\nconst inputRecipient = typeof normalized.recipient === 'string' ? normalized.recipient.trim() : '';\nconst configuredDefaultRecipient = typeof recipientConfig.defaultRecipient === 'string' ? recipientConfig.defaultRecipient.trim() : '';\n\nconst usedRecipient = inputRecipient || configuredDefaultRecipient;\nconst parseMode = typeof normalized.parseMode === 'string' && normalized.parseMode.trim() !== '' ? normalized.parseMode.trim() : 'HTML';\nconst disableNotification = normalized.disableNotification === true;\nconst disableWebPagePreview = normalized.disableWebPagePreview === true;\n\nlet error = '';\nif (!message) {\n  error = 'Input field message is required and must be a non-empty string.';\n} else if (!usedRecipient) {\n  error = 'No recipient configured. Pass recipient or set value in node Set default recipient.';\n}\n\nreturn [{\n  json: {\n    message,\n    usedRecipient,\n    parseMode,\n    disableNotification,\n    disableWebPagePreview,\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        320
+      ],
+      "id": "b3c4d5e6-f7a8-4b9c-0d1e-2f3a4b5c6d7e",
+      "name": "Resolve and validate payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c4d5e6f7-a8b9-4c0d-1e2f-3a4b5c6d7e8f",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        320
+      ],
+      "id": "d5e6f7a8-b9c0-4d1e-2f3a-4b5c6d7e8f9a",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.usedRecipient }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "disable_notification": "={{ $json.disableNotification }}",
+          "disable_web_page_preview": "={{ $json.disableWebPagePreview }}",
+          "parse_mode": "={{ $json.parseMode }}"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        208
+      ],
+      "id": "e6f7a8b9-c0d1-4e2f-3a4b-5c6d7e8f9a0b",
+      "name": "Send Telegram message",
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": ""
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resolved = $('Resolve and validate payload').item.json || {};\nconst response = $json;\nconst messageId = response.result && response.result.message_id ? response.result.message_id : null;\nconst hasError = !!response.error || !!response.error_code;\nconst ok = !hasError && messageId !== null;\n\nreturn [{\n  json: {\n    ok,\n    messageId,\n    usedRecipient: resolved.usedRecipient,\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        192
+      ],
+      "id": "f7a8b9c0-d1e2-4f3a-4b5c-6d7e8f9a0b1c",
+      "name": "Build send result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    messageId: null,\n    usedRecipient: $json.usedRecipient || null,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        432
+      ],
+      "id": "a8b9c0d1-e2f3-4a4b-5c6d-7e8f9a0b1c2d",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize input": {
+      "main": [
+        [
+          {
+            "node": "Set default recipient",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set default recipient": {
+      "main": [
+        [
+          {
+            "node": "Resolve and validate payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve and validate payload": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram message": {
+      "main": [
+        [
+          {
+            "node": "Build send result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 1
+  },
+  "versionId": "a1b2c3d4-e5f6-4789-abcd-ef0123456789",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "tGm7RsNdKpWx3YqZ",
+  "tags": []
+}
