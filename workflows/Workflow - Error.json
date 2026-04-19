@@ -6,33 +6,33 @@
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
-        -336,
-        240
+        0,
+        0
       ],
-      "id": "0f55f47a-0a14-4ff6-93c0-c2c18a073db8",
+      "id": "e6c05af8-efcd-483a-8d35-08de64b99df8",
       "name": "Error Trigger"
     },
     {
       "parameters": {
-        "jsCode": "const workflowName = $json.workflow?.name || $json.execution?.workflowData?.name || 'unknown';\nconst errorMessage = $json.error?.message || $json.execution?.error?.message || $json.message || 'unknown error';\n\nreturn [{\n  json: {\n    message: `n8n: ERROR: workflow = ${workflowName}: ${errorMessage}`,\n    recipient: ''\n  }\n}];"
+        "jsCode": "const workflowName = $json.workflow?.name || $json.execution?.workflowData?.name || 'unknown';\nconst errorMessage = $json.error?.message || $json.execution?.error?.message || $json.message || 'unknown error';\n\nreturn [{\n  json: {\n    message: `n8n: ERROR: workflow = ${workflowName}: ${errorMessage}`,\n    recipient: '-5213840069'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -96,
-        240
+        240,
+        0
       ],
-      "id": "9fd2fb1b-0ff8-49d9-9056-c4f8420d53d6",
-      "name": "Build Signal payload"
+      "id": "8bd78810-4f64-438c-a3a9-d3f445866fa4",
+      "name": "Build message payload"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "jEC35MXsssds8HOB",
+          "value": "FmZEMyUH4jsC3Qxf",
           "mode": "list",
-          "cachedResultUrl": "/workflow/jEC35MXsssds8HOB",
-          "cachedResultName": "Signal - Send Message"
+          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
+          "cachedResultName": "Telegram - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -47,11 +47,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        144,
-        240
+        480,
+        0
       ],
-      "id": "137f2cc3-16e9-49f1-a972-b12541a973da",
-      "name": "Signal - Send Message",
+      "id": "4c40ae89-7b8c-4025-9d45-28c74c8c1068",
+      "name": "Send Message",
       "alwaysOutputData": true
     }
   ],
@@ -61,18 +61,18 @@
       "main": [
         [
           {
-            "node": "Build Signal payload",
+            "node": "Build message payload",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build Signal payload": {
+    "Build message payload": {
       "main": [
         [
           {
-            "node": "Signal - Send Message",
+            "node": "Send Message",
             "type": "main",
             "index": 0
           }
@@ -84,12 +84,23 @@
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 5
   },
-  "versionId": "99871147-90df-4f92-bab1-0f204ad0f592",
+  "versionId": "63fc14a4-d329-4da1-a452-503aac9a3db9",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "0m6RHo3zK4IfHSeM",
-  "tags": []
+  "id": "Bin1Me6S1IWNK7e7",
+  "tags": [
+    {
+      "updatedAt": "2026-03-01T07:53:25.354Z",
+      "createdAt": "2026-03-01T07:53:25.354Z",
+      "id": "cvyl6jNsflTGCuzz",
+      "name": "Signal"
+    }
+  ]
 }
