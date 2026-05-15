@@ -172,10 +172,10 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "jEC35MXsssds8HOB",
+          "value": "FmZEMyUH4jsC3Qxf",
           "mode": "list",
-          "cachedResultUrl": "/workflow/jEC35MXsssds8HOB",
-          "cachedResultName": "Signal - Send Message"
+          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
+          "cachedResultName": "Telegram - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -194,7 +194,7 @@
         240
       ],
       "id": "7efb50b6-1716-4489-b2aa-3547a68edf94",
-      "name": "Signal - Send Message",
+      "name": "Telegram - Send Message",
       "alwaysOutputData": true
     },
     {
@@ -358,7 +358,7 @@
       "main": [
         [
           {
-            "node": "Signal - Send Message",
+            "node": "Telegram - Send Message",
             "type": "main",
             "index": 0
           }
