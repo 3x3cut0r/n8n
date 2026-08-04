@@ -1,0 +1,2599 @@
+{
+  "name": "AI - Chat Completion",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# AI - Chat Completion\n\n- Modular OpenAI-compatible chat-completions sub-workflow\n- Input is API-near: messages are required, model is optional\n- Route is selected by routingProfile: low, standard, high\n- Each route has a primary URL/model and a fallback URL/model\n- Runtime behavior: primary try -> primary retry -> fallback\n- On fallback success, send a Telegram alert to the configured error recipient\n- The final success output is the raw API response from the successful endpoint\n\nConfiguration notes:\n1) Edit each route Set node to change URLs and models as plain text\n2) Configure the provider-specific authentication directly in the HTTP Request nodes of the matching route\n3) The Telegram recipient is configured in the global config Set node\n4) Keep inputs OpenAI-compatible and pass additional top-level request fields through as needed",
+        "height": 592,
+        "width": 800
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -1152
+      ],
+      "id": "2f308f0b-4ff4-4e8e-a4f9-8a33ab607c91",
+      "name": "Workflow note"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        0
+      ],
+      "id": "245af04a-7f18-4528-a92c-a26c1d4ea7d7",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -624,
+        192
+      ],
+      "id": "4702380c-db7d-412f-8fcf-c4b9663bf9e8",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2d0d175-bc48-40f7-9f6f-9c56efb3ef3f",
+              "name": "messages",
+              "value": "[{\"role\":\"system\",\"content\":\"You are a concise assistant.\"},{\"role\":\"user\",\"content\":\"Reply with a short greeting.\"}]",
+              "type": "string"
+            },
+            {
+              "id": "5df9ee3b-a98b-43f4-83f4-d6d5c95ef412",
+              "name": "routingProfile",
+              "value": "standard",
+              "type": "string"
+            },
+            {
+              "id": "6d2c8278-b26f-4a9b-b7fd-5baf9b98ff38",
+              "name": "model",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "bce39fdf-2682-4866-a01e-4e9671204ff0",
+              "name": "tools",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "fc406639-e574-46cb-b7a6-c6af72d5d0c6",
+              "name": "temperature",
+              "value": 0.2,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -416,
+        192
+      ],
+      "id": "30e9753b-ee4d-4f58-a57a-18f7f8505080",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cf27666f-7cc2-4725-aa0f-5b5e52a81229",
+              "name": "defaultRoutingProfile",
+              "value": "standard",
+              "type": "string"
+            },
+            {
+              "id": "e92ad507-a3ef-4d60-b57b-7a85a8959d36",
+              "name": "defaultTools",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "af151b7d-9fd4-46d7-94b4-ab229124d85f",
+              "name": "telegramErrorRecipient",
+              "value": "-5213840069",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        96
+      ],
+      "id": "f45bb1f0-01ca-4743-8b59-b597b0932f46",
+      "name": "Set Global Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const globalConfig = $('Set Global Config').item.json || {};\n\nconst parseMessages = (value) => {\n  if (Array.isArray(value)) {\n    return value;\n  }\n\n  if (typeof value === 'string' && value.trim() !== '') {\n    try {\n      const parsed = JSON.parse(value);\n      return Array.isArray(parsed) ? parsed : null;\n    } catch {\n      return null;\n    }\n  }\n\n  return null;\n};\n\nconst normalizeBoolean = (value, fallback) => {\n  if (typeof value === 'boolean') {\n    return value;\n  }\n\n  if (typeof value === 'string') {\n    const normalized = value.trim().toLowerCase();\n    if (['true', '1', 'yes', 'on'].includes(normalized)) {\n      return true;\n    }\n    if (['false', '0', 'no', 'off'].includes(normalized)) {\n      return false;\n    }\n  }\n\n  if (typeof value === 'number') {\n    return value !== 0;\n  }\n\n  return fallback;\n};\n\nconst raw = $json || {};\nconst rawRoutingProfile = typeof raw.routingProfile === 'string' ? raw.routingProfile.trim().toLowerCase() : '';\nconst defaultRoutingProfile = typeof globalConfig.defaultRoutingProfile === 'string' && globalConfig.defaultRoutingProfile.trim()\n  ? globalConfig.defaultRoutingProfile.trim().toLowerCase()\n  : 'standard';\nconst routingProfile = rawRoutingProfile || defaultRoutingProfile;\nconst allowedRoutingProfiles = new Set(['low', 'standard', 'high']);\nconst messages = parseMessages(raw.messages);\nconst tools = normalizeBoolean(raw.tools, globalConfig.defaultTools === true);\nconst model = typeof raw.model === 'string' ? raw.model.trim() : '';\n\nlet error = '';\nif (!messages || messages.length === 0) {\n  error = 'Input field messages is required and must be a non-empty array or JSON array string.';\n} else if (!allowedRoutingProfiles.has(routingProfile)) {\n  error = `Invalid routingProfile ${JSON.stringify(rawRoutingProfile || routingProfile)}. Use low, standard, or high.`;\n}\n\nreturn [{\n  json: {\n    ...raw,\n    messages,\n    model,\n    routingProfile,\n    tools,\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        96
+      ],
+      "id": "9b13e0d0-6214-4d53-a58b-2e83cc85f5ae",
+      "name": "Normalize input"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bc459bfc-09ea-482d-b64d-dbb255389fe4",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        96
+      ],
+      "id": "d56b5996-8858-4b24-aa68-e74ebdccde9e",
+      "name": "If input valid"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error($json.error || 'Invalid input');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        288
+      ],
+      "id": "dba87e16-a31b-40df-a3e1-a76044696c3e",
+      "name": "Fail validation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6e6f6cea-701c-4f17-999f-b37950e8a625",
+              "leftValue": "={{ $json.routingProfile }}",
+              "rightValue": "low",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        96
+      ],
+      "id": "3a7f4fd6-85b4-4dd7-a925-4c520790340f",
+      "name": "If route low"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9c475d11-70b7-44ab-8296-ff9ea22aa84f",
+              "leftValue": "={{ $json.routingProfile }}",
+              "rightValue": "standard",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        624,
+        192
+      ],
+      "id": "b3d65126-4fb3-48a7-b54a-dc456d20cd5c",
+      "name": "If route standard"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "987d5f87-c30a-4314-b98e-c54d48958c0f",
+              "name": "primaryUrl",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "6354bb5c-c74a-47e2-abd5-707249dbe3c4",
+              "name": "primaryModel",
+              "value": "opencodego/deepseek-v4-flash",
+              "type": "string"
+            },
+            {
+              "id": "33ebb513-df7d-4d70-b27f-ff6cc06d4c28",
+              "name": "fallbackUrl",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "ab18c8ea-f8f3-40db-95b9-b6cbba64255d",
+              "name": "fallbackModel",
+              "value": "opencodego/deepseek-v4-flash",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        624,
+        -288
+      ],
+      "id": "c7d94fd2-85f8-43fd-b184-393f849eb6e4",
+      "name": "Set Low Route Config"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d71872bb-7dc0-4dc1-9f2a-594db274feea",
+              "name": "primaryUrl",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "364f2bb7-14fb-480d-bd49-1764dd56f053",
+              "name": "primaryModel",
+              "value": "openai/gpt-5.4",
+              "type": "string"
+            },
+            {
+              "id": "a8c65791-5180-48a0-9098-7714f9e150e7",
+              "name": "fallbackUrl",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "50d9ff86-9f09-4f81-878a-cad66787f4c3",
+              "name": "fallbackModel",
+              "value": "openai/gpt-5.4",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        96
+      ],
+      "id": "b29bd720-123e-4a75-9698-49b8029f7e16",
+      "name": "Set Standard Route Config"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c24b93f1-e4f1-4b72-8858-e390dc3955fa",
+              "name": "primaryUrl",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "f417f57a-5b5c-4f32-b924-ff6ef601da92",
+              "name": "primaryModel",
+              "value": "openai/gpt-5.6",
+              "type": "string"
+            },
+            {
+              "id": "447a8eff-9190-43d5-b9c4-049e36b4f600",
+              "name": "fallbackUrl",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "f3902b2b-2388-463f-822f-547fbf6ae2d4",
+              "name": "fallbackModel",
+              "value": "openai/gpt-5.6",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        480
+      ],
+      "id": "af89329e-7b33-4866-8eb6-216b6dcfeec9",
+      "name": "Set High Route Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst globalConfig = $('Set Global Config').item.json || {};\nconst routeConfig = $json || {};\n\nconst valueOrEmpty = (value) => typeof value === 'string' ? value.trim() : '';\nconst primaryUrl = valueOrEmpty(routeConfig.primaryUrl);\nconst fallbackUrl = valueOrEmpty(routeConfig.fallbackUrl);\nconst fallbackModel = valueOrEmpty(routeConfig.fallbackModel);\nconst explicitModel = valueOrEmpty(normalized.model);\nconst primaryModel = explicitModel || valueOrEmpty(routeConfig.primaryModel);\nconst requestPayload = {};\nconst excludedKeys = new Set(['okToSend', 'error', 'routingProfile', 'model']);\n\nfor (const [key, value] of Object.entries(normalized)) {\n  if (excludedKeys.has(key)) {\n    continue;\n  }\n\n  if (value === undefined || value === '') {\n    continue;\n  }\n\n  requestPayload[key] = value;\n}\n\nrequestPayload.model = primaryModel;\nrequestPayload.messages = normalized.messages;\n\nif (normalized.tools !== true) {\n  delete requestPayload.tools;\n  delete requestPayload.tool_choice;\n}\n\nif (!Array.isArray(requestPayload.tools)) {\n  delete requestPayload.tool_choice;\n}\n\nconst fallbackPayload = {\n  ...requestPayload,\n  model: fallbackModel\n};\n\nlet error = '';\nif (!primaryUrl) {\n  error = 'Primary chat completions URL is required in the route config Set node.';\n} else if (!primaryModel) {\n  error = 'Primary model is required in the route config Set node or input field model.';\n} else if (!fallbackUrl) {\n  error = 'Fallback chat completions URL is required in the route config Set node.';\n} else if (!fallbackModel) {\n  error = 'Fallback model is required in the route config Set node.';\n}\n\nreturn [{\n  json: {\n    route: normalized.routingProfile,\n    primaryUrl,\n    primaryModel,\n    fallbackUrl,\n    fallbackModel,\n    telegramErrorRecipient: valueOrEmpty(globalConfig.telegramErrorRecipient),\n    primaryRequestBodyJson: JSON.stringify(requestPayload),\n    fallbackRequestBodyJson: JSON.stringify(fallbackPayload),\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        -288
+      ],
+      "id": "62ab7b5d-329b-46e7-b1b1-e25afcbba898",
+      "name": "Resolve Low Route Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst globalConfig = $('Set Global Config').item.json || {};\nconst routeConfig = $json || {};\n\nconst valueOrEmpty = (value) => typeof value === 'string' ? value.trim() : '';\nconst primaryUrl = valueOrEmpty(routeConfig.primaryUrl);\nconst fallbackUrl = valueOrEmpty(routeConfig.fallbackUrl);\nconst fallbackModel = valueOrEmpty(routeConfig.fallbackModel);\nconst explicitModel = valueOrEmpty(normalized.model);\nconst primaryModel = explicitModel || valueOrEmpty(routeConfig.primaryModel);\nconst requestPayload = {};\nconst excludedKeys = new Set(['okToSend', 'error', 'routingProfile', 'model']);\n\nfor (const [key, value] of Object.entries(normalized)) {\n  if (excludedKeys.has(key)) {\n    continue;\n  }\n\n  if (value === undefined || value === '') {\n    continue;\n  }\n\n  requestPayload[key] = value;\n}\n\nrequestPayload.model = primaryModel;\nrequestPayload.messages = normalized.messages;\n\nif (normalized.tools !== true) {\n  delete requestPayload.tools;\n  delete requestPayload.tool_choice;\n}\n\nif (!Array.isArray(requestPayload.tools)) {\n  delete requestPayload.tool_choice;\n}\n\nconst fallbackPayload = {\n  ...requestPayload,\n  model: fallbackModel\n};\n\nlet error = '';\nif (!primaryUrl) {\n  error = 'Primary chat completions URL is required in the route config Set node.';\n} else if (!primaryModel) {\n  error = 'Primary model is required in the route config Set node or input field model.';\n} else if (!fallbackUrl) {\n  error = 'Fallback chat completions URL is required in the route config Set node.';\n} else if (!fallbackModel) {\n  error = 'Fallback model is required in the route config Set node.';\n}\n\nreturn [{\n  json: {\n    route: normalized.routingProfile,\n    primaryUrl,\n    primaryModel,\n    fallbackUrl,\n    fallbackModel,\n    telegramErrorRecipient: valueOrEmpty(globalConfig.telegramErrorRecipient),\n    primaryRequestBodyJson: JSON.stringify(requestPayload),\n    fallbackRequestBodyJson: JSON.stringify(fallbackPayload),\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        96
+      ],
+      "id": "d76a77bb-a9de-4061-b60e-b42f75ee10d2",
+      "name": "Resolve Standard Route Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst globalConfig = $('Set Global Config').item.json || {};\nconst routeConfig = $json || {};\n\nconst valueOrEmpty = (value) => typeof value === 'string' ? value.trim() : '';\nconst primaryUrl = valueOrEmpty(routeConfig.primaryUrl);\nconst fallbackUrl = valueOrEmpty(routeConfig.fallbackUrl);\nconst fallbackModel = valueOrEmpty(routeConfig.fallbackModel);\nconst explicitModel = valueOrEmpty(normalized.model);\nconst primaryModel = explicitModel || valueOrEmpty(routeConfig.primaryModel);\nconst requestPayload = {};\nconst excludedKeys = new Set(['okToSend', 'error', 'routingProfile', 'model']);\n\nfor (const [key, value] of Object.entries(normalized)) {\n  if (excludedKeys.has(key)) {\n    continue;\n  }\n\n  if (value === undefined || value === '') {\n    continue;\n  }\n\n  requestPayload[key] = value;\n}\n\nrequestPayload.model = primaryModel;\nrequestPayload.messages = normalized.messages;\n\nif (normalized.tools !== true) {\n  delete requestPayload.tools;\n  delete requestPayload.tool_choice;\n}\n\nif (!Array.isArray(requestPayload.tools)) {\n  delete requestPayload.tool_choice;\n}\n\nconst fallbackPayload = {\n  ...requestPayload,\n  model: fallbackModel\n};\n\nlet error = '';\nif (!primaryUrl) {\n  error = 'Primary chat completions URL is required in the route config Set node.';\n} else if (!primaryModel) {\n  error = 'Primary model is required in the route config Set node or input field model.';\n} else if (!fallbackUrl) {\n  error = 'Fallback chat completions URL is required in the route config Set node.';\n} else if (!fallbackModel) {\n  error = 'Fallback model is required in the route config Set node.';\n}\n\nreturn [{\n  json: {\n    route: normalized.routingProfile,\n    primaryUrl,\n    primaryModel,\n    fallbackUrl,\n    fallbackModel,\n    telegramErrorRecipient: valueOrEmpty(globalConfig.telegramErrorRecipient),\n    primaryRequestBodyJson: JSON.stringify(requestPayload),\n    fallbackRequestBodyJson: JSON.stringify(fallbackPayload),\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        480
+      ],
+      "id": "9d38c4b7-0f7e-46ce-a6a4-3d38c0efe6ff",
+      "name": "Resolve High Route Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6cae7fcb-7233-485e-b2db-87effbb8c9b3",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        -288
+      ],
+      "id": "8ab37f7e-476e-4313-bcff-8a1e5117f610",
+      "name": "If low route config valid"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ea2188a7-0daa-4a1c-9fc7-469d6af32987",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        96
+      ],
+      "id": "00788cdc-8f18-45e8-8dd3-b2f7799d8fc3",
+      "name": "If standard route config valid"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fef42f91-1d6e-44b3-88d8-f5048f0b8d23",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1248,
+        480
+      ],
+      "id": "3d6225ae-8e0c-41a4-b14c-a552d4edb472",
+      "name": "If high route config valid"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error($json.error || 'Invalid low route configuration');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "ca575a74-5544-444a-a136-88d45eccbdba",
+      "name": "Fail low config"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error($json.error || 'Invalid standard route configuration');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        288
+      ],
+      "id": "c6f6730b-bccc-4384-9f79-9703b0d43657",
+      "name": "Fail standard config"
+    },
+    {
+      "parameters": {
+        "jsCode": "throw new Error($json.error || 'Invalid high route configuration');"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        672
+      ],
+      "id": "421e4faf-2cc4-4c9c-b509-1e40f8fe8a02",
+      "name": "Fail high config"
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.primaryUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.primaryRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1456,
+        -384
+      ],
+      "id": "9cb5e702-0610-4ef2-93bd-02ef43c29bcc",
+      "name": "HTTP Low Primary",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst retryable = hasTransportError || statusCode === 429 || (statusCode !== null && statusCode >= 500);\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    retryable,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        -384
+      ],
+      "id": "5d57a314-6c74-4659-8798-82b00dc4fa51",
+      "name": "Evaluate Low Primary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "65965a11-a1bb-42b0-9351-a510393c2cc5",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        -384
+      ],
+      "id": "7378fc68-5fd2-4d1a-b75d-77f669dc5d90",
+      "name": "If low primary succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP Low Primary').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        -480
+      ],
+      "id": "0d03dbe2-1d5d-497a-9834-c7e137d9b2e2",
+      "name": "Return Low Primary Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f44d6f6-b5cf-4981-95cb-0714972af0cb",
+              "leftValue": "={{ $json.retryable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        -288
+      ],
+      "id": "d2582805-bf1a-46d1-b2a2-f58f93e9845f",
+      "name": "If low primary retryable"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Low Route Request').item.json || {};\nconst attempt = $('Evaluate Low Primary').item.json || {};\nthrow new Error(`Low primary request failed without fallback. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'low'}; model=${route.primaryModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        -192
+      ],
+      "id": "3ca95afe-e4cc-40b3-8141-fc74d9b0b20a",
+      "name": "Fail Low Primary"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Resolve Low Route Request').item.json.primaryUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $('Resolve Low Route Request').item.json.primaryRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        -384
+      ],
+      "id": "57f14f54-966e-489c-95fa-1780d441f820",
+      "name": "HTTP Low Primary Retry",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst retryable = hasTransportError || statusCode === 429 || (statusCode !== null && statusCode >= 500);\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    retryable,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        -384
+      ],
+      "id": "fb98b280-2e3e-45a5-a6c3-73f333704026",
+      "name": "Evaluate Low Primary Retry"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c297c3eb-f23a-4f64-8f99-318e29c2ec1f",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2704,
+        -384
+      ],
+      "id": "7351dcd2-f302-4ad5-a963-6efa9e798ec6",
+      "name": "If low retry succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP Low Primary Retry').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2912,
+        -480
+      ],
+      "id": "576ece65-5a4f-40f1-9679-c52073f6ccaf",
+      "name": "Return Low Retry Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "868c3b93-bc0b-4c6f-b289-6c6db8cf74ec",
+              "leftValue": "={{ $json.retryable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2912,
+        -288
+      ],
+      "id": "e05bfdd8-e0ef-448b-8779-8109299bb8d9",
+      "name": "If low retry fallback eligible"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Low Route Request').item.json || {};\nconst attempt = $('Evaluate Low Primary Retry').item.json || {};\nthrow new Error(`Low retry failed without fallback. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'low'}; model=${route.primaryModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        -192
+      ],
+      "id": "e6f10962-0eaf-4b45-a8a2-8c9f7b5ce91d",
+      "name": "Fail Low Retry"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Resolve Low Route Request').item.json.fallbackUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $('Resolve Low Route Request').item.json.fallbackRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        -384
+      ],
+      "id": "8a641608-1b09-4d7c-b605-c690f010ca2d",
+      "name": "HTTP Low Fallback",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        -384
+      ],
+      "id": "8992db5b-ad34-4a90-a90e-331bdfc2e615",
+      "name": "Evaluate Low Fallback"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4fe29253-9d65-4f40-b049-60cbd33783eb",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3536,
+        -384
+      ],
+      "id": "af7d4112-fbbe-4a22-8f44-76292ceff9d0",
+      "name": "If low fallback succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Low Route Request').item.json || {};\nconst retry = $('Evaluate Low Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'low'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    recipient: route.telegramErrorRecipient || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        -480
+      ],
+      "id": "35cb6dbf-7694-4701-a988-ded1c71f92da",
+      "name": "Build Low Fallback Alert"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FmZEMyUH4jsC3Qxf",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
+          "cachedResultName": "Telegram - Send Message"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": "={{ $json.message }}",
+            "recipient": "={{ $json.recipient }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "recipient",
+              "displayName": "recipient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3952,
+        -480
+      ],
+      "id": "0d61d88c-e40e-4fba-a936-230de2f2e8d7",
+      "name": "Send Low Fallback Alert",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP Low Fallback').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        -480
+      ],
+      "id": "e258f6ef-2a32-4d51-8ff9-bb8f53842612",
+      "name": "Return Low Fallback Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Low Route Request').item.json || {};\nconst attempt = $('Evaluate Low Fallback').item.json || {};\nthrow new Error(`Low fallback failed. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'low'}; model=${route.fallbackModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        -288
+      ],
+      "id": "15442081-d6d7-47fb-88ab-239212b9c9c6",
+      "name": "Fail Low Fallback"
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.primaryUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.primaryRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1456,
+        0
+      ],
+      "id": "ca0c8951-69fd-457c-b56c-e9256f7ff3b6",
+      "name": "HTTP Standard Primary",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst retryable = hasTransportError || statusCode === 429 || (statusCode !== null && statusCode >= 500);\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    retryable,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        0
+      ],
+      "id": "e6b1c476-9988-406d-b1df-7f6d3608e5cb",
+      "name": "Evaluate Standard Primary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c68d8255-c62a-4ceb-8ce9-c9f8ec5b76c4",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        0
+      ],
+      "id": "8881f06f-dfea-4762-a7cb-4fb62fdc0540",
+      "name": "If standard primary succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP Standard Primary').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        -96
+      ],
+      "id": "dab9d85d-1c19-4507-b313-f0fd8cb6a9f7",
+      "name": "Return Standard Primary Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fdd1b6cd-0bd3-4fce-b932-acac5d0377a0",
+              "leftValue": "={{ $json.retryable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        96
+      ],
+      "id": "0f3b7a7f-eb79-4d3f-9aad-7c71c4fe46b3",
+      "name": "If standard primary retryable"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Standard Route Request').item.json || {};\nconst attempt = $('Evaluate Standard Primary').item.json || {};\nthrow new Error(`Standard primary request failed without fallback. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'standard'}; model=${route.primaryModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        192
+      ],
+      "id": "0bf72e0a-d9d2-46f9-b8a0-e4bd08d72d27",
+      "name": "Fail Standard Primary"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Resolve Standard Route Request').item.json.primaryUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $('Resolve Standard Route Request').item.json.primaryRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        0
+      ],
+      "id": "2eb3c91d-5250-4148-a2d4-e9cbfd0c8b71",
+      "name": "HTTP Standard Primary Retry",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst retryable = hasTransportError || statusCode === 429 || (statusCode !== null && statusCode >= 500);\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    retryable,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        0
+      ],
+      "id": "e7a2d525-17cf-451b-a222-f36d846353a1",
+      "name": "Evaluate Standard Primary Retry"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8f61ef93-c470-4b7e-9d90-b7ee7a3112cf",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2704,
+        0
+      ],
+      "id": "45a374a7-80fd-4a6a-8329-45b1af23ba75",
+      "name": "If standard retry succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP Standard Primary Retry').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2912,
+        -96
+      ],
+      "id": "8d0daa62-5546-470e-b096-95bb0f61d9cf",
+      "name": "Return Standard Retry Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "271dd126-f9d8-4c58-9ed0-c1675518c4e7",
+              "leftValue": "={{ $json.retryable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2912,
+        96
+      ],
+      "id": "9f33f6d6-3a69-4ef2-b34d-cb6f736db8c7",
+      "name": "If standard retry fallback eligible"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Standard Route Request').item.json || {};\nconst attempt = $('Evaluate Standard Primary Retry').item.json || {};\nthrow new Error(`Standard retry failed without fallback. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'standard'}; model=${route.primaryModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        192
+      ],
+      "id": "fb7ba68a-bfb6-45da-949a-73c57b43879b",
+      "name": "Fail Standard Retry"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Resolve Standard Route Request').item.json.fallbackUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $('Resolve Standard Route Request').item.json.fallbackRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        0
+      ],
+      "id": "93cda826-bff6-47bc-b08d-ebfb2b6d8930",
+      "name": "HTTP Standard Fallback",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        0
+      ],
+      "id": "2cf76921-04e9-41b4-9432-137d55b20520",
+      "name": "Evaluate Standard Fallback"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "749a3429-f84a-4df6-9d38-f4be4320eef2",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3536,
+        0
+      ],
+      "id": "75088650-2f0f-4ec8-a30d-9e349be99414",
+      "name": "If standard fallback succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Standard Route Request').item.json || {};\nconst retry = $('Evaluate Standard Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'standard'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    recipient: route.telegramErrorRecipient || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        -96
+      ],
+      "id": "17ddc4dd-b227-4cbc-a5e0-736b8b5103ab",
+      "name": "Build Standard Fallback Alert"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FmZEMyUH4jsC3Qxf",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
+          "cachedResultName": "Telegram - Send Message"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": "={{ $json.message }}",
+            "recipient": "={{ $json.recipient }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "recipient",
+              "displayName": "recipient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3952,
+        -96
+      ],
+      "id": "472e754c-b174-4988-93e5-0b71523b9d9d",
+      "name": "Send Standard Fallback Alert",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP Standard Fallback').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        -96
+      ],
+      "id": "22fd0f30-0c75-4b17-b01c-7f6efa0f3759",
+      "name": "Return Standard Fallback Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve Standard Route Request').item.json || {};\nconst attempt = $('Evaluate Standard Fallback').item.json || {};\nthrow new Error(`Standard fallback failed. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'standard'}; model=${route.fallbackModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        96
+      ],
+      "id": "18d13e3d-aaed-46bc-8ea9-69b18ebccaea",
+      "name": "Fail Standard Fallback"
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.primaryUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.primaryRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1456,
+        384
+      ],
+      "id": "54c02396-e91f-4524-bfb7-6f810432734a",
+      "name": "HTTP High Primary",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst retryable = hasTransportError || statusCode === 429 || (statusCode !== null && statusCode >= 500);\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    retryable,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        384
+      ],
+      "id": "1f72f9cb-e60d-4695-8ec4-83159ee5dc38",
+      "name": "Evaluate High Primary"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ddceb4fd-6b0a-42d2-b2ff-75e1eb0f54f2",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1872,
+        384
+      ],
+      "id": "7883d11b-f2e4-474f-b238-f379ef2aa408",
+      "name": "If high primary succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP High Primary').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        288
+      ],
+      "id": "9d9ad9ea-a87f-4937-9813-f6d78909b1b1",
+      "name": "Return High Primary Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5e59df41-c8b4-4236-a885-5f3e37c56061",
+              "leftValue": "={{ $json.retryable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2080,
+        480
+      ],
+      "id": "f0b80fdf-35ea-446b-b1f8-6d4d74dc8b38",
+      "name": "If high primary retryable"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve High Route Request').item.json || {};\nconst attempt = $('Evaluate High Primary').item.json || {};\nthrow new Error(`High primary request failed without fallback. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'high'}; model=${route.primaryModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        576
+      ],
+      "id": "4f191373-f595-4166-aa71-a11c9121dd1c",
+      "name": "Fail High Primary"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Resolve High Route Request').item.json.primaryUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $('Resolve High Route Request').item.json.primaryRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2288,
+        384
+      ],
+      "id": "af98572b-0899-4c88-93b9-2f92f9f3c94a",
+      "name": "HTTP High Primary Retry",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst retryable = hasTransportError || statusCode === 429 || (statusCode !== null && statusCode >= 500);\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    retryable,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        384
+      ],
+      "id": "29f12c6f-ab39-4d32-8977-cbf8f2d27cc0",
+      "name": "Evaluate High Primary Retry"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8bf57268-643e-40f7-97b6-f1a977af57f4",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2704,
+        384
+      ],
+      "id": "1135d78b-1d7f-407f-80f9-d5201d6d1b44",
+      "name": "If high retry succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP High Primary Retry').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2912,
+        288
+      ],
+      "id": "3710ba8b-497f-4d32-bd4d-ee465d65fa23",
+      "name": "Return High Retry Response"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "557b6b45-31fc-4d8d-9aa8-1b74680a9aa7",
+              "leftValue": "={{ $json.retryable }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2912,
+        480
+      ],
+      "id": "8fb3e495-f465-46f2-9d9b-a69063f55dbf",
+      "name": "If high retry fallback eligible"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve High Route Request').item.json || {};\nconst attempt = $('Evaluate High Primary Retry').item.json || {};\nthrow new Error(`High retry failed without fallback. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'high'}; model=${route.primaryModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        576
+      ],
+      "id": "0564b618-6cc0-4573-9ae0-421da630ec60",
+      "name": "Fail High Retry"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Resolve High Route Request').item.json.fallbackUrl }}",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $('Resolve High Route Request').item.json.fallbackRequestBodyJson }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        384
+      ],
+      "id": "6cfb65f7-a6aa-462f-a4ff-cc7d619c3569",
+      "name": "HTTP High Fallback",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst message = [\n  response.error,\n  response.message,\n  response.errcode,\n  response.name,\n  response.response?.message,\n  response.body?.error?.message\n].filter(Boolean).map(String).join(' | ');\nconst lowered = message.toLowerCase();\nconst hasTransportError = !!response.stack || /timed out|timeout|network|socket|econn|enotfound|dns|connect|unreachable|reset/.test(lowered);\nconst failedHttp = statusCode !== null && statusCode >= 400;\nconst ok = !failedHttp && !hasTransportError && !response.error && !response.errcode;\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    failureMessage: message || (failedHttp ? `HTTP ${statusCode}` : 'Unknown error')\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3328,
+        384
+      ],
+      "id": "6dcd8f95-edde-44e7-ae0d-a1d3daf710fe",
+      "name": "Evaluate High Fallback"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "489f701f-5157-4a52-82ff-ff5af69fb8c5",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3536,
+        384
+      ],
+      "id": "2669f6d8-1d84-4964-b7fc-880145c1bff5",
+      "name": "If high fallback succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve High Route Request').item.json || {};\nconst retry = $('Evaluate High Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'high'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    recipient: route.telegramErrorRecipient || ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        288
+      ],
+      "id": "1b7037c0-8913-405d-a0ee-bdb71ed22c31",
+      "name": "Build High Fallback Alert"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "FmZEMyUH4jsC3Qxf",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
+          "cachedResultName": "Telegram - Send Message"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": "={{ $json.message }}",
+            "recipient": "={{ $json.recipient }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "recipient",
+              "displayName": "recipient",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        3952,
+        288
+      ],
+      "id": "737af535-509e-4e3a-a7ca-ca2d844663a7",
+      "name": "Send High Fallback Alert",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('HTTP High Fallback').item.json }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4160,
+        288
+      ],
+      "id": "ec95d959-a97c-461e-a6ee-f6cbcf955232",
+      "name": "Return High Fallback Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const route = $('Resolve High Route Request').item.json || {};\nconst attempt = $('Evaluate High Fallback').item.json || {};\nthrow new Error(`High fallback failed. Status=${attempt.statusCode ?? 'n/a'}; route=${route.route || 'high'}; model=${route.fallbackModel || 'unknown'}; reason=${attempt.failureMessage || 'unknown error'}`);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3744,
+        480
+      ],
+      "id": "4d9d7760-b7cb-42c8-b353-a522c4051c5d",
+      "name": "Fail High Fallback"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Global Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Set Global Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Global Config": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize input": {
+      "main": [
+        [
+          {
+            "node": "If input valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If input valid": {
+      "main": [
+        [
+          {
+            "node": "If route low",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail validation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If route low": {
+      "main": [
+        [
+          {
+            "node": "Set Low Route Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If route standard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If route standard": {
+      "main": [
+        [
+          {
+            "node": "Set Standard Route Config",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set High Route Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Low Route Config": {
+      "main": [
+        [
+          {
+            "node": "Resolve Low Route Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Low Route Request": {
+      "main": [
+        [
+          {
+            "node": "If low route config valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If low route config valid": {
+      "main": [
+        [
+          {
+            "node": "HTTP Low Primary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail low config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Low Primary": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Low Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Low Primary": {
+      "main": [
+        [
+          {
+            "node": "If low primary succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If low primary succeeded": {
+      "main": [
+        [
+          {
+            "node": "Return Low Primary Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If low primary retryable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If low primary retryable": {
+      "main": [
+        [
+          {
+            "node": "HTTP Low Primary Retry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Low Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Low Primary Retry": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Low Primary Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Low Primary Retry": {
+      "main": [
+        [
+          {
+            "node": "If low retry succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If low retry succeeded": {
+      "main": [
+        [
+          {
+            "node": "Return Low Retry Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If low retry fallback eligible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If low retry fallback eligible": {
+      "main": [
+        [
+          {
+            "node": "HTTP Low Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Low Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Low Fallback": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Low Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Low Fallback": {
+      "main": [
+        [
+          {
+            "node": "If low fallback succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If low fallback succeeded": {
+      "main": [
+        [
+          {
+            "node": "Build Low Fallback Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Low Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Low Fallback Alert": {
+      "main": [
+        [
+          {
+            "node": "Send Low Fallback Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Low Fallback Alert": {
+      "main": [
+        [
+          {
+            "node": "Return Low Fallback Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+
+    "Set Standard Route Config": {
+      "main": [
+        [
+          {
+            "node": "Resolve Standard Route Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve Standard Route Request": {
+      "main": [
+        [
+          {
+            "node": "If standard route config valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If standard route config valid": {
+      "main": [
+        [
+          {
+            "node": "HTTP Standard Primary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail standard config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Standard Primary": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Standard Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Standard Primary": {
+      "main": [
+        [
+          {
+            "node": "If standard primary succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If standard primary succeeded": {
+      "main": [
+        [
+          {
+            "node": "Return Standard Primary Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If standard primary retryable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If standard primary retryable": {
+      "main": [
+        [
+          {
+            "node": "HTTP Standard Primary Retry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Standard Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Standard Primary Retry": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Standard Primary Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Standard Primary Retry": {
+      "main": [
+        [
+          {
+            "node": "If standard retry succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If standard retry succeeded": {
+      "main": [
+        [
+          {
+            "node": "Return Standard Retry Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If standard retry fallback eligible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If standard retry fallback eligible": {
+      "main": [
+        [
+          {
+            "node": "HTTP Standard Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Standard Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Standard Fallback": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Standard Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Standard Fallback": {
+      "main": [
+        [
+          {
+            "node": "If standard fallback succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If standard fallback succeeded": {
+      "main": [
+        [
+          {
+            "node": "Build Standard Fallback Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail Standard Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Standard Fallback Alert": {
+      "main": [
+        [
+          {
+            "node": "Send Standard Fallback Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Standard Fallback Alert": {
+      "main": [
+        [
+          {
+            "node": "Return Standard Fallback Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+
+    "Set High Route Config": {
+      "main": [
+        [
+          {
+            "node": "Resolve High Route Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve High Route Request": {
+      "main": [
+        [
+          {
+            "node": "If high route config valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If high route config valid": {
+      "main": [
+        [
+          {
+            "node": "HTTP High Primary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail high config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP High Primary": {
+      "main": [
+        [
+          {
+            "node": "Evaluate High Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate High Primary": {
+      "main": [
+        [
+          {
+            "node": "If high primary succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If high primary succeeded": {
+      "main": [
+        [
+          {
+            "node": "Return High Primary Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If high primary retryable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If high primary retryable": {
+      "main": [
+        [
+          {
+            "node": "HTTP High Primary Retry",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail High Primary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP High Primary Retry": {
+      "main": [
+        [
+          {
+            "node": "Evaluate High Primary Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate High Primary Retry": {
+      "main": [
+        [
+          {
+            "node": "If high retry succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If high retry succeeded": {
+      "main": [
+        [
+          {
+            "node": "Return High Retry Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If high retry fallback eligible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If high retry fallback eligible": {
+      "main": [
+        [
+          {
+            "node": "HTTP High Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail High Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP High Fallback": {
+      "main": [
+        [
+          {
+            "node": "Evaluate High Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate High Fallback": {
+      "main": [
+        [
+          {
+            "node": "If high fallback succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If high fallback succeeded": {
+      "main": [
+        [
+          {
+            "node": "Build High Fallback Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail High Fallback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build High Fallback Alert": {
+      "main": [
+        [
+          {
+            "node": "Send High Fallback Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send High Fallback Alert": {
+      "main": [
+        [
+          {
+            "node": "Return High Fallback Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "timeSavedPerExecution": 5
+  },
+  "versionId": "7f8c71e6-9e06-4d16-9250-3e7a89cc9387",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "Wm6VTs0XAIChat01",
+  "tags": []
+}

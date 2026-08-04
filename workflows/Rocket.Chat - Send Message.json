@@ -1,0 +1,289 @@
+{
+  "name": "Rocket.Chat - Send Message",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Rocket.Chat - Send Message\n\nSub-workflow tool: posts a message to a Rocket.Chat room.\n\n## Input\n- `channel` (required): room id, `#channel` or `@user`\n- `text` (required): message text\n- `alias` (optional): display name override (persona)\n- `avatar` (optional): avatar URL override\n\n## Output\n`{ ok, statusCode, usedChannel, response }`\n\n## Config\nBase URL is set in node `Set Rocket.Chat config` (no env vars).\nCredential: `rocketchatApi` (Rocket account).\n\n## Note\nPhase-2 (collega): this tool gets an entry guard against\ncollega_agent_tools like every other tool workflow - one pass for all.",
+        "height": 320,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-160, 0],
+      "id": "b1000001-0000-4000-8000-000000000001",
+      "name": "Config note"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [-368, 208],
+      "id": "b1000001-0000-4000-8000-000000000002",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-576, 416],
+      "id": "b1000001-0000-4000-8000-000000000003",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1000001-t1",
+              "name": "channel",
+              "value": "TEST_ROOM",
+              "type": "string"
+            },
+            {
+              "id": "b1000001-t2",
+              "name": "text",
+              "value": "n8n: This is a test message",
+              "type": "string"
+            },
+            {
+              "id": "b1000001-t3",
+              "name": "alias",
+              "value": "collega runtime",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-368, 416],
+      "id": "b1000001-0000-4000-8000-000000000004",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const channel = typeof $json.channel === 'string' ? $json.channel.trim() : '';\nconst text = typeof $json.text === 'string' ? $json.text : '';\nconst alias = typeof $json.alias === 'string' ? $json.alias.trim() : '';\nconst avatar = typeof $json.avatar === 'string' ? $json.avatar.trim() : '';\n\nreturn [{\n  json: {\n    channel,\n    text,\n    alias,\n    avatar\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-160, 320],
+      "id": "b1000001-0000-4000-8000-000000000005",
+      "name": "Normalize input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b1000001-c1",
+              "name": "baseUrl",
+              "value": "https://chat.3x3cut0r.de",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [48, 320],
+      "id": "b1000001-0000-4000-8000-000000000006",
+      "name": "Set Rocket.Chat config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst config = $('Set Rocket.Chat config').item.json || {};\n\nconst channel = normalized.channel || '';\nconst text = typeof normalized.text === 'string' ? normalized.text : '';\nconst alias = normalized.alias || '';\nconst avatar = normalized.avatar || '';\nconst baseUrl = (config.baseUrl || '').replace(/\\/+$/, '');\n\nlet error = '';\nif (!channel) {\n  error = 'Input field channel is required (room id, #channel or @user).';\n} else if (!text.trim()) {\n  error = 'Input field text is required and must be a non-empty string.';\n} else if (!baseUrl) {\n  error = 'No Rocket.Chat baseUrl configured. Set value in node Set Rocket.Chat config.';\n}\n\nreturn [{\n  json: {\n    usedChannel: channel,\n    text,\n    alias,\n    avatar,\n    baseUrl,\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [256, 320],
+      "id": "b1000001-0000-4000-8000-000000000007",
+      "name": "Resolve and validate payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b1000001-if1",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [464, 320],
+      "id": "b1000001-0000-4000-8000-000000000008",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.baseUrl }}/api/v1/chat.postMessage",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "rocketchatApi",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify((() => { const b = { channel: $json.usedChannel, text: $json.text }; if ($json.alias) { b.alias = $json.alias; } if ($json.avatar) { b.avatar = $json.avatar; } return b; })()) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [672, 208],
+      "id": "b1000001-0000-4000-8000-000000000009",
+      "name": "Send Rocket.Chat message",
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "rocketchatApi": {
+          "id": "MOy67U60d183CN6f",
+          "name": "Rocket account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const statusCode = Number($json.statusCode || 0) || null;\nconst hasError = !!$json.error || ($json.success === false);\nconst ok = !hasError && (statusCode === null || statusCode >= 200 && statusCode < 300);\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedChannel: $('Resolve and validate payload').item.json.usedChannel,\n    response: $json\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 208],
+      "id": "b1000001-0000-4000-8000-000000000010",
+      "name": "Build send result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    statusCode: null,\n    usedChannel: $json.usedChannel || null,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 432],
+      "id": "b1000001-0000-4000-8000-000000000011",
+      "name": "Build validation error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize input": {
+      "main": [
+        [
+          {
+            "node": "Set Rocket.Chat config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Rocket.Chat config": {
+      "main": [
+        [
+          {
+            "node": "Resolve and validate payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve and validate payload": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "Send Rocket.Chat message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Rocket.Chat message": {
+      "main": [
+        [
+          {
+            "node": "Build send result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "timeSavedPerExecution": 1,
+    "callerPolicy": "workflowsFromSameOwner"
+  }
+}
