@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2976,
-        224
+        6480,
+        528
       ],
-      "id": "ebedcf55-1365-4182-abb4-2f1c2c53df61",
+      "id": "5ee70328-8d8a-44b1-945e-dca601a91bda",
       "name": "Pick random preview"
     },
     {
@@ -41,10 +41,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2272,
-        240
+        5776,
+        544
       ],
-      "id": "5b62261c-b9f4-45dd-bee8-a174e9df1264",
+      "id": "396d78cb-3e96-459a-97ef-023aee2cadf6",
       "name": "Get Giphy preview",
       "credentials": {
         "rocketchatApi": {
@@ -68,10 +68,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3168,
-        224
+        6672,
+        528
       ],
-      "id": "4158f61b-8477-48c2-956a-91ff472d8936",
+      "id": "a01b38f7-4088-4e2f-bc71-9bdae348d79a",
       "name": "Send picked preview",
       "executeOnce": true,
       "credentials": {
@@ -98,10 +98,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1600,
-        224
+        5104,
+        528
       ],
-      "id": "80cb93d6-76fb-4520-9c78-daa7dca968ce",
+      "id": "7979ff61-187f-4e04-a4d8-8d06578210f3",
       "name": "Set roomId"
     },
     {
@@ -112,10 +112,10 @@
       "type": "n8n-nodes-base.openWeatherMap",
       "typeVersion": 1,
       "position": [
-        656,
-        224
+        4160,
+        528
       ],
-      "id": "dc1cc171-f445-45ba-b22d-f2b87fb77366",
+      "id": "326bce6c-72e7-4f7e-a570-2c35d5c2a822",
       "name": "OpenWeatherMap",
       "credentials": {
         "openWeatherMapApi": {
@@ -131,19 +131,19 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        848,
-        224
+        4352,
+        528
       ],
-      "id": "48681455-5876-4840-8d06-c73712741e3b",
+      "id": "c85d2255-2d12-4ef5-a8d7-99c3bcf262c0",
       "name": "Get weekday, date and season"
     },
     {
       "parameters": {
         "modelId": {
           "__rl": true,
-          "value": "gpt-5-nano",
+          "value": "deepseek-v4-flash",
           "mode": "list",
-          "cachedResultName": "GPT-5-NANO"
+          "cachedResultName": "DEEPSEEK-V4-FLASH"
         },
         "messages": {
           "values": [
@@ -157,15 +157,15 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        1088,
-        224
+        4592,
+        528
       ],
-      "id": "63f6b887-aa79-4e47-9633-370c135f7fad",
+      "id": "1cb1c75d-07ef-413d-8bf8-c2247785001f",
       "name": "Get a keyword or phrase",
       "credentials": {
         "openAiApi": {
-          "id": "OpKdnL4SPopfN0cn",
-          "name": "OpenAi account"
+          "id": "nUFvAMXIipS0a7iW",
+          "name": "Opencode Go"
         }
       }
     },
@@ -176,10 +176,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        224,
-        224
+        3728,
+        528
       ],
-      "id": "4446f41e-29b3-4857-a7f5-49b71826c0c5",
+      "id": "ac645366-809c-4193-8227-39642468d665",
       "name": "Get a random minute (0-9)"
     },
     {
@@ -190,10 +190,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        432,
-        224
+        3936,
+        528
       ],
-      "id": "f1aa4dfd-69b1-458e-879c-96bd3123e8dd",
+      "id": "4c65f5d7-e190-4819-b44e-23cd902f9347",
       "name": "Wait minutes",
       "webhookId": "c1955a8a-6e21-411b-a970-daaa5d2ec135"
     },
@@ -205,11 +205,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        0,
-        0
+        3504,
+        304
       ],
       "typeVersion": 1,
-      "id": "8ca6d8bf-4c47-4136-b515-0036bf944218",
+      "id": "435b3c44-0e31-402a-8ee5-8a92b4246213",
       "name": "Sticky Note"
     },
     {
@@ -220,11 +220,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        592,
-        0
+        4096,
+        304
       ],
       "typeVersion": 1,
-      "id": "c07a31dd-439c-4f4b-9a59-f9e20e979ca5",
+      "id": "acd64e17-d229-4d55-961a-7f2ccf9e856a",
       "name": "Sticky Note1"
     },
     {
@@ -235,11 +235,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1040,
-        0
+        4544,
+        304
       ],
       "typeVersion": 1,
-      "id": "21dd3023-9a6f-493d-b228-759b07d76168",
+      "id": "9b12a69d-772c-4164-b281-13c06652cd33",
       "name": "Sticky Note2"
     },
     {
@@ -250,11 +250,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        1536,
-        0
+        5040,
+        304
       ],
       "typeVersion": 1,
-      "id": "8a491c8d-6436-4865-8bbe-430d9b5386f0",
+      "id": "15235c08-eff1-4c29-99d3-bb2d3dab76d5",
       "name": "Sticky Note3"
     },
     {
@@ -265,11 +265,11 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        2912,
-        0
+        6416,
+        304
       ],
       "typeVersion": 1,
-      "id": "3506be49-4f75-4e85-a4b5-acd740379fb1",
+      "id": "48a8507e-9cef-4229-b2d3-3c4ab5c8eb42",
       "name": "Sticky Note4"
     },
     {
@@ -279,10 +279,10 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        2032,
-        224
+        5536,
+        528
       ],
-      "id": "109efe7e-9747-45f7-ac16-d15f16e10b58",
+      "id": "31bbcd1a-5d3d-4b04-afff-185532171ea4",
       "name": "Loop up to 3 times on failure",
       "alwaysOutputData": false,
       "retryOnFail": false,
@@ -315,10 +315,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2480,
-        240
+        5984,
+        544
       ],
-      "id": "e942070f-9ee3-47d1-9e7b-2f377dba78aa",
+      "id": "8dabce5b-1a3c-47d4-82af-72b38a589f8c",
       "name": "Has preview?",
       "alwaysOutputData": false,
       "retryOnFail": false
@@ -330,10 +330,10 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        2688,
-        304
+        6192,
+        608
       ],
-      "id": "652041bc-dd47-4db5-b69a-0bc6c4ebc267",
+      "id": "c91f802a-5859-42bb-8b78-1ab57f003d50",
       "name": "Wait 2s",
       "webhookId": "e2f5fa83-fceb-492e-a066-fd224571ca9a"
     },
@@ -344,10 +344,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2272,
-        96
+        5776,
+        400
       ],
-      "id": "f91c1701-1d5f-453c-a156-508a964f1005",
+      "id": "4347b1a8-4bc6-4bd5-812f-3de5faea7284",
       "name": "Error Message"
     },
     {
@@ -357,10 +357,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1808,
-        224
+        5312,
+        528
       ],
-      "id": "fcc6cad0-c742-42c3-b71c-24d1248907f0",
+      "id": "6243d476-ec0f-4fd6-9f1d-e5ec5ea73d00",
       "name": "Generate 3 json objects"
     },
     {
@@ -368,10 +368,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        432,
-        384
+        3936,
+        688
       ],
-      "id": "3fe27b7d-f28a-4d3a-9bc3-ab4e25e2c084",
+      "id": "d873ad59-40ff-4256-9e5c-40f2be04053e",
       "name": "Manual Trigger"
     },
     {
@@ -387,10 +387,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        32,
-        224
+        3536,
+        528
       ],
-      "id": "948f1f53-cd93-43a1-a03d-2e8523a931d0",
+      "id": "ad90c511-fd26-48fd-9127-384effbe3d5b",
       "name": "Trigger at 09:00"
     }
   ],
@@ -591,14 +591,26 @@
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
     "binaryMode": "separate",
-    "timeSavedPerExecution": 2,
-    "executionTimeout": -1
+    "timeSavedPerExecution": 2
   },
-  "versionId": "f1c5421f-7ed5-46ad-bf63-7bed2e488499",
+  "versionId": "edf407f0-2420-4d19-b6dd-057cc7ef7180",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "cMtb5UL_ETErKRqaHmZ5i",
-  "tags": []
+  "tags": [
+    {
+      "updatedAt": "2026-03-01T07:53:44.697Z",
+      "createdAt": "2026-03-01T07:53:44.697Z",
+      "id": "vDR2BTjQxx7fiyBq",
+      "name": "Rocketchat"
+    },
+    {
+      "updatedAt": "2026-03-01T07:56:25.338Z",
+      "createdAt": "2026-03-01T07:56:25.338Z",
+      "id": "J4KIkOVBzvJDesqo",
+      "name": "AI"
+    }
+  ]
 }
