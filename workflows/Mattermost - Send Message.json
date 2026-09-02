@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "# Mattermost - Send Message\n\nSub-workflow tool: posts a message to a Mattermost channel.\n\n## Input\n- `message` (required): message text\n- `channelId` (optional): Mattermost channel id\n- `channelName` (optional): Mattermost channel name (for example `town-square` or `~town-square`)\n- `teamName` (optional): required when only `channelName` is used and no default team is configured\n- `rootId` (optional): post id for thread replies\n\n## Output\n`{ ok, statusCode, usedChannelId, usedChannelName, usedTeamName, response }`\n\n## Config\nBase URL is set in node `Set Mattermost config`.\nCredential: HTTP Header Auth with header `Authorization` and value `Bearer <MATTERMOST_BOT_TOKEN>`.\n\n## Notes\n- This workflow can be called via `Execute Workflow` or run manually.\n- If `channelId` is not provided, the workflow resolves the channel by `teamName` + `channelName`.\n- Prefer credentials over hardcoded tokens.",
+        "content": "# Mattermost - Send Message\n\nSub-workflow tool: posts a message to a Mattermost channel.\n\n## Input\n- `message` (required): message text\n- `channelId` (optional): Mattermost channel id\n- `channelName` (optional): Mattermost channel name (for example `town-square` or `~town-square`)\n- `teamName` (optional): required when only `channelName` is used and no default team is configured\n- `rootId` (optional): post id for thread replies\n\n## Output\n`{ ok, statusCode, usedChannelId, usedChannelName, usedTeamName, response }`\n\n## Config\nBase URL is set in node `Set Mattermost config`.\nCredential: HTTP Header Auth with header `Authorization` \nand value `Bearer <MATTERMOST_BOT_TOKEN>`.\n\n## Notes\n- This workflow can be called via `Execute Workflow` or run manually.\n- If `channelId` is not provided, the workflow resolves the channel by `teamName` + `channelName`.\n- Prefer credentials over hardcoded tokens.",
         "height": 640,
         "width": 720
       },
@@ -53,7 +53,7 @@
             {
               "id": "c2000001-t2",
               "name": "channelName",
-              "value": "town-square",
+              "value": "n8n",
               "type": "string"
             },
             {
@@ -677,10 +677,9 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "executionTimeout": -1,
     "timeSavedPerExecution": 2
   },
-  "versionId": "06e33f8a-4058-45ca-8465-fa8c6c7b1bfd",
+  "versionId": "3917c479-03ac-4aca-a883-af4a649a8b5c",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
