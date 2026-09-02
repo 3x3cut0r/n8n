@@ -1,0 +1,689 @@
+{
+  "name": "Mattermost - Send Message",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "# Mattermost - Send Message\n\nSub-workflow tool: posts a message to a Mattermost channel.\n\n## Input\n- `message` (required): message text\n- `channelId` (optional): Mattermost channel id\n- `channelName` (optional): Mattermost channel name (for example `town-square` or `~town-square`)\n- `teamName` (optional): required when only `channelName` is used and no default team is configured\n- `rootId` (optional): post id for thread replies\n\n## Output\n`{ ok, statusCode, usedChannelId, usedChannelName, usedTeamName, response }`\n\n## Config\nBase URL is set in node `Set Mattermost config`.\nCredential: HTTP Header Auth with header `Authorization` and value `Bearer <MATTERMOST_BOT_TOKEN>`.\n\n## Notes\n- This workflow can be called via `Execute Workflow` or run manually.\n- If `channelId` is not provided, the workflow resolves the channel by `teamName` + `channelName`.\n- Prefer credentials over hardcoded tokens.",
+        "height": 640,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        16,
+        -384
+      ],
+      "id": "6e943eb2-12c8-4ba8-81c4-55aeecca99b5",
+      "name": "Config note"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        192
+      ],
+      "id": "a6148cbb-5bdf-431a-a10d-2223949b6b1c",
+      "name": "Execute Workflow Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        400
+      ],
+      "id": "6f842c9c-e6d9-48a6-a8e2-00ed108603d3",
+      "name": "Manual Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c2000001-t1",
+              "name": "message",
+              "value": "n8n: This is a test message",
+              "type": "string"
+            },
+            {
+              "id": "c2000001-t2",
+              "name": "channelName",
+              "value": "town-square",
+              "type": "string"
+            },
+            {
+              "id": "c2000001-t3",
+              "name": "teamName",
+              "value": "Private",
+              "type": "string"
+            },
+            {
+              "id": "c2000001-t4",
+              "name": "channelId",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c2000001-t5",
+              "name": "rootId",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        400
+      ],
+      "id": "95fef958-19ed-49b8-9a5f-2f0bf42b7491",
+      "name": "Set test input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalizeChannelName = (value) => {\n  if (typeof value !== 'string') {\n    return '';\n  }\n\n  const trimmed = value.trim();\n  if (!trimmed) {\n    return '';\n  }\n\n  return trimmed.replace(/^[#~]/, '');\n};\n\nconst message = typeof $json.message === 'string' ? $json.message : '';\nconst channelId = typeof $json.channelId === 'string' ? $json.channelId.trim() : '';\nconst channelName = normalizeChannelName($json.channelName);\nconst teamName = typeof $json.teamName === 'string' ? $json.teamName.trim() : '';\nconst rootId = typeof $json.rootId === 'string' ? $json.rootId.trim() : '';\n\nreturn [{\n  json: {\n    message,\n    channelId,\n    channelName,\n    teamName,\n    rootId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        304
+      ],
+      "id": "1f25af63-bc26-401d-a83e-b12e1b0ad9ed",
+      "name": "Normalize input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c2000001-c1",
+              "name": "baseUrl",
+              "value": "https://mattermost.3x3cut0r.de",
+              "type": "string"
+            },
+            {
+              "id": "c2000001-c2",
+              "name": "defaultChannelId",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c2000001-c3",
+              "name": "defaultChannelName",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "c2000001-c4",
+              "name": "defaultTeamName",
+              "value": "Private",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        304
+      ],
+      "id": "dda5350e-0df6-4ba3-a6c3-ebf421b77969",
+      "name": "Set Mattermost config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst config = $('Set Mattermost config').item.json || {};\n\nconst message = typeof normalized.message === 'string' ? normalized.message.trim() : '';\nconst inputChannelId = typeof normalized.channelId === 'string' ? normalized.channelId.trim() : '';\nconst inputChannelName = typeof normalized.channelName === 'string' ? normalized.channelName.trim() : '';\nconst inputTeamName = typeof normalized.teamName === 'string' ? normalized.teamName.trim() : '';\nconst rootId = typeof normalized.rootId === 'string' ? normalized.rootId.trim() : '';\n\nconst baseUrl = typeof config.baseUrl === 'string' ? config.baseUrl.trim().replace(/\\/+$/, '') : '';\nconst defaultChannelId = typeof config.defaultChannelId === 'string' ? config.defaultChannelId.trim() : '';\nconst defaultChannelName = typeof config.defaultChannelName === 'string' ? config.defaultChannelName.trim().replace(/^[#~]/, '') : '';\nconst defaultTeamName = typeof config.defaultTeamName === 'string' ? config.defaultTeamName.trim() : '';\n\nconst usedChannelId = inputChannelId || defaultChannelId;\nconst usedChannelName = usedChannelId ? '' : (inputChannelName || defaultChannelName);\nconst usedTeamName = inputTeamName || defaultTeamName;\nconst needsChannelLookup = !usedChannelId;\n\nlet error = '';\nif (!message) {\n  error = 'Input field message is required and must be a non-empty string.';\n} else if (!baseUrl) {\n  error = 'No Mattermost baseUrl configured. Set value in node Set Mattermost config.';\n} else if (!usedChannelId && !usedChannelName) {\n  error = 'Provide channelId or channelName (or configure a default in node Set Mattermost config).';\n} else if (!usedChannelId && !usedTeamName) {\n  error = 'teamName is required when sending by channelName. Pass teamName or set defaultTeamName in node Set Mattermost config.';\n}\n\nreturn [{\n  json: {\n    message,\n    rootId,\n    baseUrl,\n    usedChannelId,\n    usedChannelName,\n    usedTeamName,\n    needsChannelLookup,\n    okToSend: !error,\n    error\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        304
+      ],
+      "id": "40a71642-20e1-4fb1-b1b7-300e0c4250b6",
+      "name": "Resolve and validate payload"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2000001-if1",
+              "leftValue": "={{ $json.okToSend }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        304
+      ],
+      "id": "54f42ff2-3e75-4ef9-8935-22b1c0b8485b",
+      "name": "If payload valid"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2000001-if2",
+              "leftValue": "={{ $json.needsChannelLookup }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        864,
+        192
+      ],
+      "id": "6514aded-10a0-405b-ac07-353ecb98f8fd",
+      "name": "If channel lookup needed"
+    },
+    {
+      "parameters": {
+        "url": "={{ `${$json.baseUrl}/api/v4/teams/name/${encodeURIComponent($json.usedTeamName)}` }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1072,
+        80
+      ],
+      "id": "2aca4f82-02e6-46bb-976f-b1657b2504ce",
+      "name": "Resolve team by name",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GLY9DAXTEvoYy10S",
+          "name": "Mattermost"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resolved = $('Resolve and validate payload').item.json || {};\nconst response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst teamId = typeof response.id === 'string' ? response.id : '';\nconst errorMessage = response.error || response.message || response.detailed_error || '';\nconst ok = !!teamId && !errorMessage && (statusCode === null || statusCode < 400);\n\nreturn [{\n  json: {\n    ...resolved,\n    usedTeamId: teamId,\n    teamLookupStatusCode: statusCode,\n    teamLookupOk: ok,\n    teamLookupResponse: response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -48
+      ],
+      "id": "c399dd87-ae71-4878-80b5-dc93ad2a4faa",
+      "name": "Evaluate team lookup"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2000001-if3",
+              "leftValue": "={{ $json.teamLookupOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1488,
+        -48
+      ],
+      "id": "23930ae8-6a5a-46b0-a599-42a63500118f",
+      "name": "If team lookup succeeded"
+    },
+    {
+      "parameters": {
+        "url": "={{ `${$json.baseUrl}/api/v4/teams/${encodeURIComponent($json.usedTeamId)}/channels/name/${encodeURIComponent($json.usedChannelName)}` }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1696,
+        -144
+      ],
+      "id": "15fc665d-5889-47f8-8b0d-7d49bb62b03d",
+      "name": "Resolve channel by name",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GLY9DAXTEvoYy10S",
+          "name": "Mattermost"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resolved = $('Evaluate team lookup').item.json || {};\nconst response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst channelId = typeof response.id === 'string' ? response.id : '';\nconst channelName = typeof response.name === 'string' ? response.name : resolved.usedChannelName || '';\nconst errorMessage = response.error || response.message || response.detailed_error || '';\nconst ok = !!channelId && !errorMessage && (statusCode === null || statusCode < 400);\n\nreturn [{\n  json: {\n    ...resolved,\n    usedChannelId: channelId,\n    usedChannelName: channelName,\n    channelLookupStatusCode: statusCode,\n    channelLookupOk: ok,\n    channelLookupResponse: response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        -144
+      ],
+      "id": "742d297e-8ce8-4222-a817-47b46e277ef3",
+      "name": "Evaluate channel lookup"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c2000001-if4",
+              "leftValue": "={{ $json.channelLookupOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        -32
+      ],
+      "id": "e0aea6fd-9dfc-4bec-b945-26f682c9db14",
+      "name": "If channel lookup succeeded"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ...$json } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        208
+      ],
+      "id": "d9de2c7d-cecc-46e6-94cb-01b1319d12d5",
+      "name": "Prepare send payload"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ `${$json.baseUrl}/api/v4/posts` }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify((() => { const body = { channel_id: $json.usedChannelId, message: $json.message }; if ($json.rootId) { body.root_id = $json.rootId; } return body; })()) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2608,
+        208
+      ],
+      "id": "1c9299b6-61d1-4e48-aaa1-9de42282d2b6",
+      "name": "Send Mattermost message",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GLY9DAXTEvoYy10S",
+          "name": "Mattermost"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resolved = $('Prepare send payload').item.json || {};\nconst response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst errorMessage = response.error || response.message || response.detailed_error || '';\nconst ok = !!response.id && !errorMessage && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedChannelId: resolved.usedChannelId || null,\n    usedChannelName: resolved.usedChannelName || null,\n    usedTeamName: resolved.usedTeamName || null,\n    response\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2896,
+        192
+      ],
+      "id": "023f966a-7844-4d60-b5e0-52d40023a70e",
+      "name": "Build send result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    statusCode: null,\n    usedChannelId: $json.usedChannelId || null,\n    usedChannelName: $json.usedChannelName || null,\n    usedTeamName: $json.usedTeamName || null,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        416
+      ],
+      "id": "b0d8b9a7-18d6-493a-a9d2-15fec18da9f2",
+      "name": "Build validation error result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    statusCode: $json.teamLookupStatusCode || null,\n    usedChannelId: null,\n    usedChannelName: $json.usedChannelName || null,\n    usedTeamName: $json.usedTeamName || null,\n    response: {\n      error: $json.teamLookupResponse?.error || $json.teamLookupResponse?.message || `Could not resolve team by name: ${$json.usedTeamName || 'unknown team'}`\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        48
+      ],
+      "id": "5a362e4e-79ea-4788-abac-43219ee9f3f2",
+      "name": "Build team lookup error result"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    ok: false,\n    statusCode: $json.channelLookupStatusCode || null,\n    usedChannelId: null,\n    usedChannelName: $json.usedChannelName || null,\n    usedTeamName: $json.usedTeamName || null,\n    response: {\n      error: $json.channelLookupResponse?.error || $json.channelLookupResponse?.message || `Could not resolve channel by name: ${$json.usedChannelName || 'unknown channel'}`\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        -16
+      ],
+      "id": "a7c4944f-8692-4540-ba72-36ac82febe6d",
+      "name": "Build channel lookup error result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set test input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set test input": {
+      "main": [
+        [
+          {
+            "node": "Normalize input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize input": {
+      "main": [
+        [
+          {
+            "node": "Set Mattermost config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Mattermost config": {
+      "main": [
+        [
+          {
+            "node": "Resolve and validate payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve and validate payload": {
+      "main": [
+        [
+          {
+            "node": "If payload valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If payload valid": {
+      "main": [
+        [
+          {
+            "node": "If channel lookup needed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build validation error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If channel lookup needed": {
+      "main": [
+        [
+          {
+            "node": "Resolve team by name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare send payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve team by name": {
+      "main": [
+        [
+          {
+            "node": "Evaluate team lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate team lookup": {
+      "main": [
+        [
+          {
+            "node": "If team lookup succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If team lookup succeeded": {
+      "main": [
+        [
+          {
+            "node": "Resolve channel by name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build team lookup error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resolve channel by name": {
+      "main": [
+        [
+          {
+            "node": "Evaluate channel lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate channel lookup": {
+      "main": [
+        [
+          {
+            "node": "If channel lookup succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If channel lookup succeeded": {
+      "main": [
+        [
+          {
+            "node": "Prepare send payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build channel lookup error result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare send payload": {
+      "main": [
+        [
+          {
+            "node": "Send Mattermost message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Mattermost message": {
+      "main": [
+        [
+          {
+            "node": "Build send result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionTimeout": -1,
+    "timeSavedPerExecution": 2
+  },
+  "versionId": "06e33f8a-4058-45ca-8465-fa8c6c7b1bfd",
+  "meta": {
+    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
+  },
+  "id": "zSpgVeZvjP34TpnO",
+  "tags": []
+}
