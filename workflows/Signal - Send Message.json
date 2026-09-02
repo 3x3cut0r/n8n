@@ -339,7 +339,8 @@
     "timeSavedMode": "fixed",
     "callerPolicy": "workflowsFromSameOwner",
     "executionTimeout": -1,
-    "timeSavedPerExecution": 1
+    "timeSavedPerExecution": 1,
+    "errorWorkflow": "Bin1Me6S1IWNK7e7"
   },
   "versionId": "c0b682fd-1d25-4898-8d28-a53cc6af0fb3",
   "meta": {

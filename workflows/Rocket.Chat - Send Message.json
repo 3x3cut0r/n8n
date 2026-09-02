@@ -284,6 +284,7 @@
     "executionOrder": "v1",
     "timeSavedMode": "fixed",
     "timeSavedPerExecution": 1,
-    "callerPolicy": "workflowsFromSameOwner"
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "Bin1Me6S1IWNK7e7"
   }
 }

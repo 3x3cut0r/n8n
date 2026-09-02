@@ -117,6 +117,8 @@
 - Include concise, operator-meaningful error messages.
 - When an HTTP request can fail but the workflow should continue, use the node-level error-routing settings intentionally.
 - Keep success/error payloads structured and predictable.
+- For every new regular workflow, set `settings.errorWorkflow` to the shared `Workflow - Error` workflow unless a different error workflow is explicitly required.
+- Treat the shared `Workflow - Error` workflow as the single place for the actual `Error Trigger` node. Do not add standalone `Error Trigger` nodes to every regular workflow.
 
 ## Credentials And Secrets
 - Never hardcode secrets, tokens, API keys, passwords, or private URLs into workflow JSON.
@@ -124,6 +126,8 @@
 - Existing workflows may reference `$env.*`; do not expand that pattern casually.
 - For new work, prefer Credentials or clearly centralized config nodes over hidden magic values.
 - If a configurable value is expected to change, keep it in a visible `Set` node or credential, not buried in code.
+- When a new workflow needs a real domain or URL under your control, use the `*.3x3cut0r.de` domain family by default instead of placeholder domains.
+- Do not introduce `example.com`, `example.org`, `example.net`, or similar placeholder domains in new workflows. Use the relevant `*.3x3cut0r.de` hostname or keep the value clearly configurable in a dedicated node or credential.
 
 ## Node Choice Guidelines
 - Prefer official n8n nodes first.
