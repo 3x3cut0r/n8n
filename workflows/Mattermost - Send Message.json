@@ -326,8 +326,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1904,
-        -144
+        2000,
+        -160
       ],
       "id": "742d297e-8ce8-4222-a817-47b46e277ef3",
       "name": "Evaluate channel lookup"
@@ -360,8 +360,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2144,
-        -32
+        2240,
+        -48
       ],
       "id": "e0aea6fd-9dfc-4bec-b945-26f682c9db14",
       "name": "If channel lookup succeeded"
@@ -373,7 +373,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2400,
+        2496,
         208
       ],
       "id": "d9de2c7d-cecc-46e6-94cb-01b1319d12d5",
@@ -396,7 +396,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2608,
+        2704,
         208
       ],
       "id": "1c9299b6-61d1-4e48-aaa1-9de42282d2b6",
@@ -416,7 +416,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2896,
+        2992,
         192
       ],
       "id": "023f966a-7844-4d60-b5e0-52d40023a70e",
@@ -455,8 +455,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2400,
-        -16
+        2496,
+        -32
       ],
       "id": "a7c4944f-8692-4540-ba72-36ac82febe6d",
       "name": "Build channel lookup error result"
@@ -669,7 +669,7 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -679,7 +679,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "3917c479-03ac-4aca-a883-af4a649a8b5c",
+  "versionId": "c4607046-1462-457f-bfcc-3cc83faf31ad",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
