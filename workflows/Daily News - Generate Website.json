@@ -3,17 +3,17 @@
   "nodes": [
     {
       "parameters": {
-        "content": "# Daily News - Generate Website\n\n- Erstellt taeglich eine HTML-Newsseite aus RSS/Atom\n- Sendet nur Link per Signal: [Daily News] + URL\n- Verwende ein eigenes Postgres-Credential auf DB/User \"n8n-data\"\n\npgAdmin Setup (ohne SQL im Workflow):\n1) In pgAdmin eine DB \"n8n-data\" mit Owner/User \"n8n-data\" anlegen\n2) Beim DB-Template \"template1\" verwenden\n3) In dieser DB die Tabelle \"public.daily_news\" mit den Spalten page_id, token, html_base64, created_at, expires_at anlegen\n4) Im n8n Postgres-Credential SSL/TLS deaktivieren (nicht nur \"insecure\")\n5) Dieses DB-Credential in beiden Daily-News-Workflows hinterlegen",
+        "content": "# Daily News - Generate Website\n\n- Erstellt taeglich eine HTML-Newsseite aus RSS/Atom\n- Sendet nur Link per Mattermost: [Daily News] + URL\n- Verwende ein eigenes Postgres-Credential auf DB/User \"n8n-data\"\n\npgAdmin Setup (ohne SQL im Workflow):\n1) In pgAdmin eine DB \"n8n-data\" mit Owner/User \"n8n-data\" anlegen\n2) Beim DB-Template \"template1\" verwenden\n3) In dieser DB die Tabelle \"public.daily_news\" mit den Spalten page_id, token, html_base64, created_at, expires_at anlegen\n4) Im n8n Postgres-Credential SSL/TLS deaktivieren (nicht nur \"insecure\")\n5) Dieses DB-Credential in beiden Daily-News-Workflows hinterlegen",
         "height": 336,
         "width": 728
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        864,
-        464
+        9200,
+        1600
       ],
-      "id": "d2bd7f7b-4f2a-4776-a472-caeea16ad495",
+      "id": "880b1366-4843-4582-b511-268741622974",
       "name": "Note"
     },
     {
@@ -21,10 +21,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        864,
-        1024
+        9200,
+        2160
       ],
-      "id": "7b80b5f8-7656-4175-b29a-7e8c0d0ac44c",
+      "id": "5dac5f65-e648-45e9-bad2-46b3dacfa2d9",
       "name": "Manual Trigger"
     },
     {
@@ -40,10 +40,10 @@
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
       "position": [
-        864,
-        832
+        9200,
+        1968
       ],
-      "id": "7146800f-6813-43bb-8f20-9ce4267180b3",
+      "id": "8755c3d6-ca86-4618-82a9-e12fdbf0b0d4",
       "name": "Daily 07:00"
     },
     {
@@ -160,10 +160,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1072,
-        832
+        9408,
+        1968
       ],
-      "id": "a220a661-0c3b-44e3-ad1c-8274f8dd5b04",
+      "id": "57dbe502-96cd-45b4-ac83-43bb0fba99ff",
       "name": "Set Config"
     },
     {
@@ -173,10 +173,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1280,
-        832
+        9616,
+        1968
       ],
-      "id": "d5125100-7347-4bed-a8e4-b8ac3bd9d3a0",
+      "id": "e433ea8f-6341-4ad0-adc7-0c62c6d554a9",
       "name": "Split Sources"
     },
     {
@@ -194,10 +194,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1488,
-        832
+        9824,
+        1968
       ],
-      "id": "c40d8bb1-f257-4767-8593-2041ec60fc0c",
+      "id": "1de50f00-8fe0-4c49-a979-50afa8a35626",
       "name": "HTTP Request Feed",
       "onError": "continueErrorOutput"
     },
@@ -209,10 +209,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1712,
-        816
+        10048,
+        1952
       ],
-      "id": "b6b51f14-c345-4a50-b169-bcf639f06fc0",
+      "id": "22a19e57-5232-42f3-8e08-83cb4fdf75ba",
       "name": "Normalize Feed Response"
     },
     {
@@ -222,10 +222,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1920,
-        816
+        10256,
+        1952
       ],
-      "id": "64fe9ca8-4b6f-4714-bc3e-b3676bbcdd06",
+      "id": "c472f285-1909-4f5b-85c9-2ad01ca16232",
       "name": "Aggregate And Build HTML"
     },
     {
@@ -235,10 +235,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2128,
-        816
+        10464,
+        1952
       ],
-      "id": "08ff3296-95d2-458a-8cce-a99db70f3ea7",
+      "id": "c0af7a25-978c-4d1a-bb5c-158041de7f39",
       "name": "Create Public URL"
     },
     {
@@ -250,10 +250,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2336,
-        816
+        10672,
+        1952
       ],
-      "id": "081dc3ad-e5ef-4e8d-ad9c-0b60add10075",
+      "id": "82e8327c-0844-42e4-b75f-62e7e8fdbcbc",
       "name": "Ensure News Table",
       "credentials": {
         "postgres": {
@@ -271,10 +271,10 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        2544,
-        816
+        10880,
+        1952
       ],
-      "id": "9e7cffe3-48b6-4ef9-991b-7a88928d3a71",
+      "id": "54a10147-320c-481a-87fa-6870c2fc9459",
       "name": "Save News Page",
       "credentials": {
         "postgres": {
@@ -287,16 +287,17 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "jEC35MXsssds8HOB",
+          "value": "zSpgVeZvjP34TpnO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/jEC35MXsssds8HOB",
-          "cachedResultName": "Signal - Send Message"
+          "cachedResultUrl": "/workflow/zSpgVeZvjP34TpnO",
+          "cachedResultName": "Mattermost - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
             "message": "={{ $('Create Public URL').item.json.message }}",
-            "recipient": "={{ $('Create Public URL').item.json.recipient }}"
+            "channelName": "n8n",
+            "teamName": "Private"
           },
           "matchingColumns": [],
           "schema": [
@@ -311,8 +312,18 @@
               "removed": false
             },
             {
-              "id": "recipient",
-              "displayName": "recipient",
+              "id": "channelName",
+              "displayName": "channelName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "teamName",
+              "displayName": "teamName",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -329,11 +340,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        2752,
-        816
+        11088,
+        1952
       ],
-      "id": "832e4157-765b-4731-a8df-20dcecdeb770",
-      "name": "Signal - Send Message",
+      "id": "99d7e35a-5667-4ce8-9562-239cd3acb879",
+      "name": "Mattermost - Send Message",
       "alwaysOutputData": true
     }
   ],
@@ -442,7 +453,7 @@
       "main": [
         [
           {
-            "node": "Signal - Send Message",
+            "node": "Mattermost - Send Message",
             "type": "main",
             "index": 0
           }
@@ -450,7 +461,7 @@
       ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -460,7 +471,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 5
   },
-  "versionId": "88c99698-55ec-4401-bb0f-cf5009e97037",
+  "versionId": "6e8842c8-2874-46ce-a21a-f435cf664a0f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
@@ -468,10 +479,10 @@
   "id": "RH1GUxxRBwYAAnmZ",
   "tags": [
     {
-      "name": "Database",
-      "id": "Pml4vA4PtD8mAMba",
       "updatedAt": "2026-03-14T21:54:50.056Z",
-      "createdAt": "2026-03-14T21:54:50.056Z"
+      "createdAt": "2026-03-14T21:54:50.056Z",
+      "id": "Pml4vA4PtD8mAMba",
+      "name": "Database"
     }
   ]
 }
