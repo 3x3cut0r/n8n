@@ -3,17 +3,17 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Routing-Regeln:**\n- **Airbus MyPayslip** → noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Keyword \"newsletter\" im Betreff/Snippet/Text → Signal-Benachrichtigung\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification, includeNoMatch).",
+        "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Routing-Regeln:**\n- **Airbus MyPayslip** → noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Keyword \"newsletter\" im Betreff/Snippet/Text → Mattermost-Benachrichtigung\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification, includeNoMatch).",
         "height": 288,
         "width": 724
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -8640,
-        3536
+        -7552,
+        3376
       ],
-      "id": "b30bf020-0673-4dd7-be2b-06cb87fc07a4",
+      "id": "27f25d19-eb6a-4e60-a9b3-34a9c8a8c6ac",
       "name": "Sticky Note"
     },
     {
@@ -23,10 +23,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -8640,
-        3856
+        -7552,
+        3696
       ],
-      "id": "67a3f872-2b41-4146-920e-2318be0372c3",
+      "id": "42ee1633-6c8c-4362-a679-482532d39bc7",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -34,10 +34,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -8832,
-        4240
+        -7744,
+        4080
       ],
-      "id": "63cd4241-6e06-4ee5-9107-882db1c0faef",
+      "id": "0586809e-9cbe-424a-918f-be5658c62552",
       "name": "Manual Trigger Airbus"
     },
     {
@@ -93,10 +93,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8640,
-        4048
+        -7552,
+        3888
       ],
-      "id": "0a275b1e-ec3a-4493-92f3-2daf682280d5",
+      "id": "08aca299-d4dc-475d-bb9c-8ba6ee7b4372",
       "name": "Set test input Airbus"
     },
     {
@@ -152,10 +152,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8640,
-        4240
+        -7552,
+        4080
       ],
-      "id": "5e6ed1ff-e534-482c-a447-261f1880477e",
+      "id": "f887bb95-9b45-4663-92c0-7ab6541f5477",
       "name": "Set test input Newsletter"
     },
     {
@@ -211,10 +211,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8640,
-        4432
+        -7552,
+        4272
       ],
-      "id": "e849fe5e-774c-4a91-8c51-f7742176fcea",
+      "id": "309c3171-e12c-499c-908e-9536b7a37004",
       "name": "Set test input No Match"
     },
     {
@@ -224,10 +224,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -8432,
-        3856
+        -7344,
+        3696
       ],
-      "id": "00f6b4ee-7967-4db6-874d-8f099c4e7002",
+      "id": "34b8e53c-524f-4782-9d22-c3a2bf41e14f",
       "name": "Normalize and validate input"
     },
     {
@@ -254,10 +254,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -8224,
-        3856
+        -7136,
+        3696
       ],
-      "id": "50b6317b-0dfb-48ba-bb93-2b79d01ee88a",
+      "id": "8449d5d5-2628-402a-8c69-fd905f6a1d7f",
       "name": "Settings"
     },
     {
@@ -288,23 +288,23 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -8016,
-        3856
+        -6928,
+        3696
       ],
-      "id": "be0aa0f9-18ab-4631-9ea7-3cbd54054842",
+      "id": "1cf69490-fab2-4d98-a054-e7b95fcff124",
       "name": "If payload valid"
     },
     {
       "parameters": {
-        "jsCode": "const input = $json || {};\n\nconst rawFrom = typeof input.from === 'string' ? input.from.trim() : '';\nconst senderMatch = rawFrom.match(/<([^>]+)>/);\nconst sender = (senderMatch?.[1] || rawFrom).trim().toLowerCase();\n\nconst contentHaystack = [input.subject || '', input.snippet || '', input.text || '']\n  .join('\\n')\n  .toLowerCase();\n\nconst isAirbusSender = sender === 'noreply@mypayslip.airbus.com';\nconst hasNewsletter = contentHaystack.includes('newsletter');\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\n\nlet classification = {\n  category: 'none',\n  confidence: 1,\n  reason: 'No routing rule matched'\n};\n\nlet routeLabel = 'No Route';\n\nconst output = {\n  ...input\n};\n\nif (isAirbusSender) {\n  route = {\n    category: 'airbus_mypayslip',\n    workflowId: 'DwMi5ywRbXvxyNVN',\n    workflowName: 'Airbus - MyPayslip'\n  };\n  classification = {\n    category: 'airbus_mypayslip',\n    confidence: 1,\n    reason: 'Matched sender noreply@mypayslip.airbus.com'\n  };\n  routeLabel = 'Airbus';\n} else if (hasNewsletter) {\n  route = {\n    category: 'newsletter',\n    workflowId: 'jEC35MXsssds8HOB',\n    workflowName: 'Signal - Send Message'\n  };\n  classification = {\n    category: 'newsletter',\n    confidence: 1,\n    reason: 'Matched keyword newsletter in email content'\n  };\n  routeLabel = 'Newsletter';\n  output.message = `Newsletter erhalten von: ${sender || 'unbekannt'}`;\n}\n\nreturn [{\n  json: {\n    ...output,\n    sender,\n    classification,\n    route,\n    routeLabel,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
+        "jsCode": "const input = $json || {};\n\nconst rawFrom = typeof input.from === 'string' ? input.from.trim() : '';\nconst senderMatch = rawFrom.match(/<([^>]+)>/);\nconst sender = (senderMatch?.[1] || rawFrom).trim().toLowerCase();\n\nconst contentHaystack = [input.subject || '', input.snippet || '', input.text || '']\n  .join('\\n')\n  .toLowerCase();\n\nconst isAirbusSender = sender === 'noreply@mypayslip.airbus.com';\nconst hasNewsletter = contentHaystack.includes('newsletter');\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\n\nlet classification = {\n  category: 'none',\n  confidence: 1,\n  reason: 'No routing rule matched'\n};\n\nlet routeLabel = 'No Route';\n\nconst output = {\n  ...input\n};\n\nif (isAirbusSender) {\n  route = {\n    category: 'airbus_mypayslip',\n    workflowId: 'DwMi5ywRbXvxyNVN',\n    workflowName: 'Airbus - MyPayslip'\n  };\n  classification = {\n    category: 'airbus_mypayslip',\n    confidence: 1,\n    reason: 'Matched sender noreply@mypayslip.airbus.com'\n  };\n  routeLabel = 'Airbus';\n} else if (hasNewsletter) {\n  route = {\n    category: 'newsletter',\n    workflowId: 'zSpgVeZvjP34TpnO',\n    workflowName: 'Mattermost - Send Message'\n  };\n  classification = {\n    category: 'newsletter',\n    confidence: 1,\n    reason: 'Matched keyword newsletter in email content'\n  };\n  routeLabel = 'Newsletter';\n  output.message = `Newsletter erhalten von: ${sender || 'unbekannt'}`;\n}\n\nreturn [{\n  json: {\n    ...output,\n    sender,\n    classification,\n    route,\n    routeLabel,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7792,
-        3760
+        -6704,
+        3600
       ],
-      "id": "5894fdf2-4eda-4e84-98b2-447caefd5e78",
+      "id": "b5fc1e43-10cc-4ce5-bdd2-b0903d77d0a2",
       "name": "Parse and resolve route"
     },
     {
@@ -335,10 +335,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -7536,
-        3904
+        -6448,
+        3744
       ],
-      "id": "812842f1-7794-4b81-9caa-8112b2a177ac",
+      "id": "31206f2f-a9e5-492c-9699-ea18f0691deb",
       "name": "If sub workflow configured"
     },
     {
@@ -369,10 +369,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -7536,
-        3616
+        -6448,
+        3456
       ],
-      "id": "6987391a-52af-4bae-90bb-bea2b8b3d702",
+      "id": "9d14904d-7501-47b5-b047-239042511c54",
       "name": "If notification enabled"
     },
     {
@@ -412,10 +412,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -7264,
-        3600
+        -6176,
+        3440
       ],
-      "id": "59bd4a05-bbe1-4dba-8c57-a05dc04e614f",
+      "id": "a90e60c7-8f77-4e81-aab2-8c5b8e5ba24f",
       "name": "If include no match"
     },
     {
@@ -431,7 +431,9 @@
             "snippet": "={{ $json.snippet }}",
             "text": "={{ $json.text }}",
             "sender": "={{ $json.sender }}",
-            "message": "={{ $json.message }}"
+            "message": "={{ $json.message }}",
+            "channelName": "n8n",
+            "teamName": "Private"
           },
           "matchingColumns": [],
           "schema": [],
@@ -443,10 +445,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -7264,
-        3808
+        -6176,
+        3648
       ],
-      "id": "e2a1e88e-89be-40fa-8ab8-f1c0b7a8b7ce",
+      "id": "9ef4e9e2-8b20-4fa0-90fa-cf1d4e607b38",
       "name": "Execute target sub workflow",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -458,28 +460,61 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7264,
-        4000
+        -6176,
+        3840
       ],
-      "id": "da002f15-d1f4-4621-a856-61f72a3a8ca8",
+      "id": "46ee6ccf-0c56-4b4f-b9c7-f00a654071b5",
       "name": "Build pending route result"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "FmZEMyUH4jsC3Qxf",
+          "value": "zSpgVeZvjP34TpnO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
-          "cachedResultName": "Telegram - Send Message"
+          "cachedResultUrl": "/workflow/zSpgVeZvjP34TpnO",
+          "cachedResultName": "Mattermost - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "message": "={{ '[Gmail]\\n[' + $json.routeLabel + ']\\n' + $json.from + '\\n' + $json.subject }}"
+            "message": "={{ '[Gmail]\\n[' + $json.routeLabel + ']\\n' + $json.from + '\\n' + $json.subject }}",
+            "channelName": "n8n",
+            "teamName": "Private"
           },
           "matchingColumns": [],
-          "schema": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "channelName",
+              "displayName": "channelName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "teamName",
+              "displayName": "teamName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": true
         },
@@ -488,10 +523,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -7008,
-        3584
+        -5920,
+        3424
       ],
-      "id": "42a82fda-47e3-41df-9dfe-5f203b65e8af",
+      "id": "9a947e1b-fecb-4362-a70c-a9755267ffb6",
       "name": "Send notification",
       "alwaysOutputData": true,
       "onError": "continueErrorOutput"
@@ -503,10 +538,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7008,
-        3792
+        -5920,
+        3632
       ],
-      "id": "85bfdcf9-85a5-4654-9e19-87956c93616a",
+      "id": "dbefa57f-2a27-46ab-8613-7549da1be30b",
       "name": "Build route result"
     },
     {
@@ -516,10 +551,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7792,
-        3952
+        -6704,
+        3792
       ],
-      "id": "7963bfe1-06bb-4219-93bd-6f20117558dc",
+      "id": "b3bcde9a-acb9-4204-81b5-1095f67c505e",
       "name": "Build validation error result"
     }
   ],
@@ -698,7 +733,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "8bacaa4c-a6aa-4373-be8b-f5f304ed2535",
+  "versionId": "a19e26ba-c222-47f1-b861-62a00de8e7c5",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
@@ -711,10 +746,10 @@
       "name": "E-Mail"
     },
     {
-      "name": "Telegram",
-      "id": "Xm8IXOGX7oofEptt",
-      "updatedAt": "2026-04-19T10:48:56.814Z",
-      "createdAt": "2026-04-19T10:48:56.814Z"
+      "name": "Mattermost",
+      "id": "ULn7rKr1NniGlDEc",
+      "updatedAt": "2026-09-04T20:42:02.072Z",
+      "createdAt": "2026-09-04T20:42:02.072Z"
     }
   ]
 }
