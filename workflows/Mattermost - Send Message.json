@@ -10,10 +10,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        16,
-        -384
+        5360,
+        -2144
       ],
-      "id": "6e943eb2-12c8-4ba8-81c4-55aeecca99b5",
+      "id": "b73cb987-04a7-4efe-a5c4-4d0d8ab1cd05",
       "name": "Config note"
     },
     {
@@ -23,10 +23,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -192,
-        192
+        5152,
+        -1568
       ],
-      "id": "a6148cbb-5bdf-431a-a10d-2223949b6b1c",
+      "id": "21cc94c3-35e7-41f2-88c7-1d608e64b2f5",
       "name": "Execute Workflow Trigger"
     },
     {
@@ -34,10 +34,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -400,
-        400
+        4944,
+        -1360
       ],
-      "id": "6f842c9c-e6d9-48a6-a8e2-00ed108603d3",
+      "id": "62a87522-8fab-43b3-a4f9-ba2f21993b4b",
       "name": "Manual Trigger"
     },
     {
@@ -81,10 +81,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -192,
-        400
+        5152,
+        -1360
       ],
-      "id": "95fef958-19ed-49b8-9a5f-2f0bf42b7491",
+      "id": "8c037c45-7c84-4eb1-9abb-e25b5dbe9cca",
       "name": "Set test input"
     },
     {
@@ -94,10 +94,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16,
-        304
+        5360,
+        -1456
       ],
-      "id": "1f25af63-bc26-401d-a83e-b12e1b0ad9ed",
+      "id": "28e110b3-ed89-4826-abae-4330b8d3609f",
       "name": "Normalize input"
     },
     {
@@ -135,10 +135,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        224,
-        304
+        5568,
+        -1456
       ],
-      "id": "dda5350e-0df6-4ba3-a6c3-ebf421b77969",
+      "id": "bc45d9e7-4a62-415a-b59c-9d4e5a3331c3",
       "name": "Set Mattermost config"
     },
     {
@@ -148,10 +148,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        432,
-        304
+        5776,
+        -1456
       ],
-      "id": "40a71642-20e1-4fb1-b1b7-300e0c4250b6",
+      "id": "98a35e16-a4ca-4f24-8de3-1c4d9aa4be3a",
       "name": "Resolve and validate payload"
     },
     {
@@ -182,10 +182,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        640,
-        304
+        5984,
+        -1456
       ],
-      "id": "54f42ff2-3e75-4ef9-8935-22b1c0b8485b",
+      "id": "4f260f9b-1108-42b5-ae46-07e753d4ae7f",
       "name": "If payload valid"
     },
     {
@@ -216,10 +216,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        864,
-        192
+        6208,
+        -1568
       ],
-      "id": "6514aded-10a0-405b-ac07-353ecb98f8fd",
+      "id": "9419cce0-9c30-4e46-8ef2-f558b1d335a9",
       "name": "If channel lookup needed"
     },
     {
@@ -234,10 +234,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1072,
-        80
+        6416,
+        -1680
       ],
-      "id": "2aca4f82-02e6-46bb-976f-b1657b2504ce",
+      "id": "44b2e2d2-c098-4273-989d-266f159eebcb",
       "name": "Resolve team by name",
       "credentials": {
         "httpHeaderAuth": {
@@ -245,7 +245,7 @@
           "name": "Mattermost"
         }
       },
-      "onError": "continueErrorOutput"
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -254,10 +254,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1280,
-        -48
+        6624,
+        -1808
       ],
-      "id": "c399dd87-ae71-4878-80b5-dc93ad2a4faa",
+      "id": "d144d024-fe63-460e-949e-4e23565079ee",
       "name": "Evaluate team lookup"
     },
     {
@@ -288,10 +288,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1488,
-        -48
+        6832,
+        -1808
       ],
-      "id": "23930ae8-6a5a-46b0-a599-42a63500118f",
+      "id": "d8ec775a-3a6f-4d12-81cc-777591bb75e6",
       "name": "If team lookup succeeded"
     },
     {
@@ -306,10 +306,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1696,
-        -144
+        7040,
+        -1904
       ],
-      "id": "15fc665d-5889-47f8-8b0d-7d49bb62b03d",
+      "id": "b10814d2-d718-463f-875b-ae9214723d57",
       "name": "Resolve channel by name",
       "credentials": {
         "httpHeaderAuth": {
@@ -317,7 +317,7 @@
           "name": "Mattermost"
         }
       },
-      "onError": "continueErrorOutput"
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -326,11 +326,83 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2000,
-        -160
+        7264,
+        -1904
       ],
-      "id": "742d297e-8ce8-4222-a817-47b46e277ef3",
+      "id": "b7e880b9-86e9-4743-90e7-e0bacf167ffa",
       "name": "Evaluate channel lookup"
+    },
+    {
+      "parameters": {
+        "url": "={{ `${$json.baseUrl}/api/v4/users/me/teams/${encodeURIComponent($json.usedTeamId)}/channels` }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        7712,
+        -1888
+      ],
+      "id": "963a9f47-a479-4bbd-befd-485c55600b47",
+      "name": "List accessible team channels",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GLY9DAXTEvoYy10S",
+          "name": "Mattermost"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resolved = $('Evaluate channel lookup').first().json || {};\nconst rawEntries = $input.all().map((item) => item.json);\n\nconst channels = rawEntries.flatMap((entry) => {\n  if (Array.isArray(entry)) {\n    return entry;\n  }\n\n  if (Array.isArray(entry?.channels)) {\n    return entry.channels;\n  }\n\n  if (Array.isArray(entry?.data)) {\n    return entry.data;\n  }\n\n  if (entry && typeof entry === 'object') {\n    return [entry];\n  }\n\n  return [];\n});\n\nconst normalizeDisplayName = (value) => String(value || '')\n  .trim()\n  .replace(/^[#~]/, '')\n  .replace(/\\s+/g, ' ')\n  .toLowerCase();\n\nconst slugifyChannelName = (value) => String(value || '')\n  .normalize('NFKD')\n  .replace(/[\\u0300-\\u036f]/g, '')\n  .trim()\n  .toLowerCase()\n  .replace(/^[#~]/, '')\n  .replace(/[^a-z0-9._-]+/g, '-')\n  .replace(/-+/g, '-')\n  .replace(/^-|-$/g, '');\n\nconst requestedName = String(resolved.usedChannelName || '').trim();\nconst requestedDisplayName = normalizeDisplayName(requestedName);\nconst requestedSlug = slugifyChannelName(requestedName);\n\nconst candidates = channels\n  .filter((channel) => channel && typeof channel === 'object')\n  .map((channel) => ({\n    id: typeof channel.id === 'string' ? channel.id : '',\n    name: typeof channel.name === 'string' ? channel.name : '',\n    displayName: typeof channel.display_name === 'string' ? channel.display_name : ''\n  }));\n\nconst directMatch = candidates.find((channel) => channel.name === requestedName);\nconst slugMatch = requestedSlug\n  ? candidates.find((channel) => channel.name === requestedSlug)\n  : null;\nconst displayNameMatch = requestedDisplayName\n  ? candidates.find((channel) => normalizeDisplayName(channel.displayName) === requestedDisplayName)\n  : null;\n\nconst matchedChannel = directMatch || slugMatch || displayNameMatch || null;\nconst ok = !!matchedChannel?.id;\nconst availableChannels = candidates.slice(0, 25).map((channel) => ({\n  name: channel.name,\n  displayName: channel.displayName\n}));\nconst error = ok\n  ? ''\n  : `Could not resolve Mattermost channel ${JSON.stringify(requestedName || 'unknown')} by internal name, slug, or display name.`;\n\nreturn [{\n  json: {\n    ...resolved,\n    usedChannelId: matchedChannel?.id || '',\n    usedChannelName: matchedChannel?.name || resolved.usedChannelName || '',\n    resolvedDisplayChannelName: matchedChannel?.displayName || '',\n    channelLookupStatusCode: ok ? 200 : (resolved.channelLookupStatusCode || 404),\n    channelLookupOk: ok,\n    channelLookupResponse: ok\n      ? {\n          id: matchedChannel.id,\n          name: matchedChannel.name,\n          display_name: matchedChannel.displayName,\n          lookup: directMatch ? 'direct-name' : slugMatch ? 'slug-fallback' : 'display-name-fallback'\n        }\n      : {\n          error,\n          requestedChannelName: requestedName,\n          requestedChannelSlug: requestedSlug,\n          availableChannels\n        }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        7968,
+        -1888
+      ],
+      "id": "ee1153d2-0df5-4637-9e9d-82638e1d3330",
+      "name": "Evaluate fallback channel lookup"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b9f75631-f61c-4d71-8caf-fcfb76f78b56",
+              "leftValue": "={{ $json.channelLookupOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        8192,
+        -1888
+      ],
+      "id": "669569bf-ef03-46bc-bc33-0c4288373813",
+      "name": "If fallback channel lookup succeeded"
     },
     {
       "parameters": {
@@ -360,10 +432,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        2240,
-        -48
+        7488,
+        -1904
       ],
-      "id": "e0aea6fd-9dfc-4bec-b945-26f682c9db14",
+      "id": "bf9052a7-992c-48c3-b916-b1100f23b111",
       "name": "If channel lookup succeeded"
     },
     {
@@ -373,10 +445,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2496,
-        208
+        8480,
+        -1552
       ],
-      "id": "d9de2c7d-cecc-46e6-94cb-01b1319d12d5",
+      "id": "afa679f9-4e4e-4010-aac1-91e3b4215e86",
       "name": "Prepare send payload"
     },
     {
@@ -396,10 +468,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2704,
-        208
+        8688,
+        -1552
       ],
-      "id": "1c9299b6-61d1-4e48-aaa1-9de42282d2b6",
+      "id": "d22b0ecc-846f-4f0f-aedf-38716deacffd",
       "name": "Send Mattermost message",
       "credentials": {
         "httpHeaderAuth": {
@@ -407,20 +479,67 @@
           "name": "Mattermost"
         }
       },
-      "onError": "continueErrorOutput"
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "const resolved = $('Prepare send payload').item.json || {};\nconst response = $json || {};\nconst statusCode = Number(response.statusCode || response.code || 0) || null;\nconst errorMessage = response.error || response.message || response.detailed_error || '';\nconst ok = !!response.id && !errorMessage && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedChannelId: resolved.usedChannelId || null,\n    usedChannelName: resolved.usedChannelName || null,\n    usedTeamName: resolved.usedTeamName || null,\n    response\n  }\n}];"
+        "jsCode": "const resolved = $('Prepare send payload').item.json || {};\nconst response = $json || {};\nconst body = response.body && typeof response.body === 'object' ? response.body : response;\nconst statusCode = Number(response.statusCode || body.statusCode || body.code || 0) || null;\nconst postId = typeof body.id === 'string' ? body.id : '';\nconst errorMessage = body.error || body.detailed_error || response.error || response.detailed_error || (!postId ? body.message || response.message || '' : '');\nconst ok = !!postId && !errorMessage && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    statusCode,\n    usedChannelId: resolved.usedChannelId || null,\n    usedChannelName: resolved.usedChannelName || null,\n    usedTeamName: resolved.usedTeamName || null,\n    response\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2992,
-        192
+        8912,
+        -1552
       ],
-      "id": "023f966a-7844-4d60-b5e0-52d40023a70e",
+      "id": "e497b6a6-88e7-407b-bc8f-db3e2db6f75c",
       "name": "Build send result"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0a52dfcf-966c-4ef7-bcd3-715ea091561c",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        9136,
+        -1552
+      ],
+      "id": "d23003f5-98b1-42c3-96d9-65ac63e7876f",
+      "name": "If send succeeded"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.response?.error || 'Mattermost message could not be sent.' }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        9360,
+        -1344
+      ],
+      "id": "5bc802c9-cf43-4730-a293-5d22462bc9c6",
+      "name": "Stop on Mattermost error"
     },
     {
       "parameters": {
@@ -429,10 +548,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        864,
-        416
+        6208,
+        -1344
       ],
-      "id": "b0d8b9a7-18d6-493a-a9d2-15fec18da9f2",
+      "id": "457bb5dc-988a-4de5-89ef-929875de86a0",
       "name": "Build validation error result"
     },
     {
@@ -442,10 +561,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1696,
-        48
+        7040,
+        -1712
       ],
-      "id": "5a362e4e-79ea-4788-abac-43219ee9f3f2",
+      "id": "e49e51a6-c447-4466-ac7e-9c5a3fd1eea4",
       "name": "Build team lookup error result"
     },
     {
@@ -455,10 +574,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2496,
-        -32
+        8480,
+        -1872
       ],
-      "id": "a7c4944f-8692-4540-ba72-36ac82febe6d",
+      "id": "917b0187-e231-4c4c-9b31-b7b30c07baca",
       "name": "Build channel lookup error result"
     }
   ],
@@ -639,6 +758,46 @@
         ],
         [
           {
+            "node": "List accessible team channels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List accessible team channels": {
+      "main": [
+        [
+          {
+            "node": "Evaluate fallback channel lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate fallback channel lookup": {
+      "main": [
+        [
+          {
+            "node": "If fallback channel lookup succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If fallback channel lookup succeeded": {
+      "main": [
+        [
+          {
+            "node": "Prepare send payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
             "node": "Build channel lookup error result",
             "type": "main",
             "index": 0
@@ -667,6 +826,62 @@
           }
         ]
       ]
+    },
+    "Build validation error result": {
+      "main": [
+        [
+          {
+            "node": "Stop on Mattermost error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build team lookup error result": {
+      "main": [
+        [
+          {
+            "node": "Stop on Mattermost error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build channel lookup error result": {
+      "main": [
+        [
+          {
+            "node": "Stop on Mattermost error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build send result": {
+      "main": [
+        [
+          {
+            "node": "If send succeeded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If send succeeded": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Stop on Mattermost error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -679,10 +894,17 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "c4607046-1462-457f-bfcc-3cc83faf31ad",
+  "versionId": "b0d6b5ad-61ee-4e17-9a34-76b084942a24",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "zSpgVeZvjP34TpnO",
-  "tags": []
+  "tags": [
+    {
+      "name": "Mattermost",
+      "id": "ULn7rKr1NniGlDEc",
+      "updatedAt": "2026-09-04T20:42:02.072Z",
+      "createdAt": "2026-09-04T20:42:02.072Z"
+    }
+  ]
 }
