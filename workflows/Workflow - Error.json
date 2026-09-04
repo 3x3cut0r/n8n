@@ -123,8 +123,7 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "timeSavedPerExecution": 2,
-    "executionTimeout": -1
+    "timeSavedPerExecution": 2
   },
   "versionId": "83bff40b-ea63-4eae-bd0a-d7510f963910",
   "meta": {
@@ -132,12 +131,6 @@
   },
   "id": "Bin1Me6S1IWNK7e7",
   "tags": [
-    {
-      "updatedAt": "2026-04-19T10:48:56.814Z",
-      "createdAt": "2026-04-19T10:48:56.814Z",
-      "id": "Xm8IXOGX7oofEptt",
-      "name": "Telegram"
-    },
     {
       "name": "Mattermost",
       "id": "ULn7rKr1NniGlDEc",
