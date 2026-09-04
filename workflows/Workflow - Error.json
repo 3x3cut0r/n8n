@@ -6,39 +6,74 @@
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        352,
+        -256
       ],
-      "id": "e6c05af8-efcd-483a-8d35-08de64b99df8",
+      "id": "8fb9a97b-4b74-40f6-b988-aacade22aa9a",
       "name": "Error Trigger"
     },
     {
       "parameters": {
-        "jsCode": "const workflowName = $json.workflow?.name || $json.execution?.workflowData?.name || 'unknown';\nconst errorMessage = $json.error?.message || $json.execution?.error?.message || $json.message || 'unknown error';\n\nreturn [{\n  json: {\n    message: `n8n: ERROR: workflow = ${workflowName}: ${errorMessage}`,\n    recipient: '-5213840069'\n  }\n}];"
+        "jsCode": "const workflowName = $json.workflow?.name || $json.execution?.workflowData?.name || 'unknown';\nconst errorMessage = $json.error?.message || $json.execution?.error?.message || $json.message || 'unknown error';\n\nreturn [{\n  json: {\n    message: `n8n: ERROR: workflow = ${workflowName}: ${errorMessage}`,\n    channelName: 'n8n',\n    teamName: 'Private'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        240,
-        0
+        592,
+        -256
       ],
-      "id": "8bd78810-4f64-438c-a3a9-d3f445866fa4",
+      "id": "66c570ff-0586-47c2-9d3d-736ecabfc1ca",
       "name": "Build message payload"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "FmZEMyUH4jsC3Qxf",
+          "value": "zSpgVeZvjP34TpnO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
-          "cachedResultName": "Telegram - Send Message"
+          "cachedResultUrl": "/workflow/zSpgVeZvjP34TpnO",
+          "cachedResultName": "Mattermost - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "message": "={{ $json.message }}",
+            "channelName": "={{ $json.channelName }}",
+            "teamName": "={{ $json.teamName }}"
+          },
           "matchingColumns": [],
-          "schema": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "channelName",
+              "displayName": "channelName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "teamName",
+              "displayName": "teamName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": true
         },
@@ -47,10 +82,10 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        480,
-        0
+        832,
+        -256
       ],
-      "id": "4c40ae89-7b8c-4025-9d45-28c74c8c1068",
+      "id": "ff297625-8f5b-43c7-b3d6-87069e8a777a",
       "name": "Send Message",
       "alwaysOutputData": true
     }
@@ -88,19 +123,26 @@
     "timeSavedMode": "fixed",
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
-    "timeSavedPerExecution": 5
+    "timeSavedPerExecution": 2,
+    "executionTimeout": -1
   },
-  "versionId": "63fc14a4-d329-4da1-a452-503aac9a3db9",
+  "versionId": "83bff40b-ea63-4eae-bd0a-d7510f963910",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "Bin1Me6S1IWNK7e7",
   "tags": [
     {
-      "name": "Telegram",
-      "id": "Xm8IXOGX7oofEptt",
       "updatedAt": "2026-04-19T10:48:56.814Z",
-      "createdAt": "2026-04-19T10:48:56.814Z"
+      "createdAt": "2026-04-19T10:48:56.814Z",
+      "id": "Xm8IXOGX7oofEptt",
+      "name": "Telegram"
+    },
+    {
+      "name": "Mattermost",
+      "id": "ULn7rKr1NniGlDEc",
+      "updatedAt": "2026-09-04T20:42:02.072Z",
+      "createdAt": "2026-09-04T20:42:02.072Z"
     }
   ]
 }
