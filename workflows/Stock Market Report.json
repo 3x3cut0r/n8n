@@ -1,15 +1,15 @@
 {
-  "name": "Market - Drop Alert via Signal",
+  "name": "Stock Market Report",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -288,
-        64
+        1696,
+        -336
       ],
-      "id": "a630c10c-f0e0-4d70-84d7-d2849d1bfd77",
+      "id": "8d87bf38-f1ec-4432-b740-7f933c20ee0b",
       "name": "Manual Trigger"
     },
     {
@@ -25,10 +25,10 @@
       "type": "n8n-nodes-base.cron",
       "typeVersion": 1,
       "position": [
-        -288,
-        240
+        1696,
+        -160
       ],
-      "id": "96ef6172-637f-4cbd-a3f8-f36b5f70b2ab",
+      "id": "ee945758-b4c6-4ad0-b3a9-20a78f67ca73",
       "name": "Daily check"
     },
     {
@@ -62,10 +62,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        -16,
-        64
+        1968,
+        -336
       ],
-      "id": "ed279d99-fdca-4b2d-99e1-9dd76c9a3280",
+      "id": "8a116bd1-4015-4c69-9e51-c1e6ab3b4580",
       "name": "Set stock symbols"
     },
     {
@@ -99,10 +99,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        -16,
-        240
+        1968,
+        -160
       ],
-      "id": "3a42de7e-d6fe-4200-8f98-15a36f1aecbd",
+      "id": "f7571a17-bc77-48d9-b1e4-0568836b4082",
       "name": "Set ETF symbols"
     },
     {
@@ -136,10 +136,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 2,
       "position": [
-        -16,
-        432
+        1968,
+        32
       ],
-      "id": "796dd4ea-59de-42cf-8295-f48369a625a7",
+      "id": "5baf7ac8-be92-4957-a1c6-05f5c5a8acd4",
       "name": "Set crypto symbols"
     },
     {
@@ -149,10 +149,10 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        672,
-        240
+        2656,
+        -160
       ],
-      "id": "b56015be-8df1-4a36-ad43-514a0e242bc0",
+      "id": "a70c223c-5b00-4fba-bbc2-3f8e5084357b",
       "name": "Combine symbols"
     },
     {
@@ -162,26 +162,61 @@
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
       "position": [
-        880,
-        240
+        2864,
+        -160
       ],
-      "id": "e075aaf9-6ea5-414f-aad6-709d2c472cde",
+      "id": "4e1a52ba-abc2-40f6-a014-d597ab76090a",
       "name": "Check drop"
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "FmZEMyUH4jsC3Qxf",
+          "value": "zSpgVeZvjP34TpnO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
-          "cachedResultName": "Telegram - Send Message"
+          "cachedResultUrl": "/workflow/zSpgVeZvjP34TpnO",
+          "cachedResultName": "Mattermost - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
-          "value": {},
+          "value": {
+            "message": "={{ $json.message }}",
+            "channelName": "Stock Market Report",
+            "teamName": "Private"
+          },
           "matchingColumns": [],
-          "schema": [],
+          "schema": [
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "channelName",
+              "displayName": "channelName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "teamName",
+              "displayName": "teamName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": true
         },
@@ -190,11 +225,11 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1296,
-        240
+        3280,
+        -160
       ],
-      "id": "7efb50b6-1716-4489-b2aa-3547a68edf94",
-      "name": "Telegram - Send Message",
+      "id": "1d756e9d-1bf8-4a80-b984-169081bb05c0",
+      "name": "Mattermost - Send Message",
       "alwaysOutputData": true
     },
     {
@@ -202,10 +237,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
-        224,
-        224
+        2208,
+        -176
       ],
-      "id": "ce3fc0ce-9bbf-4952-b6cf-d9cbfb695ef7",
+      "id": "ce53fa3f-c443-43c2-9ef5-32972f73cd5f",
       "name": "Merge stocks + ETF"
     },
     {
@@ -213,10 +248,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
-        464,
-        240
+        2448,
+        -160
       ],
-      "id": "1d01bc9d-e888-4d6a-974a-bb978179603c",
+      "id": "edf0697e-ca05-4308-b5b4-79ac04e6e380",
       "name": "Merge all categories"
     },
     {
@@ -226,10 +261,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1088,
-        240
+        3072,
+        -160
       ],
-      "id": "03269f3d-9888-4912-996e-5af3f349172e",
+      "id": "23346077-9e5d-4b87-a172-66e74fad6ff7",
       "name": "Prepare Message payload"
     }
   ],
@@ -358,7 +393,7 @@
       "main": [
         [
           {
-            "node": "Telegram - Send Message",
+            "node": "Mattermost - Send Message",
             "type": "main",
             "index": 0
           }
@@ -376,17 +411,17 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 10
   },
-  "versionId": "143a02b3-b871-40b5-bddb-6259bef138b9",
+  "versionId": "064371cf-0751-419d-a920-f9a65dee74fc",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
   "id": "zwc5QLQMZHnaRefe",
   "tags": [
     {
-      "name": "Telegram",
-      "id": "Xm8IXOGX7oofEptt",
-      "updatedAt": "2026-04-19T10:48:56.814Z",
-      "createdAt": "2026-04-19T10:48:56.814Z"
+      "name": "Mattermost",
+      "id": "ULn7rKr1NniGlDEc",
+      "updatedAt": "2026-09-04T20:42:02.072Z",
+      "createdAt": "2026-09-04T20:42:02.072Z"
     }
   ]
 }
