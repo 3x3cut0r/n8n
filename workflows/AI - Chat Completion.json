@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "# AI - Chat Completion\n\n- Modular OpenAI-compatible chat-completions sub-workflow\n- Input is API-near: messages are required, model is optional\n- Route is selected by routingProfile: low, standard, high\n- Each route has a primary URL/model and a fallback URL/model\n- Runtime behavior: primary try -> primary retry -> fallback\n- On fallback success, send a Telegram alert to the configured error recipient\n- The final success output is the raw API response from the successful endpoint\n\nConfiguration notes:\n1) Edit each route Set node to change URLs and models as plain text\n2) Configure the provider-specific authentication directly in the HTTP Request nodes of the matching route\n3) The Telegram recipient is configured in the global config Set node\n4) Keep inputs OpenAI-compatible and pass additional top-level request fields through as needed",
+        "content": "# AI - Chat Completion\n\n- Modular OpenAI-compatible chat-completions sub-workflow\n- Input is API-near: messages are required, model is optional\n- Route is selected by routingProfile: low, standard, high\n- Each route has a primary URL/model and a fallback URL/model\n- Runtime behavior: primary try -> primary retry -> fallback\n- On fallback success, send a Mattermost alert to the default channel\n- The final success output is the raw API response from the successful endpoint\n\nConfiguration notes:\n1) Edit each route Set node to change URLs and models as plain text\n2) Configure the provider-specific authentication directly in the HTTP Request nodes of the matching route\n3) Mattermost defaults are configured in the Mattermost sub-workflow\n4) Keep inputs OpenAI-compatible and pass additional top-level request fields through as needed",
         "height": 592,
         "width": 800
       },
@@ -881,7 +881,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const route = $('Resolve Low Route Request').item.json || {};\nconst retry = $('Evaluate Low Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'low'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    recipient: route.telegramErrorRecipient || ''\n  }\n}];"
+        "jsCode": "const route = $('Resolve Low Route Request').item.json || {};\nconst retry = $('Evaluate Low Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'low'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    channelName: 'n8n',\n    teamName: 'Private'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -896,17 +896,18 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "FmZEMyUH4jsC3Qxf",
+            "value": "zSpgVeZvjP34TpnO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
-          "cachedResultName": "Telegram - Send Message"
+            "cachedResultUrl": "/workflow/zSpgVeZvjP34TpnO",
+            "cachedResultName": "Mattermost - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "message": "={{ $json.message }}",
-            "recipient": "={{ $json.recipient }}"
-          },
+              "message": "={{ $json.message }}",
+              "channelName": "={{ $json.channelName }}",
+              "teamName": "={{ $json.teamName }}"
+            },
           "matchingColumns": [],
           "schema": [
             {
@@ -920,15 +921,25 @@
               "removed": false
             },
             {
-              "id": "recipient",
-              "displayName": "recipient",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
+                "id": "channelName",
+                "displayName": "channelName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "teamName",
+                "displayName": "teamName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": true
@@ -1301,7 +1312,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const route = $('Resolve Standard Route Request').item.json || {};\nconst retry = $('Evaluate Standard Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'standard'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    recipient: route.telegramErrorRecipient || ''\n  }\n}];"
+        "jsCode": "const route = $('Resolve Standard Route Request').item.json || {};\nconst retry = $('Evaluate Standard Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'standard'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    channelName: 'n8n',\n    teamName: 'Private'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1316,17 +1327,18 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "FmZEMyUH4jsC3Qxf",
+            "value": "zSpgVeZvjP34TpnO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
-          "cachedResultName": "Telegram - Send Message"
+            "cachedResultUrl": "/workflow/zSpgVeZvjP34TpnO",
+            "cachedResultName": "Mattermost - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "message": "={{ $json.message }}",
-            "recipient": "={{ $json.recipient }}"
-          },
+              "message": "={{ $json.message }}",
+              "channelName": "={{ $json.channelName }}",
+              "teamName": "={{ $json.teamName }}"
+            },
           "matchingColumns": [],
           "schema": [
             {
@@ -1340,15 +1352,25 @@
               "removed": false
             },
             {
-              "id": "recipient",
-              "displayName": "recipient",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
+                "id": "channelName",
+                "displayName": "channelName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "teamName",
+                "displayName": "teamName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": true
@@ -1721,7 +1743,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const route = $('Resolve High Route Request').item.json || {};\nconst retry = $('Evaluate High Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'high'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    recipient: route.telegramErrorRecipient || ''\n  }\n}];"
+        "jsCode": "const route = $('Resolve High Route Request').item.json || {};\nconst retry = $('Evaluate High Primary Retry').item.json || {};\n\nreturn [{\n  json: {\n    message: `[AI]\n[Fallback]\nRoute=${route.route || 'high'}, primaryModel=${route.primaryModel || 'unknown'}, fallbackModel=${route.fallbackModel || 'unknown'}, reason=${retry.failureMessage || 'unknown error'}`,\n    channelName: 'n8n',\n    teamName: 'Private'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1736,17 +1758,18 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "FmZEMyUH4jsC3Qxf",
+            "value": "zSpgVeZvjP34TpnO",
           "mode": "list",
-          "cachedResultUrl": "/workflow/FmZEMyUH4jsC3Qxf",
-          "cachedResultName": "Telegram - Send Message"
+            "cachedResultUrl": "/workflow/zSpgVeZvjP34TpnO",
+            "cachedResultName": "Mattermost - Send Message"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
-            "message": "={{ $json.message }}",
-            "recipient": "={{ $json.recipient }}"
-          },
+              "message": "={{ $json.message }}",
+              "channelName": "={{ $json.channelName }}",
+              "teamName": "={{ $json.teamName }}"
+            },
           "matchingColumns": [],
           "schema": [
             {
@@ -1760,15 +1783,25 @@
               "removed": false
             },
             {
-              "id": "recipient",
-              "displayName": "recipient",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "canBeUsedToMatch": true,
-              "type": "string",
-              "removed": false
-            }
+                "id": "channelName",
+                "displayName": "channelName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              },
+              {
+                "id": "teamName",
+                "displayName": "teamName",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string",
+                "removed": false
+              }
           ],
           "attemptToConvertTypes": false,
           "convertFieldsToString": true
