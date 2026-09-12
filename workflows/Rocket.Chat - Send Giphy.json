@@ -32,7 +32,7 @@
             },
             {
               "name": "params",
-              "value": "={{ $('Get a keyword or phrase').item.json.message.content }}"
+              "value": "={{ $('Get a keyword or phrase').item.json.choices[0].message.content }}"
             }
           ]
         },
@@ -62,7 +62,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({\n  command: \"giphy\",\n  roomId: $node[\"Set roomId\"].json.roomId,\n  params: $node[\"Get a keyword or phrase\"].json.message.content,\n  triggerId: \"auto-\" + Date.now(),\n  previewItem: {\n    id: $node[\"Pick random preview\"].json.id,\n    type: $node[\"Pick random preview\"].json.type,\n    value: $node[\"Pick random preview\"].json.value\n  }\n}) }}",
+        "body": "={{ JSON.stringify({\n  command: \"giphy\",\n  roomId: $node[\"Set roomId\"].json.roomId,\n  params: $node[\"Get a keyword or phrase\"].json.choices[0].message.content,\n  triggerId: \"auto-\" + Date.now(),\n  previewItem: {\n    id: $node[\"Pick random preview\"].json.id,\n    type: $node[\"Pick random preview\"].json.type,\n    value: $node[\"Pick random preview\"].json.value\n  }\n}) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -139,23 +139,30 @@
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "deepseek-v4-flash",
-          "mode": "list",
-          "cachedResultName": "DEEPSEEK-V4-FLASH"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=You are **GifKeywordBot**.\nTask:\n1. Generate 1–3 short keywords (at least 1, but max 3 words total) for the `/giphy` command in Rocket.Chat. Try to use less than more words.\n2. Base your choice on:\n   • the current weekday,\n   • German public holidays (if today is one),\n   • moods at work, like: \"i need coffee\", \"boring meeting\", \"i am stressed\" ...\n   • moods at waking up, like: \"i am tired\", \"today i feel fit\"\n   • the current weather in Germany,\n3. Keep it workplace-safe.\n\nOutput format:\n• English keywords.\n• One single line, no bullet points.\n• Only the keyword phrase(s), separated by a single space if multiple.\n• No quotation marks, hashtags or other punctuation.\n\nExample outputs:\n• sunshine coffee\n• rainy monday\n• beach vibes\n• Merry Christmas\n\nContext variables:\n  • Weekday: {{ $json[\"weekday\"] }}\n  • Date-ISO: {{ $json[\"date_iso\"] }}\n  • Season: {{ $json[\"season\"] }}\n  • Weather: ({{ $('OpenWeatherMap').item.json.weather[0].main }}, Temp: {{ $('OpenWeatherMap').item.json.main.temp }} °C, Feels lile: {{ $('OpenWeatherMap').item.json.main.feels_like }} °C, Windspeed: {{ $('OpenWeatherMap').item.json.wind.speed }} m/s, Windgust: {{ $('OpenWeatherMap').item.json.wind.gust }} m/s)\n\nNow think briefly and return the keywords only.\n"
-            }
-          ]
-        },
+        "jsCode": "const ctx = $input.first().json;\nconst weather = $('OpenWeatherMap').first().json;\n\nconst prompt = `You are **GifKeywordBot**.\nTask:\n1. Generate 1–3 short keywords (at least 1, but max 3 words total) for the \\`/giphy\\` command in Rocket.Chat. Try to use less than more words.\n2. Base your choice on:\n   • the current weekday,\n   • German public holidays (if today is one),\n   • moods at work, like: \"i need coffee\", \"boring meeting\", \"i am stressed\" ...\n   • moods at waking up, like: \"i am tired\", \"today i feel fit\"\n   • the current weather in Germany,\n3. Keep it workplace-safe.\n\nOutput format:\n• English keywords.\n• One single line, no bullet points.\n• Only the keyword phrase(s), separated by a single space if multiple.\n• No quotation marks, hashtags or other punctuation.\n\nExample outputs:\n• sunshine coffee\n• rainy monday\n• beach vibes\n• Merry Christmas\n\nContext variables:\n  • Weekday: ${ctx.weekday}\n  • Date-ISO: ${ctx.date_iso}\n  • Season: ${ctx.season}\n  • Weather: (${weather.weather[0].main}, Temp: ${weather.main.temp} °C, Feels lile: ${weather.main.feels_like} °C, Windspeed: ${weather.wind.speed} m/s, Windgust: ${weather.wind.gust} m/s)\n\nNow think briefly and return the keywords only.\n`;\n\nreturn [{ json: { prompt } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4472,
+        528
+      ],
+      "id": "b20d5e58-b03b-4f70-916b-3ce9f839fa63",
+      "name": "Build prompt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"deepseek/deepseek-v4.1-flash\", messages: [{ role: \"user\", content: $json.prompt }] }) }}",
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         4592,
         528
@@ -163,9 +170,9 @@
       "id": "1cb1c75d-07ef-413d-8bf8-c2247785001f",
       "name": "Get a keyword or phrase",
       "credentials": {
-        "openAiApi": {
-          "id": "nUFvAMXIipS0a7iW",
-          "name": "Opencode Go"
+        "httpHeaderAuth": {
+          "id": "SLFzGJjTJGNSDzF0",
+          "name": "OpenRouter"
         }
       }
     },
@@ -462,7 +469,7 @@
       "main": [
         [
           {
-            "node": "Get a keyword or phrase",
+            "node": "Build prompt",
             "type": "main",
             "index": 0
           }
@@ -576,6 +583,17 @@
         [
           {
             "node": "Get a random minute (0-9)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build prompt": {
+      "main": [
+        [
+          {
+            "node": "Get a keyword or phrase",
             "type": "main",
             "index": 0
           }
