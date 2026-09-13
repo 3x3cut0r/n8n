@@ -43,6 +43,10 @@
             {
               "name": "category",
               "value": "Stock"
+            },
+            {
+              "name": "names",
+              "value": "Apple,Microsoft,Alphabet,Amazon,Tesla,IBM,Oracle,GE Aerospace"
             }
           ],
           "number": [
@@ -80,12 +84,16 @@
             {
               "name": "category",
               "value": "ETF"
+            },
+            {
+              "name": "names",
+              "value": "S&P 500,Nasdaq 100,Dow Jones,Russell 2000,Vanguard S&P 500,Emerging Markets,Technology Sector"
             }
           ],
           "number": [
             {
               "name": "lookback",
-              "value": 7
+              "value": 3
             },
             {
               "name": "threshold",
@@ -117,6 +125,10 @@
             {
               "name": "category",
               "value": "Crypto"
+            },
+            {
+              "name": "names",
+              "value": "Bitcoin,Ethereum,Solana,XRP"
             }
           ],
           "number": [
@@ -145,7 +157,7 @@
     },
     {
       "parameters": {
-        "functionCode": "const entries=[];\nfor (const item of items){\n  const symbols=(item.json.symbols || '').split(',').map(s=>s.trim()).filter(Boolean);\n  const category=item.json.category || 'Unknown';\n  const lookback=Number(item.json.lookback || 3);\n  const threshold=Number(item.json.threshold || 5);\n  for (const symbol of symbols){\n    entries.push({ symbol, category, lookback, threshold });\n  }\n}\nconst unique=[];\nconst seen=new Set();\nfor (const entry of entries){\n  const key=`${entry.category}:${entry.symbol}`;\n  if (!seen.has(key)){\n    seen.add(key);\n    unique.push(entry);\n  }\n}\nreturn [{ entries: unique }];"
+        "functionCode": "const entries = [];\nlet config = {};\nfor (const item of items) {\n  const j = item.json || {};\n  if (j.extraMax !== undefined || j.extraEnabled !== undefined) {\n    config = {\n      enabled: String(j.extraEnabled || 'true').toLowerCase() === 'true',\n      max: Number(j.extraMax || 3),\n      threshold: Number(j.extraThreshold || 5),\n    };\n    continue;\n  }\n  const symbols = (j.symbols || '').split(',').map(s => s.trim()).filter(Boolean);\n  const names = (j.names || '').split(',').map(s => s.trim());\n  const category = j.category || 'Unknown';\n  const lookback = Number(j.lookback || 3);\n  const threshold = Number(j.threshold || 5);\n  symbols.forEach((symbol, i) => {\n    entries.push({ symbol, name: names[i] || symbol, category, lookback, threshold });\n  });\n}\nconst unique = [];\nconst seen = new Set();\nfor (const entry of entries) {\n  const key = `${entry.category}:${entry.symbol}`;\n  if (!seen.has(key)) { seen.add(key); unique.push(entry); }\n}\nreturn [{ entries: unique, config }];"
       },
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
@@ -158,7 +170,7 @@
     },
     {
       "parameters": {
-        "functionCode": "const entries=Array.isArray($json.entries) ? $json.entries : [];\nconst dropped=[];\nconst errors=[];\n\nfor (const entry of entries){\n  const symbol=entry.symbol;\n  const category=entry.category || 'Unknown';\n  const lookback=Math.max(1, Number(entry.lookback || 3));\n  const threshold=Math.max(0, Number(entry.threshold || 5));\n  const isCrypto=category.toLowerCase() === 'crypto';\n  const rangeDays=isCrypto ? Math.max(lookback + 5, 10) : Math.max((lookback * 3) + 5, 14);\n  const url=`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${rangeDays}d&interval=1d`;\n\n  try {\n    const data=await this.helpers.httpRequest({ method: 'GET', url });\n    const result=data?.chart?.result?.[0];\n    const closes=result?.indicators?.quote?.[0]?.close || [];\n    const timestamps=result?.timestamp || [];\n\n    const points=[];\n    for (let i=0; i<Math.min(closes.length, timestamps.length); i++){\n      const close=closes[i];\n      const ts=timestamps[i];\n      if (typeof close === 'number' && Number.isFinite(close) && close > 0 && typeof ts === 'number'){\n        points.push({ close, ts });\n      }\n    }\n\n    if (points.length < 2){\n      errors.push(`${symbol}: insufficient data`);\n      continue;\n    }\n\n    const latest=points[points.length - 1];\n    let reference;\n\n    if (isCrypto){\n      const targetTs=latest.ts - (lookback * 86400);\n      for (let i=points.length - 2; i>=0; i--){\n        if (points[i].ts <= targetTs){\n          reference=points[i];\n          break;\n        }\n      }\n    } else {\n      const refIndex=points.length - 1 - lookback;\n      if (refIndex >= 0){\n        reference=points[refIndex];\n      }\n    }\n\n    if (!reference || reference.close <= 0){\n      errors.push(`${symbol}: missing reference for ${lookback}d`);\n      continue;\n    }\n\n    const change=((latest.close - reference.close) / reference.close) * 100;\n    if (change <= -threshold){\n      dropped.push(`${category} (${lookback}d): ${symbol} ${change.toFixed(2)}% drop`);\n    }\n  } catch (error){\n    errors.push(`${symbol}: request failed`);\n  }\n}\n\nreturn [{ dropped, errors }];"
+        "functionCode": "const entries = Array.isArray($json.entries) ? $json.entries : [];\nconst config = $json.config || {};\nconst listedSymbols = new Set(entries.map(e => e.symbol));\nconst dropped = [];\nconst errors = [];\n\nfor (const entry of entries) {\n  const symbol = entry.symbol;\n  const label = entry.name || symbol;\n  const category = entry.category || 'Unknown';\n  const lookback = Math.max(1, Number(entry.lookback || 3));\n  const threshold = Math.max(0, Number(entry.threshold || 5));\n  const isCrypto = category.toLowerCase() === 'crypto';\n  const rangeDays = isCrypto ? Math.max(lookback + 5, 10) : Math.max((lookback * 3) + 5, 14);\n  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${rangeDays}d&interval=1d`;\n\n  try {\n    const data = await this.helpers.httpRequest({ method: 'GET', url });\n    const result = data && data.chart && data.chart.result && data.chart.result[0];\n    const closes = (((result || {}).indicators || {}).quote || [])[0] || {};\n    const timestamps = (result || {}).timestamp || [];\n    const closeArr = closes.close || [];\n\n    const points = [];\n    for (let i = 0; i < Math.min(closeArr.length, timestamps.length); i++) {\n      const close = closeArr[i];\n      const ts = timestamps[i];\n      if (typeof close === 'number' && Number.isFinite(close) && close > 0 && typeof ts === 'number') {\n        points.push({ close, ts });\n      }\n    }\n\n    if (points.length < 2) {\n      errors.push(`${symbol}: insufficient data`);\n      continue;\n    }\n\n    const latest = points[points.length - 1];\n\n    // 1d check\n    let ref1;\n    if (isCrypto) {\n      const targetTs = latest.ts - 86400;\n      for (let i = points.length - 2; i >= 0; i--) {\n        if (points[i].ts <= targetTs) { ref1 = points[i]; break; }\n      }\n    } else {\n      const idx = points.length - 2;\n      if (idx >= 0) ref1 = points[idx];\n    }\n\n    const change1 = (ref1 && ref1.close > 0)\n      ? ((latest.close - ref1.close) / ref1.close) * 100\n      : null;\n\n    if (change1 !== null && change1 <= -threshold) {\n      dropped.push(`${category} (1d): ${label} ${change1.toFixed(2)}% drop`);\n      continue; // 1d already qualifies - skip Nd to avoid duplicate\n    }\n\n    // Nd check\n    let refN;\n    if (isCrypto) {\n      const targetTs = latest.ts - (lookback * 86400);\n      for (let i = points.length - 2; i >= 0; i--) {\n        if (points[i].ts <= targetTs) { refN = points[i]; break; }\n      }\n    } else {\n      const idx = points.length - 1 - lookback;\n      if (idx >= 0) refN = points[idx];\n    }\n\n    if (!refN || refN.close <= 0) {\n      errors.push(`${symbol}: missing reference for ${lookback}d`);\n      continue;\n    }\n\n    const changeN = ((latest.close - refN.close) / refN.close) * 100;\n    if (changeN <= -threshold) {\n      dropped.push(`${category} (${lookback}d): ${label} ${changeN.toFixed(2)}% drop`);\n    }\n  } catch (error) {\n    errors.push(`${symbol}: request failed`);\n  }\n}\n\n// Unlisted symbols: Yahoo day_losers screener, 1d only, limited\nconst extras = [];\nconst extraMax = Math.max(0, Number(config.max != null ? config.max : 3));\nconst extraThreshold = Math.max(0, Number(config.threshold != null ? config.threshold : 5));\nif (config.enabled !== false && extraMax > 0) {\n  try {\n    const data = await this.helpers.httpRequest({\n      method: 'GET',\n      url: 'https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?scrIds=day_losers&count=50',\n      headers: { 'User-Agent': 'Mozilla/5.0' },\n    });\n    const quotes = ((((data || {}).finance || {}).result || [])[0] || {}).quotes || [];\n    for (const q of quotes) {\n      if (extras.length >= extraMax) break;\n      const symbol = q.symbol;\n      const change = q.regularMarketChangePercent;\n      if (!symbol || listedSymbols.has(symbol)) continue;\n      if (typeof change !== 'number' || !(change <= -extraThreshold)) continue;\n      if (q.quoteType !== 'EQUITY' && q.quoteType !== 'ETF') continue;\n      const cat = q.quoteType === 'ETF' ? 'ETF' : 'Stock';\n      const name = q.shortName || q.longName || symbol;\n      extras.push(`${cat} (1d, unlisted): ${name} (${symbol}) ${change.toFixed(2)}% drop`);\n    }\n  } catch (error) {\n    errors.push('screener: request failed');\n  }\n}\n\nreturn [{ dropped: dropped.concat(extras), errors }];"
       },
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
@@ -267,9 +279,41 @@
       ],
       "id": "23346077-9e5d-4b87-a172-66e74fad6ff7",
       "name": "Prepare Message payload"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "extraEnabled",
+              "value": "true"
+            }
+          ],
+          "number": [
+            {
+              "name": "extraMax",
+              "value": 3
+            },
+            {
+              "name": "extraThreshold",
+              "value": 5
+            }
+          ]
+        },
+        "options": {
+          "dotNotation": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        208
+      ],
+      "id": "c0nf1g-report-0001-0000-000000000001",
+      "name": "Report config"
     }
   ],
-  "pinData": {},
   "connections": {
     "Manual Trigger": {
       "main": [
@@ -286,6 +330,11 @@
           },
           {
             "node": "Set crypto symbols",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Report config",
             "type": "main",
             "index": 0
           }
@@ -307,6 +356,11 @@
           },
           {
             "node": "Set crypto symbols",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Report config",
             "type": "main",
             "index": 0
           }
@@ -400,9 +454,19 @@
           }
         ]
       ]
+    },
+    "Report config": {
+      "main": [
+        [
+          {
+            "node": "Merge all categories",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
     }
   },
-  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -411,18 +475,5 @@
     "errorWorkflow": "Bin1Me6S1IWNK7e7",
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 10
-  },
-  "versionId": "064371cf-0751-419d-a920-f9a65dee74fc",
-  "meta": {
-    "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
-  },
-  "id": "zwc5QLQMZHnaRefe",
-  "tags": [
-    {
-      "name": "Mattermost",
-      "id": "ULn7rKr1NniGlDEc",
-      "updatedAt": "2026-09-04T20:42:02.072Z",
-      "createdAt": "2026-09-04T20:42:02.072Z"
-    }
-  ]
+  }
 }
