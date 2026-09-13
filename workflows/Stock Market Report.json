@@ -17,7 +17,8 @@
         "triggerTimes": {
           "item": [
             {
-              "hour": 8
+              "mode": "custom",
+              "cronExpression": "0 45 22 * * 1-5"
             }
           ]
         }
