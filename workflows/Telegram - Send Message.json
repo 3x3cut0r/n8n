@@ -223,6 +223,19 @@
       ],
       "id": "afac8e48-baf1-42a2-a87e-17f89f769499",
       "name": "Build validation error result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1136,
+        448
+      ],
+      "id": "8a2dfcb4-13b8-4945-a8ba-a63e977e406e",
+      "name": "Fail send"
     }
   ],
   "pinData": {},
@@ -316,6 +329,13 @@
         [
           {
             "node": "Build send result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail send",
             "type": "main",
             "index": 0
           }

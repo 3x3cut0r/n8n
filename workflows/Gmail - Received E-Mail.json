@@ -106,6 +106,19 @@
       ],
       "id": "517fe8d0-6c68-46ab-babd-76a70c889d53",
       "name": "Config note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        704
+      ],
+      "id": "9f5f6def-db4d-46ad-b0a1-34754cb4afa4",
+      "name": "Fail router call"
     }
   ],
   "pinData": {},
@@ -137,6 +150,13 @@
         [
           {
             "node": "Build receive result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail router call",
             "type": "main",
             "index": 0
           }
