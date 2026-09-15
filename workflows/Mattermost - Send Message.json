@@ -530,7 +530,7 @@
     },
     {
       "parameters": {
-        "errorMessage": "={{ $json.response?.error || 'Mattermost message could not be sent.' }}"
+        "errorMessage": "={{ (typeof $json.response?.error === 'object' ? ($json.response.error.message || $json.response.error.description || JSON.stringify($json.response.error)) : ($json.response?.error || 'Mattermost message could not be sent.')) }}"
       },
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,

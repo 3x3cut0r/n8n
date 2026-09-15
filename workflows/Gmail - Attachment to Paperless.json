@@ -266,6 +266,32 @@
       ],
       "id": "9266149c-2e71-418d-b792-2c87f2cedf46",
       "name": "Build validation error result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        288
+      ],
+      "id": "572e6867-f6ee-479b-b708-5ad247b041ee",
+      "name": "Fail message fetch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        160
+      ],
+      "id": "ba3cce60-94c7-4372-9d7b-ea7a97a35585",
+      "name": "Fail upload"
     }
   ],
   "pinData": {},
@@ -340,6 +366,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Fail message fetch",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -377,6 +410,13 @@
         [
           {
             "node": "Build upload item result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail upload",
             "type": "main",
             "index": 0
           }

@@ -346,6 +346,19 @@
       "id": "99d7e35a-5667-4ce8-9562-239cd3acb879",
       "name": "Mattermost - Send Message",
       "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        10048,
+        2192
+      ],
+      "id": "84b6be74-f7a8-4b9f-a84c-fa4572bdb074",
+      "name": "Fail feed"
     }
   ],
   "pinData": {},
@@ -399,6 +412,13 @@
         [
           {
             "node": "Normalize Feed Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail feed",
             "type": "main",
             "index": 0
           }
