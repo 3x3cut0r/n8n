@@ -533,7 +533,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const data = $('Parse and resolve route').item.json || {};\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: true,\n    response: $json || {}\n  }\n}];"
+        "jsCode": "const data = $('Parse and resolve route').item.json || {};\nconst response = $json || {};\nconst failure = response.error;\nconst errorMessage = failure && typeof failure === 'object'\n  ? (failure.message || failure.description || JSON.stringify(failure))\n  : (typeof failure === 'string' && failure.trim() !== '' ? failure.trim() : '');\n\nreturn [{\n  json: {\n    ok: !errorMessage,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: !errorMessage,\n    error: errorMessage || null,\n    response\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -556,6 +556,32 @@
       ],
       "id": "b3bcde9a-acb9-4204-81b5-1095f67c505e",
       "name": "Build validation error result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5952,
+        3872
+      ],
+      "id": "2c912675-3417-41cf-9601-7b8954d5c985",
+      "name": "Fail route"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5696,
+        3648
+      ],
+      "id": "91df9749-b137-489d-947c-7f3362ea67d0",
+      "name": "Fail notification"
     }
   ],
   "pinData": {},
@@ -716,6 +742,25 @@
         [
           {
             "node": "Build route result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send notification": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Fail notification",
             "type": "main",
             "index": 0
           }

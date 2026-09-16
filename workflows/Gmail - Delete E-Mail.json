@@ -142,6 +142,19 @@
       ],
       "id": "837bad1d-21c7-4723-926f-8ac9e439da73",
       "name": "Build validation error result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        208
+      ],
+      "id": "ef9d592d-e7de-4818-bed5-2b6345e1539a",
+      "name": "Fail delete"
     }
   ],
   "pinData": {},
@@ -213,6 +226,13 @@
         [
           {
             "node": "Build delete result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail delete",
             "type": "main",
             "index": 0
           }

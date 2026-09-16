@@ -268,6 +268,32 @@
       ],
       "id": "f9a12d1e-f932-4f5b-8e5a-dfed58a70e1b",
       "name": "Build validation error result"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        224
+      ],
+      "id": "30f41530-b820-4337-8cf8-c598de67c732",
+      "name": "Fail add labels"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        224
+      ],
+      "id": "d75c437a-7b23-4db9-897a-545c0f82ce89",
+      "name": "Fail remove labels"
     }
   ],
   "pinData": {},
@@ -360,6 +386,13 @@
             "type": "main",
             "index": 0
           }
+        ],
+        [
+          {
+            "node": "Fail add labels",
+            "type": "main",
+            "index": 0
+          }
         ]
       ]
     },
@@ -397,6 +430,13 @@
         [
           {
             "node": "Build set label result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail remove labels",
             "type": "main",
             "index": 0
           }
