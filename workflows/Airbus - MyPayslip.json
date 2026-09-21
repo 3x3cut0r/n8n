@@ -14,7 +14,7 @@
     },
     {
       "parameters": {
-        "content": "# Airbus MyPayslip Setup\n\nDieses Workflow nutzt native HTTP-Request-Nodes fuer Login, 2FA, Dokumentenliste und Download und schickt neue Downloads an den Subworkflow **Paperless-ngx - Upload Document**.\n\nKonfiguration im Node **Set workflow config**:\n- `email` ist vorbelegt\n- `maxDocuments`: `1` = neuestes Dokument, `0` = alle Dokumente, `N` = letzte `N` Dokumente\n- `password`: Standardmaessig aus `AIRBUS_MYPAYSLIP_PASSWORD`\n\nTOTP:\n- Im Node **Generate TOTP** ein TOTP-Credential mit deinem Airbus-Secret hinterlegen\n- Der Node erzeugt bei jedem Lauf den aktuellen 6-stelligen Code fuer den 2FA-Login\n\nData Table fuer Dedup:\n- Eine Data Table **Airbus Processed Documents** anlegen\n- Empfohlene Spalten: `documentId` (Text), `filename` (Text)\n- `createdAt` und `updatedAt` kommen bereits als Systemspalten von n8n\n- Bereits vorhandene `documentId`s werden vor dem Download uebersprungen\n\nSubworkflow:\n- Dieser Workflow kann ueber **Execute Workflow** aufgerufen werden\n- Optionale Inputs: `email`, `password`, `maxDocuments`, `baseUrl`, `apiBase`, `userAgent`\n- Ohne Inputs verwendet der Workflow die hinterlegten Default-Werte\n",
+        "content": "# Airbus MyPayslip Setup\n\nDieses Workflow nutzt native HTTP-Request-Nodes fuer Login, 2FA, Dokumentenliste und Download und schickt neue Downloads an den Subworkflow **Paperless-ngx - Upload Document**.\n\nKonfiguration im Node **Set workflow config**:\n- `email` ist vorbelegt\n- `maxDocuments`: `1` = neuestes Dokument, `0` = alle Dokumente, `N` = letzte `N` Dokumente\n\nPasswort:\n- Steht NICHT als Workflow-Wert vor. Es kommt aus dem Credential **Airbus MyPayslip** (Custom Auth), das am Node **Login request** haengt.\n- Credential-JSON: `{ \"body\": { \"password\": \"<dein Airbus-Passwort>\" } }` (wird in den Login-Body gemergt).\n\nTOTP:\n- Im Node **Generate TOTP** ist das TOTP-Credential **mypayslip.airbus.com** hinterlegt\n- Der Node erzeugt bei jedem Lauf den aktuellen 6-stelligen Code fuer den 2FA-Login\n\nData Table fuer Dedup:\n- Eine Data Table **Airbus Processed Documents** anlegen\n- Empfohlene Spalten: `documentId` (Text), `filename` (Text)\n- `createdAt` und `updatedAt` kommen bereits als Systemspalten von n8n\n- Bereits vorhandene `documentId`s werden vor dem Download uebersprungen\n\nSubworkflow:\n- Dieser Workflow kann ueber **Execute Workflow** aufgerufen werden\n- Optionale Inputs: `email`, `maxDocuments`, `baseUrl`, `apiBase`, `userAgent`",
         "height": 452,
         "width": 928
       },
@@ -42,12 +42,6 @@
               "name": "maxDocuments",
               "value": "={{ Number.isFinite(Number($json.maxDocuments)) ? Math.trunc(Number($json.maxDocuments)) : 1 }}",
               "type": "number"
-            },
-            {
-              "id": "2be17707-22db-4d7d-b9e1-f4ad4e258b61",
-              "name": "password",
-              "value": "={{ $json.password || $env.AIRBUS_MYPAYSLIP_PASSWORD }}",
-              "type": "string"
             },
             {
               "id": "18a3f30d-4e6a-4814-a967-642c3df1f665",
@@ -105,7 +99,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cfg = $('Set workflow config').item.json || {};\nconst totp = $('Generate TOTP').item.json || {};\n\nconst email = typeof cfg.email === 'string' ? cfg.email.trim() : '';\nconst password = typeof cfg.password === 'string' ? cfg.password : '';\nconst token = typeof totp.token === 'string' ? totp.token.trim() : '';\nconst apiBase = typeof cfg.apiBase === 'string' ? cfg.apiBase.replace(/\\/+$/, '') : '';\nconst userAgent = typeof cfg.userAgent === 'string' && cfg.userAgent.trim() ? cfg.userAgent.trim() : 'n8n-airbus-mypayslip/1.0';\n\nlet maxDocuments = Number(cfg.maxDocuments);\nif (!Number.isFinite(maxDocuments)) maxDocuments = NaN;\nif (Number.isFinite(maxDocuments)) maxDocuments = Math.trunc(maxDocuments);\n\nconst errors = [];\nif (!email) errors.push('email fehlt.');\nif (!password) errors.push('password fehlt. Setze AIRBUS_MYPAYSLIP_PASSWORD oder trage den Wert im Set-Node ein.');\nif (!token) errors.push('TOTP-Token fehlt. Konfiguriere den Node Generate TOTP mit einem TOTP-Credential.');\nif (!apiBase) errors.push('apiBase fehlt.');\nif (!Number.isInteger(maxDocuments) || maxDocuments < 0) errors.push('maxDocuments muss eine ganze Zahl >= 0 sein.');\n\nif (errors.length) {\n  return [{\n    json: {\n      kind: 'error',\n      ok: false,\n      status: 'validation_error',\n      action: 'downloadPayslipsToPaperless',\n      message: errors.join(' '),\n      totalAvailable: 0,\n      unseenAvailable: 0,\n      selectedCount: 0,\n      results: []\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    email,\n    password,\n    token,\n    apiBase,\n    userAgent,\n    maxDocuments,\n    action: 'downloadPayslipsToPaperless'\n  }\n}];"
+        "jsCode": "const cfg = $('Set workflow config').item.json || {};\nconst totp = $('Generate TOTP').item.json || {};\n\nconst email = typeof cfg.email === 'string' ? cfg.email.trim() : '';\nconst token = typeof totp.token === 'string' ? totp.token.trim() : '';\nconst apiBase = typeof cfg.apiBase === 'string' ? cfg.apiBase.replace(/\\/+$/, '') : '';\nconst userAgent = typeof cfg.userAgent === 'string' && cfg.userAgent.trim() ? cfg.userAgent.trim() : 'n8n-airbus-mypayslip/1.0';\n\nlet maxDocuments = Number(cfg.maxDocuments);\nif (!Number.isFinite(maxDocuments)) maxDocuments = NaN;\nif (Number.isFinite(maxDocuments)) maxDocuments = Math.trunc(maxDocuments);\n\nconst errors = [];\nif (!email) errors.push('email fehlt.');\nif (!token) errors.push('TOTP-Token fehlt. Konfiguriere den Node Generate TOTP mit einem TOTP-Credential.');\nif (!apiBase) errors.push('apiBase fehlt.');\nif (!Number.isInteger(maxDocuments) || maxDocuments < 0) errors.push('maxDocuments muss eine ganze Zahl >= 0 sein.');\n\nif (errors.length) {\n  return [{\n    json: {\n      kind: 'error',\n      ok: false,\n      status: 'validation_error',\n      action: 'downloadPayslipsToPaperless',\n      message: errors.join(' '),\n      totalAvailable: 0,\n      unseenAvailable: 0,\n      selectedCount: 0,\n      results: []\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    email,\n    token,\n    apiBase,\n    userAgent,\n    maxDocuments,\n    action: 'downloadPayslipsToPaperless'\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -167,9 +161,7 @@
           ]
         },
         "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ email: $json.email, password: $json.password }) }}",
+        "contentType": "json",
         "options": {
           "response": {
             "response": {
@@ -178,7 +170,11 @@
               "responseFormat": "json"
             }
           }
-        }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $json.email }) }}"
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -187,7 +183,13 @@
         1648
       ],
       "id": "8dfd6acd-2f89-41d7-ac4b-fe47d95ab6e4",
-      "name": "Login request"
+      "name": "Login request",
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "xkGN2amcxiF84ePt",
+          "name": "Airbus MyPayslip"
+        }
+      }
     },
     {
       "parameters": {
