@@ -287,6 +287,12 @@
               "name": "aiMaxContentLength",
               "value": 4000,
               "type": "number"
+            },
+            {
+              "id": "a703eb96-0a3c-4f2f-bc8b-d39d88653c69",
+              "name": "aiReasoningEnabled",
+              "value": false,
+              "type": "boolean"
             }
           ]
         },
@@ -665,7 +671,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build the OpenRouter chat-completions payload for the AI classification step.\nconst email = $json || {};\nconst settings = $('Settings').first().json;\n\nconst bodyText = typeof email.text === 'string' && email.text.trim() !== ''\n  ? email.text\n  : (email.snippet || '');\n\nconst contentLimit = Number(settings.aiMaxContentLength) || 4000;\n\nconst userContent = [\n  'From: ' + (email.from || ''),\n  'Subject: ' + (email.subject || ''),\n  'Body:',\n  bodyText.slice(0, contentLimit)\n].join('\\n\\n');\n\nreturn [{\n  json: {\n    ...email,\n    model: settings.aiModel,\n    temperature: settings.aiTemperature,\n    maxTokens: settings.aiMaxTokens,\n    aiConfidenceThreshold: settings.aiConfidenceThreshold,\n    messages: [\n      { role: 'system', content: settings.aiSystemPrompt },\n      { role: 'user', content: userContent }\n    ]\n  }\n}];"
+        "jsCode": "// Build the OpenRouter chat-completions payload for the AI classification step.\nconst email = $json || {};\nconst settings = $('Settings').first().json;\n\nconst bodyText = typeof email.text === 'string' && email.text.trim() !== ''\n  ? email.text\n  : (email.snippet || '');\n\nconst contentLimit = Number(settings.aiMaxContentLength) || 4000;\n\nconst userContent = [\n  'From: ' + (email.from || ''),\n  'Subject: ' + (email.subject || ''),\n  'Body:',\n  bodyText.slice(0, contentLimit)\n].join('\\n\\n');\n\nreturn [{\n  json: {\n    ...email,\n    model: settings.aiModel,\n    temperature: settings.aiTemperature,\n    maxTokens: settings.aiMaxTokens,\n    aiConfidenceThreshold: settings.aiConfidenceThreshold,\n    reasoningEnabled: settings.aiReasoningEnabled === true,\n    messages: [\n      { role: 'system', content: settings.aiSystemPrompt },\n      { role: 'user', content: userContent }\n    ]\n  }\n}];"
       },
       "id": "70b842aa-bce6-4404-bbaf-dce2634f7212",
       "name": "Build AI prompt",
@@ -684,7 +690,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: $json.model, temperature: $json.temperature, max_tokens: $json.maxTokens, response_format: { type: \"json_object\" }, messages: $json.messages }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: $json.model, temperature: $json.temperature, max_tokens: $json.maxTokens, response_format: { type: \"json_object\" }, reasoning: { enabled: $json.reasoningEnabled }, messages: $json.messages }) }}",
         "options": {}
       },
       "id": "7f784207-ec56-4260-95cb-a92a898e78a1",
@@ -704,7 +710,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Map the AI classification to a route.\n// Extendable: to add further AI decisions later, add a field to the JSON schema\n// in the Settings system prompt and an entry to aiRouteTable.\nconst email = $('Build AI prompt').first().json || {};\nconst response = $json || {};\n\nlet aiResult;\ntry {\n  const rawContent = response.choices && response.choices[0] && response.choices[0].message\n    ? response.choices[0].message.content\n    : '';\n  const jsonText = String(rawContent).replace(/```(?:json)?/g, '').trim();\n  aiResult = JSON.parse(jsonText);\n} catch (error) {\n  throw new Error('AI classification failed: unexpected model response');\n}\n\nconst threshold = Number(email.aiConfidenceThreshold) || 0;\nconst confidence = Number(aiResult.confidence);\nconst aiConfidence = Number.isFinite(confidence) ? confidence : 0;\n\n// Route table: extend with additional AI decisions later.\nconst aiRouteTable = [\n  {\n    field: 'isNewsletter',\n    category: 'newsletter',\n    workflowId: '3O6R9JybPJWyeyzF',\n    workflowName: 'Gmail - Delete E-Mail',\n    label: 'Newsletter'\n  }\n];\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\nlet routeLabel = 'No Route';\nlet matchedDecision = '';\n\nfor (const entry of aiRouteTable) {\n  if (aiResult[entry.field] === true && aiConfidence >= threshold) {\n    route = {\n      category: entry.category,\n      workflowId: entry.workflowId,\n      workflowName: entry.workflowName\n    };\n    routeLabel = entry.label;\n    matchedDecision = entry.field;\n    break;\n  }\n}\n\nconst classification = {\n  category: route.category,\n  confidence: aiConfidence,\n  reason: typeof aiResult.reason === 'string' && aiResult.reason.trim() !== ''\n    ? aiResult.reason.trim()\n    : 'AI classification without reason',\n  source: 'ai',\n  decision: matchedDecision\n};\n\nconst { messages, model, temperature, maxTokens, ...emailData } = email;\n\nreturn [{\n  json: {\n    ...emailData,\n    classification,\n    route,\n    routeLabel,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
+        "jsCode": "// Map the AI classification to a route.\n// Extendable: to add further AI decisions later, add a field to the JSON schema\n// in the Settings system prompt and an entry to aiRouteTable.\nconst email = $('Build AI prompt').first().json || {};\nconst response = $json || {};\n\nlet aiResult;\ntry {\n  const rawContent = response.choices && response.choices[0] && response.choices[0].message\n    ? response.choices[0].message.content\n    : '';\n  const jsonText = String(rawContent).replace(/```(?:json)?/g, '').trim();\n  aiResult = JSON.parse(jsonText);\n} catch (error) {\n  throw new Error('AI classification failed: unexpected model response');\n}\n\nconst threshold = Number(email.aiConfidenceThreshold) || 0;\nconst confidence = Number(aiResult.confidence);\nconst aiConfidence = Number.isFinite(confidence) ? confidence : 0;\n\n// Route table: extend with additional AI decisions later.\nconst aiRouteTable = [\n  {\n    field: 'isNewsletter',\n    category: 'newsletter',\n    workflowId: '3O6R9JybPJWyeyzF',\n    workflowName: 'Gmail - Delete E-Mail',\n    label: 'Newsletter'\n  }\n];\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\nlet routeLabel = 'No Route';\nlet matchedDecision = '';\n\nfor (const entry of aiRouteTable) {\n  if (aiResult[entry.field] === true && aiConfidence >= threshold) {\n    route = {\n      category: entry.category,\n      workflowId: entry.workflowId,\n      workflowName: entry.workflowName\n    };\n    routeLabel = entry.label;\n    matchedDecision = entry.field;\n    break;\n  }\n}\n\nconst classification = {\n  category: route.category,\n  confidence: aiConfidence,\n  reason: typeof aiResult.reason === 'string' && aiResult.reason.trim() !== ''\n    ? aiResult.reason.trim()\n    : 'AI classification without reason',\n  source: 'ai',\n  decision: matchedDecision\n};\n\nconst { messages, model, temperature, maxTokens, reasoningEnabled, aiConfidenceThreshold, ...emailData } = email;\n\nreturn [{\n  json: {\n    ...emailData,\n    classification,\n    route,\n    routeLabel,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
       },
       "id": "be88a233-aa6b-4d4d-87cd-5c6d6bdcd596",
       "name": "Build AI classification result",
