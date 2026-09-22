@@ -97,7 +97,10 @@
     },
     {
       "parameters": {
-        "operation": "delete",
+        "operation": "addLabels",
+        "labelIds": [
+          "TRASH"
+        ],
         "messageId": "={{ $json.messageId }}"
       },
       "type": "n8n-nodes-base.gmail",
@@ -107,7 +110,7 @@
         -16
       ],
       "id": "072060a7-b119-4d2e-adea-a954742660b3",
-      "name": "Delete Gmail message",
+      "name": "Trash Gmail message",
       "webhookId": "b8ecfdc8-8726-4e26-a3ee-0779c39de21f",
       "credentials": {
         "gmailOAuth2": {
@@ -119,7 +122,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    action: 'delete',\n    messageId: $('Normalize and validate input').item.json.messageId || null,\n    statusCode,\n    response\n  }\n}];"
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    action: 'trash',\n    messageId: $('Normalize and validate input').item.json.messageId || null,\n    statusCode,\n    response\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -207,7 +210,7 @@
       "main": [
         [
           {
-            "node": "Delete Gmail message",
+            "node": "Trash Gmail message",
             "type": "main",
             "index": 0
           }
@@ -221,7 +224,7 @@
         ]
       ]
     },
-    "Delete Gmail message": {
+    "Trash Gmail message": {
       "main": [
         [
           {
