@@ -4,7 +4,7 @@
     {
       "parameters": {
         "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Deterministische Regeln (ohne AI):**\n- **Airbus MyPayslip** → Absender noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Newsletter-Keyword im Betreff (Settings: newsletterKeywords) → Workflow \"Gmail - Delete E-Mail\"\n\n**AI-Klassifizierung:** Alle übrigen E-Mails klassifiziert der AI-Node (OpenRouter, Settings: aiModel). Aktuelle Entscheidung: isNewsletter → Newsletter-Route, nur ab Konfidenz-Schwelle (Settings: aiConfidenceThreshold). Weitere Entscheidungen später ergänzbar: Feld im System-Prompt (Settings: aiSystemPrompt) + Eintrag in aiRouteTable im Node \"Build AI classification result\".\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification, includeNoMatch).",
-        "height": 288,
+        "height": 480,
         "width": 724
       },
       "id": "27f25d19-eb6a-4e60-a9b3-34a9c8a8c6ac",
@@ -13,7 +13,7 @@
       "typeVersion": 1,
       "position": [
         -7552,
-        3376
+        3184
       ]
     },
     {
@@ -247,43 +247,43 @@
               "type": "boolean"
             },
             {
-              "id": "36516bd9-fe7d-4da1-b3af-d5373c00221b",
+              "id": "796c4e80-ad07-4179-84d5-ba2fd99e682c",
               "name": "newsletterKeywords",
               "value": "newsletter",
               "type": "string"
             },
             {
-              "id": "ebda6cea-7cf8-4170-abc2-7aa4fa11b8c8",
+              "id": "846ed69b-3013-413c-8ee4-273e24217712",
               "name": "aiModel",
               "value": "deepseek/deepseek-v4.1-flash",
               "type": "string"
             },
             {
-              "id": "4a72abf6-f5a7-421e-bd35-41f45852d9dc",
+              "id": "f732b8da-8eab-44ac-8ac1-661bc3639916",
               "name": "aiSystemPrompt",
               "value": "You are an email classifier. Answer with a single JSON object and nothing else.\nAllowed fields:\n{\"isNewsletter\": true | false, \"confidence\": 0.0-1.0, \"reason\": \"short explanation in German\"}\nRules:\n- isNewsletter is true only if the primary purpose of the email is a newsletter, digest or recurring promotional mailing (product updates, blog digests, weekly deals, similar).\n- isNewsletter is false for transactional mail (order confirmations, shipping and delivery notifications, invoices, payment and account notices, security messages, personal replies), even if the footer contains marketing links, unsubscribe text or the word \"newsletter\".\n- If you are unsure, return false with a confidence below 0.8.",
               "type": "string"
             },
             {
-              "id": "f622ae54-5560-4ef8-afd8-8dd065feff9d",
+              "id": "f0b71050-7418-4bea-be17-3e138821f3d7",
               "name": "aiTemperature",
               "value": 0,
               "type": "number"
             },
             {
-              "id": "f6da65af-1a72-44a6-9b96-d8a471802834",
+              "id": "d63dc6c0-6d5a-4923-b9a2-4d59e26ec3a8",
               "name": "aiMaxTokens",
               "value": 200,
               "type": "number"
             },
             {
-              "id": "d2e7cdeb-ba71-4f83-b010-94c4eae5142f",
+              "id": "4ff1df52-e3b6-45be-a5d1-294bae7727aa",
               "name": "aiConfidenceThreshold",
               "value": 0.8,
               "type": "number"
             },
             {
-              "id": "3e0cadc6-ad94-432e-a26e-92861d7bd5ad",
+              "id": "9f188be9-0221-482d-a198-7f082e0fc7a2",
               "name": "aiMaxContentLength",
               "value": 4000,
               "type": "number"
@@ -379,8 +379,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -5424,
-        3744
+        -5440,
+        3728
       ]
     },
     {
@@ -413,8 +413,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -5424,
-        3456
+        -5440,
+        3440
       ]
     },
     {
@@ -456,8 +456,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -5152,
-        3440
+        -5168,
+        3424
       ]
     },
     {
@@ -494,8 +494,8 @@
       "typeVersion": 1.2,
       "alwaysOutputData": true,
       "position": [
-        -5152,
-        3648
+        -5168,
+        3632
       ],
       "onError": "continueErrorOutput"
     },
@@ -508,8 +508,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5152,
-        3840
+        -5168,
+        3824
       ]
     },
     {
@@ -572,8 +572,8 @@
       "typeVersion": 1.2,
       "alwaysOutputData": true,
       "position": [
-        -4896,
-        3424
+        -4912,
+        3408
       ],
       "onError": "continueErrorOutput"
     },
@@ -586,8 +586,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -4896,
-        3632
+        -4912,
+        3616
       ]
     },
     {
@@ -612,8 +612,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -4896,
-        3840
+        -4912,
+        3824
       ]
     },
     {
@@ -625,8 +625,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -4592,
-        3440
+        -4608,
+        3424
       ]
     },
     {
@@ -640,7 +640,7 @@
           },
           "conditions": [
             {
-              "id": "14720560-35cd-452c-9f74-4ae2f5da24e5",
+              "id": "0da792bf-20ac-42ec-b591-a8571f71b188",
               "leftValue": "={{ $json.aiDecisionNeeded }}",
               "rightValue": true,
               "operator": {
@@ -654,7 +654,7 @@
         },
         "options": {}
       },
-      "id": "2ed167bb-5837-4d2f-8745-045f798b3498",
+      "id": "9a42f485-1fa3-47b6-b4c7-cb6388ac28f6",
       "name": "If AI classification needed",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -667,13 +667,13 @@
       "parameters": {
         "jsCode": "// Build the OpenRouter chat-completions payload for the AI classification step.\nconst email = $json || {};\nconst settings = $('Settings').first().json;\n\nconst bodyText = typeof email.text === 'string' && email.text.trim() !== ''\n  ? email.text\n  : (email.snippet || '');\n\nconst contentLimit = Number(settings.aiMaxContentLength) || 4000;\n\nconst userContent = [\n  'From: ' + (email.from || ''),\n  'Subject: ' + (email.subject || ''),\n  'Body:',\n  bodyText.slice(0, contentLimit)\n].join('\\n\\n');\n\nreturn [{\n  json: {\n    ...email,\n    model: settings.aiModel,\n    temperature: settings.aiTemperature,\n    maxTokens: settings.aiMaxTokens,\n    aiConfidenceThreshold: settings.aiConfidenceThreshold,\n    messages: [\n      { role: 'system', content: settings.aiSystemPrompt },\n      { role: 'user', content: userContent }\n    ]\n  }\n}];"
       },
-      "id": "70b842aa-bce6-4404-bbaf-dce2634f7212",
+      "id": "2e30a726-f065-4593-b6a1-771292d03550",
       "name": "Build AI prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -6208,
-        3600
+        3584
       ]
     },
     {
@@ -687,13 +687,13 @@
         "jsonBody": "={{ JSON.stringify({ model: $json.model, temperature: $json.temperature, max_tokens: $json.maxTokens, response_format: { type: \"json_object\" }, messages: $json.messages }) }}",
         "options": {}
       },
-      "id": "7f784207-ec56-4260-95cb-a92a898e78a1",
+      "id": "6a95a3c6-46ed-4570-9298-ff76ecf6ca66",
       "name": "AI Classify E-Mail",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -5952,
-        3600
+        -5968,
+        3584
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -706,13 +706,13 @@
       "parameters": {
         "jsCode": "// Map the AI classification to a route.\n// Extendable: to add further AI decisions later, add a field to the JSON schema\n// in the Settings system prompt and an entry to aiRouteTable.\nconst email = $('Build AI prompt').first().json || {};\nconst response = $json || {};\n\nlet aiResult;\ntry {\n  const rawContent = response.choices && response.choices[0] && response.choices[0].message\n    ? response.choices[0].message.content\n    : '';\n  const jsonText = String(rawContent).replace(/```(?:json)?/g, '').trim();\n  aiResult = JSON.parse(jsonText);\n} catch (error) {\n  throw new Error('AI classification failed: unexpected model response');\n}\n\nconst threshold = Number(email.aiConfidenceThreshold) || 0;\nconst confidence = Number(aiResult.confidence);\nconst aiConfidence = Number.isFinite(confidence) ? confidence : 0;\n\n// Route table: extend with additional AI decisions later.\nconst aiRouteTable = [\n  {\n    field: 'isNewsletter',\n    category: 'newsletter',\n    workflowId: '3O6R9JybPJWyeyzF',\n    workflowName: 'Gmail - Delete E-Mail',\n    label: 'Newsletter'\n  }\n];\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\nlet routeLabel = 'No Route';\nlet matchedDecision = '';\n\nfor (const entry of aiRouteTable) {\n  if (aiResult[entry.field] === true && aiConfidence >= threshold) {\n    route = {\n      category: entry.category,\n      workflowId: entry.workflowId,\n      workflowName: entry.workflowName\n    };\n    routeLabel = entry.label;\n    matchedDecision = entry.field;\n    break;\n  }\n}\n\nconst classification = {\n  category: route.category,\n  confidence: aiConfidence,\n  reason: typeof aiResult.reason === 'string' && aiResult.reason.trim() !== ''\n    ? aiResult.reason.trim()\n    : 'AI classification without reason',\n  source: 'ai',\n  decision: matchedDecision\n};\n\nconst { messages, model, temperature, maxTokens, ...emailData } = email;\n\nreturn [{\n  json: {\n    ...emailData,\n    classification,\n    route,\n    routeLabel,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
       },
-      "id": "be88a233-aa6b-4d4d-87cd-5c6d6bdcd596",
+      "id": "3778d7b2-db87-4053-9001-9b9364350fc7",
       "name": "Build AI classification result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5696,
-        3600
+        -5712,
+        3584
       ]
     }
   ],
@@ -966,7 +966,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "9b4a35df-32b6-42d5-818b-8df8c5307b86",
+  "versionId": "3bb401b8-7123-47d4-bb8d-e826fd08c2fd",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
