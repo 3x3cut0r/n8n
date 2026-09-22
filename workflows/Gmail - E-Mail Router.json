@@ -7,38 +7,38 @@
         "height": 288,
         "width": 724
       },
+      "id": "27f25d19-eb6a-4e60-a9b3-34a9c8a8c6ac",
+      "name": "Sticky Note",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
         -7552,
         3376
-      ],
-      "id": "27f25d19-eb6a-4e60-a9b3-34a9c8a8c6ac",
-      "name": "Sticky Note"
+      ]
     },
     {
       "parameters": {
         "inputSource": "passthrough"
       },
+      "id": "42ee1633-6c8c-4362-a679-482532d39bc7",
+      "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
         -7552,
         3696
-      ],
-      "id": "42ee1633-6c8c-4362-a679-482532d39bc7",
-      "name": "Execute Workflow Trigger"
+      ]
     },
     {
       "parameters": {},
+      "id": "0586809e-9cbe-424a-918f-be5658c62552",
+      "name": "Manual Trigger Airbus",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
         -7744,
         4080
-      ],
-      "id": "0586809e-9cbe-424a-918f-be5658c62552",
-      "name": "Manual Trigger Airbus"
+      ]
     },
     {
       "parameters": {
@@ -90,14 +90,14 @@
         },
         "options": {}
       },
+      "id": "08aca299-d4dc-475d-bb9c-8ba6ee7b4372",
+      "name": "Set test input Airbus",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -7552,
         3888
-      ],
-      "id": "08aca299-d4dc-475d-bb9c-8ba6ee7b4372",
-      "name": "Set test input Airbus"
+      ]
     },
     {
       "parameters": {
@@ -149,14 +149,14 @@
         },
         "options": {}
       },
+      "id": "f887bb95-9b45-4663-92c0-7ab6541f5477",
+      "name": "Set test input Newsletter",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -7552,
         4080
-      ],
-      "id": "f887bb95-9b45-4663-92c0-7ab6541f5477",
-      "name": "Set test input Newsletter"
+      ]
     },
     {
       "parameters": {
@@ -208,27 +208,27 @@
         },
         "options": {}
       },
+      "id": "309c3171-e12c-499c-908e-9536b7a37004",
+      "name": "Set test input No Match",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -7552,
         4272
-      ],
-      "id": "309c3171-e12c-499c-908e-9536b7a37004",
-      "name": "Set test input No Match"
+      ]
     },
     {
       "parameters": {
         "jsCode": "const raw = $json || {};\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst threadId = typeof raw.threadId === 'string' ? raw.threadId.trim() : '';\nconst from = typeof raw.from === 'string' ? raw.from.trim() : '';\nconst subject = typeof raw.subject === 'string' ? raw.subject.trim() : '';\nconst snippet = typeof raw.snippet === 'string' ? raw.snippet.trim() : '';\nconst text = typeof raw.text === 'string' ? raw.text : '';\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    threadId,\n    from,\n    subject,\n    snippet,\n    text,\n    okToRoute: !error,\n    error\n  }\n}];"
       },
+      "id": "34b8e53c-524f-4782-9d22-c3a2bf41e14f",
+      "name": "Normalize and validate input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -7344,
         3696
-      ],
-      "id": "34b8e53c-524f-4782-9d22-c3a2bf41e14f",
-      "name": "Normalize and validate input"
+      ]
     },
     {
       "parameters": {
@@ -251,14 +251,14 @@
         "includeOtherFields": true,
         "options": {}
       },
+      "id": "8449d5d5-2628-402a-8c69-fd905f6a1d7f",
+      "name": "Settings",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
         -7136,
         3696
-      ],
-      "id": "8449d5d5-2628-402a-8c69-fd905f6a1d7f",
-      "name": "Settings"
+      ]
     },
     {
       "parameters": {
@@ -285,27 +285,27 @@
         },
         "options": {}
       },
+      "id": "1cf69490-fab2-4d98-a054-e7b95fcff124",
+      "name": "If payload valid",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
         -6928,
         3696
-      ],
-      "id": "1cf69490-fab2-4d98-a054-e7b95fcff124",
-      "name": "If payload valid"
+      ]
     },
     {
       "parameters": {
         "jsCode": "const input = $json || {};\n\nconst rawFrom = typeof input.from === 'string' ? input.from.trim() : '';\nconst senderMatch = rawFrom.match(/<([^>]+)>/);\nconst sender = (senderMatch?.[1] || rawFrom).trim().toLowerCase();\n\nconst contentHaystack = [input.subject || '', input.snippet || '', input.text || '']\n  .join('\\n')\n  .toLowerCase();\n\nconst isAirbusSender = sender === 'noreply@mypayslip.airbus.com';\nconst hasNewsletter = contentHaystack.includes('newsletter');\n\nlet route = {\n  category: 'none',\n  workflowId: '',\n  workflowName: ''\n};\n\nlet classification = {\n  category: 'none',\n  confidence: 1,\n  reason: 'No routing rule matched'\n};\n\nlet routeLabel = 'No Route';\n\nconst output = {\n  ...input\n};\n\nif (isAirbusSender) {\n  route = {\n    category: 'airbus_mypayslip',\n    workflowId: 'DwMi5ywRbXvxyNVN',\n    workflowName: 'Airbus - MyPayslip'\n  };\n  classification = {\n    category: 'airbus_mypayslip',\n    confidence: 1,\n    reason: 'Matched sender noreply@mypayslip.airbus.com'\n  };\n  routeLabel = 'Airbus';\n} else if (hasNewsletter) {\n  route = {\n    category: 'newsletter',\n    workflowId: 'zSpgVeZvjP34TpnO',\n    workflowName: 'Mattermost - Send Message'\n  };\n  classification = {\n    category: 'newsletter',\n    confidence: 1,\n    reason: 'Matched keyword newsletter in email content'\n  };\n  routeLabel = 'Newsletter';\n  output.message = `Newsletter erhalten von: ${sender || 'unbekannt'}`;\n}\n\nreturn [{\n  json: {\n    ...output,\n    sender,\n    classification,\n    route,\n    routeLabel,\n    shouldExecuteSubworkflow: !!route.workflowId\n  }\n}];"
       },
+      "id": "b5fc1e43-10cc-4ce5-bdd2-b0903d77d0a2",
+      "name": "Parse and resolve route",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -6704,
         3600
-      ],
-      "id": "b5fc1e43-10cc-4ce5-bdd2-b0903d77d0a2",
-      "name": "Parse and resolve route"
+      ]
     },
     {
       "parameters": {
@@ -332,14 +332,14 @@
         },
         "options": {}
       },
+      "id": "31206f2f-a9e5-492c-9699-ea18f0691deb",
+      "name": "If sub workflow configured",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
         -6448,
         3744
-      ],
-      "id": "31206f2f-a9e5-492c-9699-ea18f0691deb",
-      "name": "If sub workflow configured"
+      ]
     },
     {
       "parameters": {
@@ -366,14 +366,14 @@
         },
         "options": {}
       },
+      "id": "9d14904d-7501-47b5-b047-239042511c54",
+      "name": "If notification enabled",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
         -6448,
         3456
-      ],
-      "id": "9d14904d-7501-47b5-b047-239042511c54",
-      "name": "If notification enabled"
+      ]
     },
     {
       "parameters": {
@@ -409,21 +409,21 @@
         },
         "options": {}
       },
+      "id": "a90e60c7-8f77-4e81-aab2-8c5b8e5ba24f",
+      "name": "If include no match",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
         -6176,
         3440
-      ],
-      "id": "a90e60c7-8f77-4e81-aab2-8c5b8e5ba24f",
-      "name": "If include no match"
+      ]
     },
     {
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "mode": "list",
-          "value": "={{ $json.route.workflowId }}"
+          "value": "={{ $json.route.workflowId }}",
+          "mode": "list"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -446,29 +446,29 @@
         },
         "options": {}
       },
+      "id": "9ef4e9e2-8b20-4fa0-90fa-cf1d4e607b38",
+      "name": "Execute target sub workflow",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
+      "alwaysOutputData": true,
       "position": [
         -6176,
         3648
       ],
-      "id": "9ef4e9e2-8b20-4fa0-90fa-cf1d4e607b38",
-      "name": "Execute target sub workflow",
-      "alwaysOutputData": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
         "jsCode": "const data = $('Parse and resolve route').item.json || {};\n\nreturn [{\n  json: {\n    ok: true,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: false,\n    response: {\n      note: 'No routing rule matched. No action executed.'\n    }\n  }\n}];"
       },
+      "id": "46ee6ccf-0c56-4b4f-b9c7-f00a654071b5",
+      "name": "Build pending route result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -6176,
         3840
-      ],
-      "id": "46ee6ccf-0c56-4b4f-b9c7-f00a654071b5",
-      "name": "Build pending route result"
+      ]
     },
     {
       "parameters": {
@@ -524,68 +524,68 @@
         },
         "options": {}
       },
+      "id": "9a947e1b-fecb-4362-a70c-a9755267ffb6",
+      "name": "Send notification",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
+      "alwaysOutputData": true,
       "position": [
         -5920,
         3424
       ],
-      "id": "9a947e1b-fecb-4362-a70c-a9755267ffb6",
-      "name": "Send notification",
-      "alwaysOutputData": true,
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
         "jsCode": "const data = $('Parse and resolve route').item.json || {};\nconst response = $json || {};\nconst failure = response.error;\nconst errorMessage = failure && typeof failure === 'object'\n  ? (failure.message || failure.description || JSON.stringify(failure))\n  : (typeof failure === 'string' && failure.trim() !== '' ? failure.trim() : '');\n\nreturn [{\n  json: {\n    ok: !errorMessage,\n    action: 'route',\n    messageId: data.messageId || null,\n    threadId: data.threadId || null,\n    classification: data.classification || null,\n    route: data.route || null,\n    executed: !errorMessage,\n    error: errorMessage || null,\n    response\n  }\n}];"
       },
+      "id": "dbefa57f-2a27-46ab-8613-7549da1be30b",
+      "name": "Build route result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -5920,
         3632
-      ],
-      "id": "dbefa57f-2a27-46ab-8613-7549da1be30b",
-      "name": "Build route result"
+      ]
     },
     {
       "parameters": {
         "jsCode": "return [{\n  json: {\n    ok: false,\n    action: 'route',\n    messageId: $json.messageId || null,\n    threadId: $json.threadId || null,\n    classification: null,\n    route: null,\n    executed: false,\n    response: {\n      error: $json.error || 'Invalid input'\n    }\n  }\n}];"
       },
+      "id": "b3bcde9a-acb9-4204-81b5-1095f67c505e",
+      "name": "Build validation error result",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         -6704,
         3792
-      ],
-      "id": "b3bcde9a-acb9-4204-81b5-1095f67c505e",
-      "name": "Build validation error result"
+      ]
     },
     {
       "parameters": {
         "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
       },
+      "id": "733a80c6-1511-41c2-8b6a-3c589e601276",
+      "name": "Fail route",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5952,
-        3872
-      ],
-      "id": "2c912675-3417-41cf-9601-7b8954d5c985",
-      "name": "Fail route"
+        -5920,
+        3840
+      ]
     },
     {
       "parameters": {
         "jsCode": "const item = $json || {};\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\nthrow new Error(errorMessage);"
       },
+      "id": "7c89cbf3-f700-42ec-8e31-d30a033655b5",
+      "name": "Fail notification",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5696,
-        3648
-      ],
-      "id": "91df9749-b137-489d-947c-7f3362ea67d0",
-      "name": "Fail notification"
+        -5616,
+        3440
+      ]
     }
   ],
   "pinData": {},
@@ -782,10 +782,11 @@
     "callerPolicy": "workflowsFromSameOwner",
     "timeSavedPerExecution": 2
   },
-  "versionId": "a19e26ba-c222-47f1-b861-62a00de8e7c5",
+  "versionId": "9b4a35df-32b6-42d5-818b-8df8c5307b86",
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
+  "nodeGroups": [],
   "id": "m51F9IO2sbOKSlKD",
   "tags": [
     {
@@ -795,10 +796,10 @@
       "name": "E-Mail"
     },
     {
-      "name": "Mattermost",
-      "id": "ULn7rKr1NniGlDEc",
       "updatedAt": "2026-09-04T20:42:02.072Z",
-      "createdAt": "2026-09-04T20:42:02.072Z"
+      "createdAt": "2026-09-04T20:42:02.072Z",
+      "id": "ULn7rKr1NniGlDEc",
+      "name": "Mattermost"
     }
   ]
 }
