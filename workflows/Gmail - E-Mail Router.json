@@ -420,7 +420,11 @@
     },
     {
       "parameters": {
-        "workflowId": "={{ $json.route.workflowId }}",
+        "workflowId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "={{ $json.route.workflowId }}"
+        },
         "workflowInputs": {
           "mappingMode": "defineBelow",
           "value": {
