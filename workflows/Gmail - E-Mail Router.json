@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Deterministische Regeln (ohne AI):**\n- **Airbus MyPayslip** → Absender noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Newsletter-Keyword im Betreff (Settings: newsletterKeywords) → Workflow \"Gmail - Delete E-Mail\"\n\n**AI-Klassifizierung:** Alle übrigen E-Mails klassifiziert der AI-Node (OpenRouter, Settings: aiModel). Aktuelle Entscheidung: isNewsletter → Newsletter-Route, nur ab Konfidenz-Schwelle (Settings: aiConfidenceThreshold). Weitere Entscheidungen später ergänzbar: Feld im System-Prompt (Settings: aiSystemPrompt) + Eintrag in aiRouteTable im Node \"Build AI classification result\".\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification, includeNoMatch).",
+        "content": "## Gmail - E-Mail Router\n\nRoutet eingehende Gmail-Nachrichten anhand von Absender und Inhalt\nan den passenden Sub-Workflow.\n\n**Deterministische Regeln (ohne AI):**\n- **Airbus MyPayslip** → Absender noreply@mypayslip.airbus.com → Workflow \"Airbus - MyPayslip\"\n- **Newsletter** → Newsletter-Keyword im Betreff (Settings: newsletterKeywords) → Workflow \"Gmail - Delete E-Mail\"\n\n**AI-Klassifizierung:** Alle übrigen E-Mails klassifiziert der AI-Node (OpenRouter, Settings: aiModel). Aktuelle Entscheidung: isNewsletter → Newsletter-Route, nur ab Konfidenz-Schwelle (Settings: aiConfidenceThreshold). Weitere Entscheidungen später ergänzbar: Feld im System-Prompt (Settings: aiSystemPrompt) + Eintrag in aiRouteTable im Node \"Build AI classification result\".\n\n**Eingabe-Felder:** messageId, threadId, from, subject, snippet, text\n**Keine Regel matched:** Kein Sub-Workflow wird ausgeführt.\n**Benachrichtigung:** Über Settings-Node steuerbar (enableNotification, includeNoMatch).\n**Als gelesen markieren:** Über Settings-Node steuerbar (markAsRead, Default an). Wird an Sub-Workflows durchgereicht, die das unterstützen (aktuell: Newsletter-Route → Gmail - Delete E-Mail).",
         "height": 368,
         "width": 724
       },
@@ -237,6 +237,12 @@
             {
               "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
               "name": "enableNotification",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "148a281e-5adb-4ec4-8005-e7e7b962e486",
+              "name": "markAsRead",
               "value": true,
               "type": "boolean"
             },
@@ -484,6 +490,7 @@
             "text": "={{ $json.text }}",
             "sender": "={{ $json.sender }}",
             "message": "={{ $json.message }}",
+            "markAsRead": "={{ $json.markAsRead === true }}",
             "channelName": "n8n",
             "teamName": "Private"
           },

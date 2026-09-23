@@ -50,7 +50,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const raw = $json || {};\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    okToDelete: !error,\n    error\n  }\n}];"
+        "jsCode": "const raw = $json || {};\n\nconst messageId = typeof raw.messageId === 'string' ? raw.messageId.trim() : '';\nconst threadId = typeof raw.threadId === 'string' ? raw.threadId.trim() : '';\nconst from = typeof raw.from === 'string' ? raw.from.trim() : '';\nconst subject = typeof raw.subject === 'string' ? raw.subject.trim() : '';\nconst snippet = typeof raw.snippet === 'string' ? raw.snippet.trim() : '';\nconst text = typeof raw.text === 'string' ? raw.text : '';\n\n// Caller-supplied read flag. Absent (undefined) means: use the workflow default.\n// String forms are expected because executeWorkflow can deliver booleans as strings.\nlet markAsRead;\nif (typeof raw.markAsRead === 'boolean') {\n  markAsRead = raw.markAsRead;\n} else if (typeof raw.markAsRead === 'string') {\n  const flag = raw.markAsRead.trim().toLowerCase();\n  if (flag === 'true') markAsRead = true;\n  else if (flag === 'false') markAsRead = false;\n}\n\nconst error = messageId ? '' : 'Input field messageId is required and must be a non-empty string.';\n\nreturn [{\n  json: {\n    messageId,\n    threadId,\n    from,\n    subject,\n    snippet,\n    text,\n    markAsRead,\n    okToDelete: !error,\n    error\n  }\n}];"
       },
       "id": "b395e637-0e10-4a5c-a576-196718b31414",
       "name": "Normalize and validate input",
@@ -98,7 +98,7 @@
     {
       "parameters": {
         "operation": "addLabels",
-        "messageId": "={{ $json.messageId }}",
+        "messageId": "={{ $('Set mark as read default').first().json.messageId }}",
         "labelIds": [
           "TRASH"
         ]
@@ -122,7 +122,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\nreturn [{\n  json: {\n    ok,\n    action: 'trash',\n    messageId: $('Normalize and validate input').item.json.messageId || null,\n    statusCode,\n    response\n  }\n}];"
+        "jsCode": "const response = $json || {};\nconst statusCode = Number(response.statusCode || 0) || null;\nconst hasError = !!response.error || !!response.message;\nconst ok = !hasError && (statusCode === null || (statusCode >= 200 && statusCode < 300));\n\n// Detect the branch that ran: after a successful mark-as-read the Gmail node\n// returns the message with UNREAD removed, otherwise it is absent.\nlet markAsReadDone = false;\ntry {\n  const labels = $('Mark Gmail message as read').first().json.labelIds;\n  markAsReadDone = Array.isArray(labels) && !labels.includes('UNREAD');\n} catch (error) {\n  markAsReadDone = false;\n}\n\nreturn [{\n  json: {\n    ok,\n    action: 'trash',\n    messageId: $('Normalize and validate input').item.json.messageId || null,\n    markAsRead: markAsReadDone,\n    statusCode,\n    response\n  }\n}];"
       },
       "id": "780e2c6c-5b02-4d00-8718-b9685eb2d4a1",
       "name": "Build delete result",
@@ -158,6 +158,99 @@
         288,
         208
       ]
+    },
+    {
+      "id": "41de8459-387f-4d4a-bd5d-ef054b8e2ea5",
+      "name": "Set mark as read default",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        60,
+        208
+      ],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8b21b76e-5909-4e1c-9d4b-6a2df32c8e11",
+              "name": "markAsReadDefault",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {},
+        "includeOtherFields": true
+      }
+    },
+    {
+      "id": "a22c11c5-a80c-4755-b69e-4179cfcaf39b",
+      "name": "If mark as read",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        272,
+        208
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "35dbc316-4108-4e35-b9c5-1af1d5c611e0",
+              "leftValue": "={{ $json.markAsRead ?? $('Set mark as read default').first().json.markAsReadDefault }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "dffdee91-3cd5-42c7-a847-5f38609695b4",
+      "name": "Mark Gmail message as read",
+      "webhookId": "9f0ed08c-080e-42ec-b5c0-f0c251bfe320",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "onError": "continueErrorOutput",
+      "position": [
+        496,
+        208
+      ],
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $('Set mark as read default').first().json.messageId }}"
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "id": "33bd51b8-51fd-454a-b79c-95246115b047",
+      "name": "Fail mark as read",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        384
+      ],
+      "parameters": {
+        "jsCode": "const item = $json || {};\nconst cfg = $('Set mark as read default').first().json || {};\n\nconst failure = item.error;\nlet errorMessage;\nif (failure && typeof failure === 'object') {\n  errorMessage = failure.message || failure.description || failure.name || JSON.stringify(failure);\n} else if (typeof failure === 'string' && failure.trim() !== '') {\n  errorMessage = failure.trim();\n} else if (typeof item.message === 'string' && item.message.trim() !== '') {\n  errorMessage = item.message.trim();\n} else {\n  errorMessage = 'Node failed without error details.';\n}\n\n// Best effort: mark-as-read problems must not block the trash move,\n// so do not throw. Report the problem in the result instead.\nreturn [{\n  json: {\n    ok: false,\n    action: 'markAsRead',\n    messageId: cfg.messageId || null,\n    statusCode: null,\n    response: {\n      error: errorMessage\n    }\n  }\n}];"
+      }
     }
   ],
   "pinData": {},
@@ -210,7 +303,7 @@
       "main": [
         [
           {
-            "node": "Trash Gmail message",
+            "node": "Set mark as read default",
             "type": "main",
             "index": 0
           }
@@ -236,6 +329,64 @@
         [
           {
             "node": "Fail delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set mark as read default": {
+      "main": [
+        [
+          {
+            "node": "If mark as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If mark as read": {
+      "main": [
+        [
+          {
+            "node": "Mark Gmail message as read",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Trash Gmail message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Gmail message as read": {
+      "main": [
+        [
+          {
+            "node": "Trash Gmail message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail mark as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fail mark as read": {
+      "main": [
+        [
+          {
+            "node": "Trash Gmail message",
             "type": "main",
             "index": 0
           }
