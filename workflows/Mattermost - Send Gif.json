@@ -119,7 +119,7 @@
             {
               "id": "c3000001-c3",
               "name": "defaultChannelName",
-              "value": "",
+              "value": "town-square",
               "type": "string"
             },
             {
@@ -149,7 +149,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst config = $('Set Mattermost config').item.json || {};\n\nconst query = typeof normalized.query === 'string' ? normalized.query.trim() : '';\nconst inputChannelId = typeof normalized.channelId === 'string' ? normalized.channelId.trim() : '';\nconst inputChannelName = typeof normalized.channelName === 'string' ? normalized.channelName.trim() : '';\nconst inputTeamName = typeof normalized.teamName === 'string' ? normalized.teamName.trim() : '';\nconst rootId = typeof normalized.rootId === 'string' ? normalized.rootId.trim() : '';\n\nconst baseUrl = typeof config.baseUrl === 'string' ? config.baseUrl.trim().replace(/\\/+$/, '') : '';\nconst defaultChannelId = typeof config.defaultChannelId === 'string' ? config.defaultChannelId.trim() : '';\nconst defaultChannelName = typeof config.defaultChannelName === 'string' ? config.defaultChannelName.trim().replace(/^[#~]/, '') : '';\nconst defaultTeamName = typeof config.defaultTeamName === 'string' ? config.defaultTeamName.trim() : '';\nconst commandName = typeof config.commandName === 'string' ? config.commandName.trim().replace(/^\/+/, '') : '';\n\nconst usedChannelId = inputChannelId || defaultChannelId;\nconst usedChannelName = usedChannelId ? '' : (inputChannelName || defaultChannelName);\nconst usedTeamName = inputTeamName || defaultTeamName;\nconst needsChannelLookup = !usedChannelId;\n\nlet error = '';\nif (!query) {\n  error = 'Input field query is required and must be a non-empty string.';\n} else if (!baseUrl) {\n  error = 'No Mattermost baseUrl configured. Set value in node Set Mattermost config.';\n} else if (!commandName) {\n  error = 'No Mattermost commandName configured. Set value in node Set Mattermost config.';\n} else if (!usedChannelId && !usedChannelName) {\n  error = 'Provide channelId or channelName (or configure a default in node Set Mattermost config).';\n} else if (!usedChannelId && !usedTeamName) {\n  error = 'teamName is required when sending by channelName. Pass teamName or set defaultTeamName in node Set Mattermost config.';\n}\n\nreturn [{\n  json: {\n    query,\n    rootId,\n    baseUrl,\n    commandName,\n    usedChannelId,\n    usedChannelName,\n    usedTeamName,\n    usedTeamId: '',\n    needsChannelLookup,\n    okToSend: error === '',\n    error\n  }\n}];"
+        "jsCode": "const normalized = $('Normalize input').item.json || {};\nconst config = $('Set Mattermost config').item.json || {};\n\nconst query = typeof normalized.query === 'string' ? normalized.query.trim() : '';\nconst inputChannelId = typeof normalized.channelId === 'string' ? normalized.channelId.trim() : '';\nconst inputChannelName = typeof normalized.channelName === 'string' ? normalized.channelName.trim() : '';\nconst inputTeamName = typeof normalized.teamName === 'string' ? normalized.teamName.trim() : '';\nconst rootId = typeof normalized.rootId === 'string' ? normalized.rootId.trim() : '';\n\nconst baseUrl = typeof config.baseUrl === 'string' ? config.baseUrl.trim().replace(/\\/+$/, '') : '';\nconst defaultChannelId = typeof config.defaultChannelId === 'string' ? config.defaultChannelId.trim() : '';\nconst defaultChannelName = typeof config.defaultChannelName === 'string' ? config.defaultChannelName.trim().replace(/^[#~]/, '') : '';\nconst defaultTeamName = typeof config.defaultTeamName === 'string' ? config.defaultTeamName.trim() : '';\nconst commandName = typeof config.commandName === 'string' ? config.commandName.trim().replace(/^\\/+/, '') : '';\n\nconst usedChannelId = inputChannelId || defaultChannelId;\nconst usedChannelName = usedChannelId ? '' : (inputChannelName || defaultChannelName);\nconst usedTeamName = inputTeamName || defaultTeamName;\nconst needsChannelLookup = !usedChannelId;\n\nlet error = '';\nif (!query) {\n  error = 'Input field query is required and must be a non-empty string.';\n} else if (!baseUrl) {\n  error = 'No Mattermost baseUrl configured. Set value in node Set Mattermost config.';\n} else if (!commandName) {\n  error = 'No Mattermost commandName configured. Set value in node Set Mattermost config.';\n} else if (!usedChannelId && !usedChannelName) {\n  error = 'Provide channelId or channelName (or configure a default in node Set Mattermost config).';\n} else if (!usedChannelId && !usedTeamName) {\n  error = 'teamName is required when sending by channelName. Pass teamName or set defaultTeamName in node Set Mattermost config.';\n}\n\nreturn [{\n  json: {\n    query,\n    rootId,\n    baseUrl,\n    commandName,\n    usedChannelId,\n    usedChannelName,\n    usedTeamName,\n    usedTeamId: '',\n    needsChannelLookup,\n    okToSend: error === '',\n    error\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -675,7 +675,7 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -689,6 +689,6 @@
   "meta": {
     "instanceId": "9a86e2e169064cb50265681a96c982c97ed621c99e4666faa548d134581fb6a5"
   },
-  "id": "EUtEs9R0IhwE8f5I",
+  "id": "35jwP96VKdOgldwh",
   "tags": []
 }
