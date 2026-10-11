@@ -53,7 +53,7 @@
             {
               "id": "c3000001-t2",
               "name": "channelName",
-              "value": "n8n",
+              "value": "",
               "type": "string"
             },
             {
@@ -113,13 +113,13 @@
             {
               "id": "c3000001-c2",
               "name": "defaultChannelId",
-              "value": "",
+              "value": "oxabtc5qh3gk98631bhrq4zzoy",
               "type": "string"
             },
             {
               "id": "c3000001-c3",
               "name": "defaultChannelName",
-              "value": "town-square",
+              "value": "",
               "type": "string"
             },
             {
