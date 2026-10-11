@@ -257,7 +257,9 @@
       "name": "Merge stocks + ETF"
     },
     {
-      "parameters": {},
+      "parameters": {
+        "numberInputs": 3
+      },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
       "position": [
@@ -296,7 +298,7 @@
             },
             {
               "name": "extraThreshold",
-              "value": 5
+              "value": 10
             },
             {
               "name": "extraMinMarketCap",
