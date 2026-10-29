@@ -1,0 +1,499 @@
+{
+  "name": "Gmail - GMX Import - SPAM",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Gmail - GMX Import - SPAM (Entwurf)\n\nPull-Import: GMX per IMAP lesen, per Gmail API `users.messages.import` in Gmail einliefern.\n\n**Vor Aktivierung offen**\n- IMAP-Credential fuer GMX anlegen\n- Data Table `GMX Import State` anlegen\n- Gmail-OAuth2 (Publishing-Status) pruefen\n\n**GMX bleibt Quelle:** keine Nachricht wird geloescht oder als gelesen markiert.\n\n**Zweig fuer den GMX-Spamordner**\n- Ordnername `Spam` ist unbestaetigt (`list_gmx_folders.py`)\n- kein `neverMarkSpam`: Gmail klassifiziert\n- gleiche Data Table wie INBOX-Import -> keine Dublette, wenn eine Mail zwischen den Ordnern wandert",
+        "height": 412,
+        "width": 788,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -272
+      ],
+      "id": "5d0333ad-a9a2-4ec3-90f7-02ce677e5f53",
+      "name": "Note - Design"
+    },
+    {
+      "parameters": {
+        "mailbox": "Spamverdacht",
+        "postProcessAction": "nothing",
+        "format": "resolved",
+        "options": {
+          "customEmailConfig": "[\"UNSEEN\"]",
+          "forceReconnect": 30,
+          "trackLastMessageId": true
+        }
+      },
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        160
+      ],
+      "id": "987f2dbc-4294-41bf-a3fe-4001f0025006",
+      "name": "GMX IMAP Trigger",
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "83618cd5-f6a7-406e-84f5-19d7a1f5210f",
+              "name": "gmailUserId",
+              "value": "me",
+              "type": "string"
+            },
+            {
+              "id": "18e35026-aaa2-45d3-9870-3af134a992c8",
+              "name": "gmailImportUrl",
+              "value": "https://gmail.googleapis.com/gmail/v1/users/me/messages/import",
+              "type": "string"
+            },
+            {
+              "id": "d91c65e3-4b38-43e1-9b21-dd3cda3eded0",
+              "name": "internalDateSource",
+              "value": "dateHeader",
+              "type": "string"
+            },
+            {
+              "id": "0b4cce48-4eeb-4a96-8149-cdbd94198ef3",
+              "name": "neverMarkSpam",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "6282420a-878f-47ba-94e9-b60787959b2d",
+              "name": "processForCalendar",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "2b5fa904-1e6a-4c0a-8ecc-e8f7489770fb",
+              "name": "dataTableName",
+              "value": "GMX Import State",
+              "type": "string"
+            },
+            {
+              "id": "ae405335-57a7-49d0-99a1-7741d60de933",
+              "name": "gmxMailbox",
+              "value": "Spam",
+              "type": "string"
+            },
+            {
+              "id": "ddd50368-883d-4395-87c2-13da72177fba",
+              "name": "maxRetryAttempts",
+              "value": 5,
+              "type": "number"
+            },
+            {
+              "id": "0296106f-8e52-49a4-b8b5-3ba9416453d1",
+              "name": "stripBrokenAuthHeaders",
+              "value": false,
+              "type": "boolean"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        144,
+        160
+      ],
+      "id": "2bbcf6f6-1b82-45f0-bc3f-b3424b764f8f",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rebuild a valid RFC822 message from the parsed IMAP item.\n//\n// Why: the Email Trigger (IMAP) node in n8n-nodes-base 2.38.2 fetches\n// BODY.PEEK[TEXT] for format \"raw\" (headers are lost) and decodes the stream as\n// UTF-8, so its \"raw\" field is neither the original message nor base64url.\n// Gmail users.messages.import needs the RFC822 source, so the message is\n// rebuilt here from the headers, text/html body and binary attachments that\n// the \"resolved\" format provides.\nconst cfg = $('Config').first().json;\n\nconst STRUCTURAL = new Set([\n  'content-type',\n  'content-transfer-encoding',\n  'content-length',\n  'content-disposition',\n  'content-id',\n  'mime-version',\n]);\nconst BROKEN_AUTH = new Set([\n  'dkim-signature',\n  'arc-seal',\n  'arc-message-signature',\n  'arc-authentication-results',\n  'authentication-results',\n  'received-spf',\n]);\n\nconst CRLF = '\\r\\n';\n\nfunction base64Lines(buf) {\n  return Buffer.from(buf).toString('base64').replace(/(.{76})/g, '$1' + CRLF);\n}\n\nfunction contentParam(name, value) {\n  if (/^[\\x20-\\x7e]*$/.test(value)) {\n    return `${name}=\"${value.replace(/([\"\\\\])/g, '\\\\$1')}\"`;\n  }\n  const encoded = encodeURIComponent(value).replace(\n    /['()*!~]/g,\n    (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase(),\n  );\n  return `${name}*=UTF-8''${encoded}`;\n}\n\n// Stable, dependency-free content hash used only when a message has no\n// Message-ID (the Code node cannot require(\"crypto\")).\nfunction fnv1a64(str) {\n  let hash = 0xcbf29ce484222325n;\n  const prime = 0x100000001b3n;\n  const mask = 0xffffffffffffffffn;\n  for (let i = 0; i < str.length; i++) {\n    hash ^= BigInt(str.charCodeAt(i));\n    hash = (hash * prime) & mask;\n  }\n  return hash.toString(16).padStart(16, '0');\n}\n\nfunction newBoundary(tag, index) {\n  return `=_n8n_${tag}_${Date.now().toString(36)}_${index}`;\n}\n\nfunction textEntity(subtype, content) {\n  return {\n    headers: [\n      `Content-Type: text/${subtype}; charset=utf-8`,\n      'Content-Transfer-Encoding: base64',\n    ],\n    body: base64Lines(Buffer.from(content, 'utf8')) + CRLF,\n    children: null,\n  };\n}\n\nfunction attachmentEntity(attachment) {\n  const contentType = attachment.contentType || 'application/octet-stream';\n  return {\n    headers: [\n      `Content-Type: ${contentType}; ${contentParam('name', attachment.filename)}`,\n      `Content-Disposition: attachment; ${contentParam('filename', attachment.filename)}`,\n      'Content-Transfer-Encoding: base64',\n    ],\n    body: base64Lines(attachment.buffer) + CRLF,\n    children: null,\n  };\n}\n\nfunction multipartEntity(subtype, children, boundary) {\n  return {\n    headers: [\n      `Content-Type: multipart/${subtype}; boundary=\"${boundary}\"`,\n      'MIME-Version: 1.0',\n    ],\n    body: null,\n    children,\n    boundary,\n  };\n}\n\nfunction renderBody(entity) {\n  if (!entity.children) return entity.body;\n  let out = '';\n  for (const child of entity.children) {\n    out += `--${entity.boundary}${CRLF}`;\n    out += child.headers.join(CRLF) + CRLF + CRLF;\n    out += renderBody(child) + CRLF;\n  }\n  out += `--${entity.boundary}--${CRLF}`;\n  return out;\n}\n\nasync function build(itemIndex, item) {\n  const json = item.json || {};\n  const headerMap = json.headers || {};\n\n  // Preserve the original header lines and order; the map already collapses\n  // duplicate names (e.g. several Received lines), which cannot be recovered.\n  const headerLines = [];\n  let hasMimeVersion = false;\n  for (const [name, line] of Object.entries(headerMap)) {\n    const lower = String(name).toLowerCase();\n    if (lower === 'mime-version') hasMimeVersion = true;\n    if (STRUCTURAL.has(lower)) continue;\n    if (cfg.stripBrokenAuthHeaders && BROKEN_AUTH.has(lower)) continue;\n    if (typeof line === 'string' && line.trim() !== '') headerLines.push(line);\n  }\n\n  const messageIdRaw = json.messageId || headerMap['message-id'] || '';\n  const messageId = String(messageIdRaw).replace(/^message-id:\\s*/i, '').trim();\n  const subject = typeof json.subject === 'string' ? json.subject : '';\n  const sender =\n    json.from && json.from.text ? String(json.from.text) : String(headerMap.from || '');\n\n  const children = [];\n  const text = typeof json.text === 'string' ? json.text : '';\n  const html = typeof json.html === 'string' ? json.html : '';\n  const bodyParts = [];\n  if (text !== '') bodyParts.push(textEntity('plain', text));\n  if (html !== '') bodyParts.push(textEntity('html', html));\n  if (bodyParts.length === 0) bodyParts.push(textEntity('plain', ''));\n  if (bodyParts.length === 1) {\n    children.push(bodyParts[0]);\n  } else {\n    children.push(multipartEntity('alternative', bodyParts, newBoundary('alt', itemIndex)));\n  }\n\n  const binary = item.binary || {};\n  const attachmentSignature = [];\n  for (const key of Object.keys(binary)) {\n    const buffer = await this.helpers.getBinaryDataBuffer(itemIndex, key);\n    const meta = binary[key] || {};\n    const filename = meta.fileName || `${key}.bin`;\n    children.push(\n      attachmentEntity({\n        buffer,\n        filename,\n        contentType: meta.mimeType,\n      }),\n    );\n    attachmentSignature.push(`${filename}:${buffer.length}`);\n  }\n  const attachmentCount = attachmentSignature.length;\n\n  const top =\n    children.length === 1 && attachmentCount === 0\n      ? children[0]\n      : multipartEntity('mixed', children, newBoundary('mix', itemIndex));\n\n  const outHeaders = [...headerLines];\n  if (!hasMimeVersion) outHeaders.push('MIME-Version: 1.0');\n  outHeaders.push(...top.headers);\n\n  const message = outHeaders.join(CRLF) + CRLF + CRLF + renderBody(top);\n  const buffer = Buffer.from(message, 'utf8');\n\n  // The fallback hash must not depend on the random MIME boundaries, so it is\n  // built from the stable message content only.\n  const fallbackSeed = [\n    String(json.date || ''),\n    sender,\n    subject,\n    text,\n    html,\n    attachmentSignature.join('|'),\n  ].join('\\u0000');\n  const key = messageId !== '' ? messageId.toLowerCase() : `sha:${fnv1a64(fallbackSeed)}`;\n\n  return {\n    messageKey: key,\n    messageId,\n    subject,\n    sender,\n    mailDate: json.date instanceof Date ? json.date.toISOString() : String(json.date || ''),\n    sizeBytes: buffer.length,\n    attachmentCount,\n    headerCount: outHeaders.length,\n    importedFrom: `imap:${cfg.gmxMailbox || 'INBOX'}`,\n    rawB64: buffer\n      .toString('base64')\n      .replace(/\\+/g, '-')\n      .replace(/\\//g, '_')\n      .replace(/=+$/, ''),\n  };\n}\n\nconst items = $input.all();\nconst results = [];\nfor (let i = 0; i < items.length; i++) {\n  // pairedItem is set explicitly: downstream nodes read $('Build RFC822').item,\n  // which would otherwise depend on n8n's automatic pairing.\n  results.push({ json: await build.call(this, i, items[i]), pairedItem: { item: i } });\n}\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        160
+      ],
+      "id": "946a0671-b6bd-4758-9c4b-f455ebefb0ce",
+      "name": "Build RFC822"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Config').first().json.dataTableName }}"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "messageKey",
+              "keyValue": "={{ $json.messageKey }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        160
+      ],
+      "id": "08ab5ee2-1801-4e10-bb48-6100f951231b",
+      "name": "Only new messages"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.gmailImportUrl }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "internalDateSource",
+              "value": "={{ $('Config').first().json.internalDateSource }}"
+            },
+            {
+              "name": "neverMarkSpam",
+              "value": "={{ $('Config').first().json.neverMarkSpam }}"
+            },
+            {
+              "name": "processForCalendar",
+              "value": "={{ $('Config').first().json.processForCalendar }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ raw: $json.rawB64 }) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        160
+      ],
+      "id": "d23893a1-bc96-4037-9b2c-4546e64f0fe1",
+      "name": "Gmail import",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Config').first().json.dataTableName }}"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "messageKey",
+              "keyValue": "={{ $('Build RFC822').item.json.messageKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "messageKey": "={{ $('Build RFC822').item.json.messageKey }}",
+            "messageId": "={{ $('Build RFC822').item.json.messageId }}",
+            "subject": "={{ $('Build RFC822').item.json.subject }}",
+            "sender": "={{ $('Build RFC822').item.json.sender }}",
+            "mailDate": "={{ $('Build RFC822').item.json.mailDate }}",
+            "status": "imported",
+            "attempts": "={{ 0 }}",
+            "gmailMessageId": "={{ $json.id }}",
+            "gmailThreadId": "={{ $json.threadId }}",
+            "lastError": "",
+            "rawB64": ""
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        48
+      ],
+      "id": "3ab6a077-7678-43d1-a5c3-6ecabc3b3a93",
+      "name": "Mark imported"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Config').first().json.dataTableName }}"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "messageKey",
+              "keyValue": "={{ $('Build RFC822').item.json.messageKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "messageKey": "={{ $('Build RFC822').item.json.messageKey }}",
+            "messageId": "={{ $('Build RFC822').item.json.messageId }}",
+            "subject": "={{ $('Build RFC822').item.json.subject }}",
+            "sender": "={{ $('Build RFC822').item.json.sender }}",
+            "mailDate": "={{ $('Build RFC822').item.json.mailDate }}",
+            "status": "failed",
+            "attempts": "={{ 0 }}",
+            "lastError": "={{ String(($json.error && ($json.error.message || $json.error.description)) || 'unknown error').slice(0, 500) }}",
+            "rawB64": "={{ $('Build RFC822').item.json.rawB64 }}"
+          },
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        272
+      ],
+      "id": "2be7836c-09f6-4dbb-b066-7f85f25dc8dc",
+      "name": "Mark failed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// One summary row per execution so a failed import becomes a red execution\n// instead of a green one with hidden errors.\nconst rows = $input.all().map((item) => item.json || {});\nconst imported = rows.filter((r) => r.status === 'imported').length;\nconst failed = rows.filter((r) => r.status === 'failed').length;\nconst failedKeys = rows\n  .filter((r) => r.status === 'failed')\n  .map((r) => r.messageKey || r.messageId || 'unknown');\n\nreturn [\n  {\n    json: {\n      total: rows.length,\n      imported,\n      failed,\n      failedKeys,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        160
+      ],
+      "id": "95c176a7-f7fa-4228-a3f3-aa3b6db8be53",
+      "name": "Collect results"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5d8ce756-d598-4829-ab72-6ef417f511d8",
+              "leftValue": "={{ $json.failed > 0 }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1504,
+        160
+      ],
+      "id": "0b9ad47a-a048-4db6-a0d3-c7e1196ce55c",
+      "name": "IF failures"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ 'GMX->Gmail Import fehlgeschlagen: ' + $json.failed + ' von ' + $json.total + ' Nachricht(en): ' + $json.failedKeys.join(', ') }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        48
+      ],
+      "id": "fa9e1a6a-3342-4eb3-afcf-50892afc64c4",
+      "name": "Raise visible error"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1728,
+        272
+      ],
+      "id": "5167853e-2eb1-4674-9872-d8c4127f9a61",
+      "name": "Done"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "GMX IMAP Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Build RFC822",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build RFC822": {
+      "main": [
+        [
+          {
+            "node": "Only new messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only new messages": {
+      "main": [
+        [
+          {
+            "node": "Gmail import",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail import": {
+      "main": [
+        [
+          {
+            "node": "Mark imported",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mark failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark imported": {
+      "main": [
+        [
+          {
+            "node": "Collect results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark failed": {
+      "main": [
+        [
+          {
+            "node": "Collect results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect results": {
+      "main": [
+        [
+          {
+            "node": "IF failures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF failures": {
+      "main": [
+        [
+          {
+            "node": "Raise visible error",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionTimeout": 300,
+    "errorWorkflow": "Bin1Me6S1IWNK7e7",
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "binaryMode": "separate"
+  },
+  "versionId": "74d4df31-e4b9-48db-968c-124d2bd84807",
+  "meta": null,
+  "id": "4JpTgkz78rjWJcrv",
+  "tags": []
+}
