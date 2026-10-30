@@ -67,7 +67,7 @@
             {
               "id": "48ef72ad-f8b6-4cde-a095-3f9a8010eb14",
               "name": "neverMarkSpam",
-              "value": false,
+              "value": true,
               "type": "boolean"
             },
             {

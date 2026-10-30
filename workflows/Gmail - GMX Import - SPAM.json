@@ -86,7 +86,7 @@
             {
               "id": "ae405335-57a7-49d0-99a1-7741d60de933",
               "name": "gmxMailbox",
-              "value": "Spam",
+              "value": "Spamverdacht",
               "type": "string"
             },
             {
@@ -105,7 +105,7 @@
               "id": "d4bbeb1f-7904-428c-9721-fe85e1a98e35",
               "name": "gmailLabelIds",
               "value": [
-                "INBOX"
+                "SPAM"
               ],
               "type": "array"
             }
