@@ -99,6 +99,14 @@
               "name": "stripBrokenAuthHeaders",
               "value": false,
               "type": "boolean"
+            },
+            {
+              "id": "27c64d68-f9a9-45cb-acdd-5c77afa5541d",
+              "name": "gmailLabelIds",
+              "value": [
+                "INBOX"
+              ],
+              "type": "array"
             }
           ]
         },
@@ -179,7 +187,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ raw: $json.rawB64 }) }}",
+        "jsonBody": "={{ JSON.stringify({ raw: $json.rawB64, labelIds: $('Config').first().json.gmailLabelIds }) }}",
         "options": {
           "timeout": 180000
         }
