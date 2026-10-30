@@ -1,0 +1,850 @@
+{
+  "name": "Gmail - GMX Leftover",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -220,
+        0
+      ],
+      "id": "bebee735-c5f1-4c2f-828f-871ee9bf8dc1",
+      "name": "Every 10 minutes"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "46bd6ed5-ce6d-4b2f-b8d9-60a2188820a8",
+              "name": "gmailImportUrl",
+              "value": "https://gmail.googleapis.com/gmail/v1/users/me/messages/import",
+              "type": "string"
+            },
+            {
+              "id": "743b72ed-2b7d-4ab0-b2fd-ec85c84f54c2",
+              "name": "internalDateSource",
+              "value": "dateHeader",
+              "type": "string"
+            },
+            {
+              "id": "871e93e5-0c69-4786-b2f3-b3ce7d4bf901",
+              "name": "processForCalendar",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "16fde302-217b-4dae-98e7-96c56c2c803e",
+              "name": "dataTableName",
+              "value": "GMX Import State",
+              "type": "string"
+            },
+            {
+              "id": "0ae2bb52-43b0-497a-af8e-6a3b471bff2e",
+              "name": "inboxMailbox",
+              "value": "INBOX",
+              "type": "string"
+            },
+            {
+              "id": "8cdbd6df-7665-4d61-ac53-453a247356ba",
+              "name": "spamMailbox",
+              "value": "Spamverdacht",
+              "type": "string"
+            },
+            {
+              "id": "25581398-e713-415e-b1f5-e07a588c1d66",
+              "name": "inboxLabelIds",
+              "value": [
+                "INBOX",
+                "UNREAD"
+              ],
+              "type": "array"
+            },
+            {
+              "id": "c0002d33-3c5c-4648-994c-37889d59f260",
+              "name": "spamLabelIds",
+              "value": [
+                "SPAM",
+                "UNREAD"
+              ],
+              "type": "array"
+            },
+            {
+              "id": "22a30b11-b8a6-4229-9f6f-5b644e910a5a",
+              "name": "inboxNeverMarkSpam",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "ce257abc-bb53-4ee9-8022-b6ef539ef2bb",
+              "name": "spamNeverMarkSpam",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "96ce5b48-023c-42ba-b2b3-affd33a3b472",
+              "name": "maxMailsPerFolder",
+              "value": 25,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fd150ddb-de32-407f-b451-78edfb9eef46",
+      "name": "Config"
+    },
+    {
+      "parameters": {
+        "authentication": "coreImapAccount",
+        "resource": "email",
+        "operation": "getEmailsList",
+        "mailboxPath": {
+          "__rl": true,
+          "mode": "path",
+          "value": "={{ $('Config').first().json.inboxMailbox }}"
+        },
+        "limit": "={{ $('Config').first().json.maxMailsPerFolder }}",
+        "includeParts": []
+      },
+      "type": "n8n-nodes-imap.imap",
+      "typeVersion": 1,
+      "position": [
+        240,
+        -160
+      ],
+      "id": "dc599f6e-e6b1-4b79-893f-d2cd33219f3e",
+      "name": "List INBOX",
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turn one IMAP list result into import candidates for the inbox branch.\n// mailboxPath is set by the IMAP node, so the folder is taken from the item.\nconst cfg = $('Config').first().json;\nconst mailbox = cfg.inboxMailbox;\nreturn $input.all()\n  .filter((item) => item.json && item.json.uid)\n  .map((item) => {\n  const env = item.json.envelope || {};\n  const from = Array.isArray(env.from) && env.from.length ? env.from[0] : {};\n  const fromText = [from.name, from.address].filter(Boolean).join(' ') || '';\n  const messageId = String(env.messageId || '').trim();\n  return {\n    json: {\n      mailbox,\n      uid: String(item.json.uid ?? ''),\n      messageId,\n      // Same key format as the trigger workflows so both paths share the dedupe table.\n      // Fallback keeps re-runs of the same leftover stable when a mail has no Message-ID.\n      messageKey: messageId ? messageId.toLowerCase() : `sha:uid:${mailbox}:${item.json.uid}`, \n      subject: String(env.subject || ''),\n      sender: fromText,\n      mailDate: env.date ? new Date(env.date).toISOString() : '',\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -160
+      ],
+      "id": "d709a674-913d-4cb2-8fa6-70d1d1b82715",
+      "name": "Targets INBOX"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Config').first().json.dataTableName }}"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "messageKey",
+              "keyValue": "={{ $json.messageKey }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        680,
+        -160
+      ],
+      "id": "cd9e77fd-8f77-4fda-8001-6e89d6324627",
+      "name": "Only new INBOX"
+    },
+    {
+      "parameters": {
+        "authentication": "coreImapAccount",
+        "resource": "email",
+        "operation": "downloadEml",
+        "mailboxPath": {
+          "__rl": true,
+          "mode": "path",
+          "value": "={{ $('Config').first().json.inboxMailbox }}"
+        },
+        "emailUid": "={{ $json.uid }}",
+        "outputToBinary": false
+      },
+      "type": "n8n-nodes-imap.imap",
+      "typeVersion": 1,
+      "position": [
+        900,
+        -160
+      ],
+      "id": "7a759797-91d2-4e25-80ba-17c9aceb62e7",
+      "name": "Download INBOX",
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the original EML (IMAP download) into an import payload.\n// Header values are unfolded (continuation lines start with whitespace).\nfunction headerBlock(eml) {\n  const cut = eml.indexOf('\\r\\n\\r\\n');\n  const end = cut >= 0 ? cut : eml.indexOf('\\n\\n');\n  return end >= 0 ? eml.slice(0, end) : eml;\n}\n\nfunction parseHeaders(block) {\n  const lines = block.split(/\\r?\\n/);\n  const out = {};\n  let current = null;\n  for (const line of lines) {\n    if (/^[ \\t]/.test(line) && current) {\n      out[current] += ' ' + line.trim();\n      continue;\n    }\n    const idx = line.indexOf(':');\n    if (idx > 0) {\n      current = line.slice(0, idx).trim().toLowerCase();\n      out[current] = line.slice(idx + 1).trim();\n    }\n  }\n  return out;\n}\n\nfunction fnv1a64(str) {\n  let hash = 0xcbf29ce484222325n;\n  const prime = 0x100000001b3n;\n  const mask = 0xffffffffffffffffn;\n  for (let i = 0; i < str.length; i++) {\n    hash ^= BigInt(str.charCodeAt(i));\n    hash = (hash * prime) & mask;\n  }\n  return hash.toString(16).padStart(16, '0');\n}\n\nreturn $input.all().map((item, index) => {\n  const eml = String(item.json.emlContent || '');\n  const block = headerBlock(eml);\n  const h = parseHeaders(block);\n  const messageId = String(h['message-id'] || '');\n  const key = messageId ? messageId.toLowerCase() : `sha:${fnv1a64(block)}`;\n  const rawB64 = Buffer.from(eml, 'utf8')\n    .toString('base64')\n    .replace(/\\+/g, '-')\n    .replace(/\\//g, '_')\n    .replace(/=+$/, '');\n  return {\n    json: {\n      messageKey: key,\n      messageId,\n      subject: String(h.subject || ''),\n      sender: String(h.from || ''),\n      mailDate: h.date ? new Date(h.date).toISOString() : '',\n      sizeBytes: Buffer.byteLength(eml, 'utf8'),\n      sourceUid: String(item.json.uid ?? ''),\n      rawB64,\n    },\n    pairedItem: { item: index },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -160
+      ],
+      "id": "deb3eeea-ea75-4f19-8b3b-0a83b7cd953d",
+      "name": "Payload INBOX"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.gmailImportUrl }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "internalDateSource",
+              "value": "={{ $('Config').first().json.internalDateSource }}"
+            },
+            {
+              "name": "neverMarkSpam",
+              "value": "={{ $('Config').first().json.inboxNeverMarkSpam }}"
+            },
+            {
+              "name": "processForCalendar",
+              "value": "={{ $('Config').first().json.processForCalendar }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ raw: $json.rawB64, labelIds: $('Config').first().json.inboxLabelIds }) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        -160
+      ],
+      "id": "2b8475d0-f9cd-4be6-8cd6-ec47a3a028e9",
+      "name": "Gmail import INBOX",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Config').first().json.dataTableName }}"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "messageKey",
+              "keyValue": "={{ $('Payload INBOX').item.json.messageKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "messageKey": "={{ $('Payload INBOX').item.json.messageKey }}",
+            "messageId": "={{ $('Payload INBOX').item.json.messageId }}",
+            "subject": "={{ $('Payload INBOX').item.json.subject }}",
+            "sender": "={{ $('Payload INBOX').item.json.sender }}",
+            "mailDate": "={{ $('Payload INBOX').item.json.mailDate }}",
+            "status": "imported",
+            "attempts": 0,
+            "gmailMessageId": "={{ $json.id }}",
+            "gmailThreadId": "={{ $json.threadId }}",
+            "lastError": "",
+            "rawB64": ""
+          }
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        -250
+      ],
+      "id": "42229903-60c2-4164-9691-a5d3f0db220a",
+      "name": "Mark imported INBOX"
+    },
+    {
+      "parameters": {
+        "authentication": "coreImapAccount",
+        "resource": "email",
+        "operation": "deleteEmail",
+        "mailboxPath": {
+          "__rl": true,
+          "mode": "path",
+          "value": "={{ $('Config').first().json.inboxMailbox }}"
+        },
+        "emailUid": "={{ $('Payload INBOX').item.json.sourceUid }}"
+      },
+      "type": "n8n-nodes-imap.imap",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        -250
+      ],
+      "id": "c19427f4-0c27-46d2-9303-11068d31ad1f",
+      "name": "Delete GMX copy INBOX",
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = [];\nfor (const item of $input.all()) {\n  const e = item.json?.error;\n  const msg = typeof e === 'string' ? e : e?.message || e?.description || JSON.stringify(e ?? {});\n  rows.push(`${item.json?.sourceUid || 'unknown'}: ${msg}`);\n}\nthrow new Error('GMX-Loeschung fehlgeschlagen (INBOX): ' + rows.join(' | '));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        -100
+      ],
+      "id": "354e4910-3ab8-4479-b4af-1c1a28d871bf",
+      "name": "Fail delete INBOX"
+    },
+    {
+      "parameters": {
+        "authentication": "coreImapAccount",
+        "resource": "email",
+        "operation": "getEmailsList",
+        "mailboxPath": {
+          "__rl": true,
+          "mode": "path",
+          "value": "={{ $('Config').first().json.spamMailbox }}"
+        },
+        "limit": "={{ $('Config').first().json.maxMailsPerFolder }}",
+        "includeParts": []
+      },
+      "type": "n8n-nodes-imap.imap",
+      "typeVersion": 1,
+      "position": [
+        240,
+        220
+      ],
+      "id": "0bc30c12-d5a2-4cea-8b8b-4ff5df9dd550",
+      "name": "List Spam",
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      },
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// Turn one IMAP list result into import candidates for the spam branch.\n// mailboxPath is set by the IMAP node, so the folder is taken from the item.\nconst cfg = $('Config').first().json;\nconst mailbox = cfg.spamMailbox;\nreturn $input.all()\n  .filter((item) => item.json && item.json.uid)\n  .map((item) => {\n  const env = item.json.envelope || {};\n  const from = Array.isArray(env.from) && env.from.length ? env.from[0] : {};\n  const fromText = [from.name, from.address].filter(Boolean).join(' ') || '';\n  const messageId = String(env.messageId || '').trim();\n  return {\n    json: {\n      mailbox,\n      uid: String(item.json.uid ?? ''),\n      messageId,\n      // Same key format as the trigger workflows so both paths share the dedupe table.\n      // Fallback keeps re-runs of the same leftover stable when a mail has no Message-ID.\n      messageKey: messageId ? messageId.toLowerCase() : `sha:uid:${mailbox}:${item.json.uid}`, \n      subject: String(env.subject || ''),\n      sender: fromText,\n      mailDate: env.date ? new Date(env.date).toISOString() : '',\n    },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        220
+      ],
+      "id": "0d64f458-eb31-448c-a89d-2de0256d4a35",
+      "name": "Targets Spam"
+    },
+    {
+      "parameters": {
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Config').first().json.dataTableName }}"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "messageKey",
+              "keyValue": "={{ $json.messageKey }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        680,
+        220
+      ],
+      "id": "89045d84-676d-4c55-b9fe-4b909671e685",
+      "name": "Only new Spam"
+    },
+    {
+      "parameters": {
+        "authentication": "coreImapAccount",
+        "resource": "email",
+        "operation": "downloadEml",
+        "mailboxPath": {
+          "__rl": true,
+          "mode": "path",
+          "value": "={{ $('Config').first().json.spamMailbox }}"
+        },
+        "emailUid": "={{ $json.uid }}",
+        "outputToBinary": false
+      },
+      "type": "n8n-nodes-imap.imap",
+      "typeVersion": 1,
+      "position": [
+        900,
+        220
+      ],
+      "id": "b61b2ecf-d43e-4874-8b57-8654588bb297",
+      "name": "Download Spam",
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the original EML (IMAP download) into an import payload.\n// Header values are unfolded (continuation lines start with whitespace).\nfunction headerBlock(eml) {\n  const cut = eml.indexOf('\\r\\n\\r\\n');\n  const end = cut >= 0 ? cut : eml.indexOf('\\n\\n');\n  return end >= 0 ? eml.slice(0, end) : eml;\n}\n\nfunction parseHeaders(block) {\n  const lines = block.split(/\\r?\\n/);\n  const out = {};\n  let current = null;\n  for (const line of lines) {\n    if (/^[ \\t]/.test(line) && current) {\n      out[current] += ' ' + line.trim();\n      continue;\n    }\n    const idx = line.indexOf(':');\n    if (idx > 0) {\n      current = line.slice(0, idx).trim().toLowerCase();\n      out[current] = line.slice(idx + 1).trim();\n    }\n  }\n  return out;\n}\n\nfunction fnv1a64(str) {\n  let hash = 0xcbf29ce484222325n;\n  const prime = 0x100000001b3n;\n  const mask = 0xffffffffffffffffn;\n  for (let i = 0; i < str.length; i++) {\n    hash ^= BigInt(str.charCodeAt(i));\n    hash = (hash * prime) & mask;\n  }\n  return hash.toString(16).padStart(16, '0');\n}\n\nreturn $input.all().map((item, index) => {\n  const eml = String(item.json.emlContent || '');\n  const block = headerBlock(eml);\n  const h = parseHeaders(block);\n  const messageId = String(h['message-id'] || '');\n  const key = messageId ? messageId.toLowerCase() : `sha:${fnv1a64(block)}`;\n  const rawB64 = Buffer.from(eml, 'utf8')\n    .toString('base64')\n    .replace(/\\+/g, '-')\n    .replace(/\\//g, '_')\n    .replace(/=+$/, '');\n  return {\n    json: {\n      messageKey: key,\n      messageId,\n      subject: String(h.subject || ''),\n      sender: String(h.from || ''),\n      mailDate: h.date ? new Date(h.date).toISOString() : '',\n      sizeBytes: Buffer.byteLength(eml, 'utf8'),\n      sourceUid: String(item.json.uid ?? ''),\n      rawB64,\n    },\n    pairedItem: { item: index },\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        220
+      ],
+      "id": "76a64365-e729-4f17-b6dc-62456055bab5",
+      "name": "Payload Spam"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.gmailImportUrl }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "internalDateSource",
+              "value": "={{ $('Config').first().json.internalDateSource }}"
+            },
+            {
+              "name": "neverMarkSpam",
+              "value": "={{ $('Config').first().json.spamNeverMarkSpam }}"
+            },
+            {
+              "name": "processForCalendar",
+              "value": "={{ $('Config').first().json.processForCalendar }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ raw: $json.rawB64, labelIds: $('Config').first().json.spamLabelIds }) }}",
+        "options": {
+          "timeout": 180000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        220
+      ],
+      "id": "862ac439-a5ba-49c1-a256-843825a533cd",
+      "name": "Gmail import Spam",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbMOUQL6WmlDF4Be",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Config').first().json.dataTableName }}"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "messageKey",
+              "keyValue": "={{ $('Payload Spam').item.json.messageKey }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "messageKey": "={{ $('Payload Spam').item.json.messageKey }}",
+            "messageId": "={{ $('Payload Spam').item.json.messageId }}",
+            "subject": "={{ $('Payload Spam').item.json.subject }}",
+            "sender": "={{ $('Payload Spam').item.json.sender }}",
+            "mailDate": "={{ $('Payload Spam').item.json.mailDate }}",
+            "status": "imported",
+            "attempts": 0,
+            "gmailMessageId": "={{ $json.id }}",
+            "gmailThreadId": "={{ $json.threadId }}",
+            "lastError": "",
+            "rawB64": ""
+          }
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1560,
+        130
+      ],
+      "id": "e4b8b964-26d6-474a-b914-e61cddc5d64c",
+      "name": "Mark imported Spam"
+    },
+    {
+      "parameters": {
+        "authentication": "coreImapAccount",
+        "resource": "email",
+        "operation": "deleteEmail",
+        "mailboxPath": {
+          "__rl": true,
+          "mode": "path",
+          "value": "={{ $('Config').first().json.spamMailbox }}"
+        },
+        "emailUid": "={{ $('Payload Spam').item.json.sourceUid }}"
+      },
+      "type": "n8n-nodes-imap.imap",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        130
+      ],
+      "id": "066a6e05-8316-4138-8710-756797586ff3",
+      "name": "Delete GMX copy Spam",
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = [];\nfor (const item of $input.all()) {\n  const e = item.json?.error;\n  const msg = typeof e === 'string' ? e : e?.message || e?.description || JSON.stringify(e ?? {});\n  rows.push(`${item.json?.sourceUid || 'unknown'}: ${msg}`);\n}\nthrow new Error('GMX-Loeschung fehlgeschlagen (Spam): ' + rows.join(' | '));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        280
+      ],
+      "id": "60114a0d-2e6d-4ca0-beb5-2eea052b4792",
+      "name": "Fail delete Spam"
+    },
+    {
+      "parameters": {
+        "jsCode": "// One summary per run; status comes from the data table nodes so a skipped or\n// failed branch never turns into a green run without numbers.\nfunction rowsOf(name) {\n  try {\n    return $(name).all().map((item) => item.json || {});\n  } catch {\n    return [];\n  }\n}\nconst imported = [...rowsOf('Mark imported INBOX'), ...rowsOf('Mark imported Spam')]\n  .filter((r) => r.status === 'imported').length;\nreturn [{ json: { imported } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        30
+      ],
+      "id": "accbb66e-5ef9-4d63-8ece-d38920baa641",
+      "name": "Collect results"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "List INBOX": {
+      "main": [
+        [
+          {
+            "node": "Targets INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Targets INBOX": {
+      "main": [
+        [
+          {
+            "node": "Only new INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only new INBOX": {
+      "main": [
+        [
+          {
+            "node": "Download INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download INBOX": {
+      "main": [
+        [
+          {
+            "node": "Payload INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload INBOX": {
+      "main": [
+        [
+          {
+            "node": "Gmail import INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail import INBOX": {
+      "main": [
+        [
+          {
+            "node": "Mark imported INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail delete INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark imported INBOX": {
+      "main": [
+        [
+          {
+            "node": "Delete GMX copy INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete GMX copy INBOX": {
+      "main": [
+        [
+          {
+            "node": "Collect results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail delete INBOX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Spam": {
+      "main": [
+        [
+          {
+            "node": "Targets Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Targets Spam": {
+      "main": [
+        [
+          {
+            "node": "Only new Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only new Spam": {
+      "main": [
+        [
+          {
+            "node": "Download Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Spam": {
+      "main": [
+        [
+          {
+            "node": "Payload Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payload Spam": {
+      "main": [
+        [
+          {
+            "node": "Gmail import Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail import Spam": {
+      "main": [
+        [
+          {
+            "node": "Mark imported Spam",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail delete Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark imported Spam": {
+      "main": [
+        [
+          {
+            "node": "Delete GMX copy Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete GMX copy Spam": {
+      "main": [
+        [
+          {
+            "node": "Collect results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail delete Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every 10 minutes": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "List INBOX",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "List Spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "67c729d5-16a7-4d02-a27c-656c10002af9",
+  "meta": null,
+  "id": "ngydKnAjfgd00O5x",
+  "tags": []
+}
