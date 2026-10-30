@@ -104,7 +104,8 @@
               "id": "27c64d68-f9a9-45cb-acdd-5c77afa5541d",
               "name": "gmailLabelIds",
               "value": [
-                "INBOX"
+                "INBOX",
+                "UNREAD"
               ],
               "type": "array"
             }

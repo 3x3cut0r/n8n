@@ -105,7 +105,8 @@
               "id": "d4bbeb1f-7904-428c-9721-fe85e1a98e35",
               "name": "gmailLabelIds",
               "value": [
-                "SPAM"
+                "SPAM",
+                "UNREAD"
               ],
               "type": "array"
             }
