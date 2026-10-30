@@ -126,7 +126,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Rebuild a valid RFC822 message from the parsed IMAP item.\n//\n// Why: the Email Trigger (IMAP) node in n8n-nodes-base 2.38.2 fetches\n// BODY.PEEK[TEXT] for format \"raw\" (headers are lost) and decodes the stream as\n// UTF-8, so its \"raw\" field is neither the original message nor base64url.\n// Gmail users.messages.import needs the RFC822 source, so the message is\n// rebuilt here from the headers, text/html body and binary attachments that\n// the \"resolved\" format provides.\nconst cfg = $('Config').first().json;\n\nconst STRUCTURAL = new Set([\n  'content-type',\n  'content-transfer-encoding',\n  'content-length',\n  'content-disposition',\n  'content-id',\n  'mime-version',\n]);\nconst BROKEN_AUTH = new Set([\n  'dkim-signature',\n  'arc-seal',\n  'arc-message-signature',\n  'arc-authentication-results',\n  'authentication-results',\n  'received-spf',\n]);\n\nconst CRLF = '\\r\\n';\n\nfunction base64Lines(buf) {\n  return Buffer.from(buf).toString('base64').replace(/(.{76})/g, '$1' + CRLF);\n}\n\nfunction contentParam(name, value) {\n  if (/^[\\x20-\\x7e]*$/.test(value)) {\n    return `${name}=\"${value.replace(/([\"\\\\])/g, '\\\\$1')}\"`;\n  }\n  const encoded = encodeURIComponent(value).replace(\n    /['()*!~]/g,\n    (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase(),\n  );\n  return `${name}*=UTF-8''${encoded}`;\n}\n\n// Stable, dependency-free content hash used only when a message has no\n// Message-ID (the Code node cannot require(\"crypto\")).\nfunction fnv1a64(str) {\n  let hash = 0xcbf29ce484222325n;\n  const prime = 0x100000001b3n;\n  const mask = 0xffffffffffffffffn;\n  for (let i = 0; i < str.length; i++) {\n    hash ^= BigInt(str.charCodeAt(i));\n    hash = (hash * prime) & mask;\n  }\n  return hash.toString(16).padStart(16, '0');\n}\n\nfunction newBoundary(tag, index) {\n  return `=_n8n_${tag}_${Date.now().toString(36)}_${index}`;\n}\n\nfunction textEntity(subtype, content) {\n  return {\n    headers: [\n      `Content-Type: text/${subtype}; charset=utf-8`,\n      'Content-Transfer-Encoding: base64',\n    ],\n    body: base64Lines(Buffer.from(content, 'utf8')) + CRLF,\n    children: null,\n  };\n}\n\nfunction attachmentEntity(attachment) {\n  const contentType = attachment.contentType || 'application/octet-stream';\n  return {\n    headers: [\n      `Content-Type: ${contentType}; ${contentParam('name', attachment.filename)}`,\n      `Content-Disposition: attachment; ${contentParam('filename', attachment.filename)}`,\n      'Content-Transfer-Encoding: base64',\n    ],\n    body: base64Lines(attachment.buffer) + CRLF,\n    children: null,\n  };\n}\n\nfunction multipartEntity(subtype, children, boundary) {\n  return {\n    headers: [\n      `Content-Type: multipart/${subtype}; boundary=\"${boundary}\"`,\n      'MIME-Version: 1.0',\n    ],\n    body: null,\n    children,\n    boundary,\n  };\n}\n\nfunction renderBody(entity) {\n  if (!entity.children) return entity.body;\n  let out = '';\n  for (const child of entity.children) {\n    out += `--${entity.boundary}${CRLF}`;\n    out += child.headers.join(CRLF) + CRLF + CRLF;\n    out += renderBody(child) + CRLF;\n  }\n  out += `--${entity.boundary}--${CRLF}`;\n  return out;\n}\n\nasync function build(itemIndex, item) {\n  const json = item.json || {};\n  const headerMap = json.headers || {};\n\n  // Preserve the original header lines and order; the map already collapses\n  // duplicate names (e.g. several Received lines), which cannot be recovered.\n  const headerLines = [];\n  let hasMimeVersion = false;\n  for (const [name, line] of Object.entries(headerMap)) {\n    const lower = String(name).toLowerCase();\n    if (lower === 'mime-version') hasMimeVersion = true;\n    if (STRUCTURAL.has(lower)) continue;\n    if (cfg.stripBrokenAuthHeaders && BROKEN_AUTH.has(lower)) continue;\n    if (typeof line === 'string' && line.trim() !== '') headerLines.push(line);\n  }\n\n  const messageIdRaw = json.messageId || headerMap['message-id'] || '';\n  const messageId = String(messageIdRaw).replace(/^message-id:\\s*/i, '').trim();\n  const subject = typeof json.subject === 'string' ? json.subject : '';\n  const sender =\n    json.from && json.from.text ? String(json.from.text) : String(headerMap.from || '');\n\n  const children = [];\n  const text = typeof json.text === 'string' ? json.text : '';\n  const html = typeof json.html === 'string' ? json.html : '';\n  const bodyParts = [];\n  if (text !== '') bodyParts.push(textEntity('plain', text));\n  if (html !== '') bodyParts.push(textEntity('html', html));\n  if (bodyParts.length === 0) bodyParts.push(textEntity('plain', ''));\n  if (bodyParts.length === 1) {\n    children.push(bodyParts[0]);\n  } else {\n    children.push(multipartEntity('alternative', bodyParts, newBoundary('alt', itemIndex)));\n  }\n\n  const binary = item.binary || {};\n  const attachmentSignature = [];\n  for (const key of Object.keys(binary)) {\n    const buffer = await this.helpers.getBinaryDataBuffer(itemIndex, key);\n    const meta = binary[key] || {};\n    const filename = meta.fileName || `${key}.bin`;\n    children.push(\n      attachmentEntity({\n        buffer,\n        filename,\n        contentType: meta.mimeType,\n      }),\n    );\n    attachmentSignature.push(`${filename}:${buffer.length}`);\n  }\n  const attachmentCount = attachmentSignature.length;\n\n  const top =\n    children.length === 1 && attachmentCount === 0\n      ? children[0]\n      : multipartEntity('mixed', children, newBoundary('mix', itemIndex));\n\n  const outHeaders = [...headerLines];\n  if (!hasMimeVersion) outHeaders.push('MIME-Version: 1.0');\n  outHeaders.push(...top.headers);\n\n  const message = outHeaders.join(CRLF) + CRLF + CRLF + renderBody(top);\n  const buffer = Buffer.from(message, 'utf8');\n\n  // The fallback hash must not depend on the random MIME boundaries, so it is\n  // built from the stable message content only.\n  const fallbackSeed = [\n    String(json.date || ''),\n    sender,\n    subject,\n    text,\n    html,\n    attachmentSignature.join('|'),\n  ].join('\\u0000');\n  const key = messageId !== '' ? messageId.toLowerCase() : `sha:${fnv1a64(fallbackSeed)}`;\n\n  return {\n    messageKey: key,\n    messageId,\n    subject,\n    sender,\n    mailDate: json.date instanceof Date ? json.date.toISOString() : String(json.date || ''),\n    sizeBytes: buffer.length,\n    attachmentCount,\n    headerCount: outHeaders.length,\n    importedFrom: `imap:${cfg.gmxMailbox || 'INBOX'}`,\n    rawB64: buffer\n      .toString('base64')\n      .replace(/\\+/g, '-')\n      .replace(/\\//g, '_')\n      .replace(/=+$/, ''),\n  };\n}\n\nconst items = $input.all();\nconst results = [];\nfor (let i = 0; i < items.length; i++) {\n  // pairedItem is set explicitly: downstream nodes read $('Build RFC822').item,\n  // which would otherwise depend on n8n's automatic pairing.\n  results.push({ json: await build.call(this, i, items[i]), pairedItem: { item: i } });\n}\nreturn results;\n"
+        "jsCode": "// Rebuild a valid RFC822 message from the parsed IMAP item.\n//\n// Why: the Email Trigger (IMAP) node in n8n-nodes-base 2.38.2 fetches\n// BODY.PEEK[TEXT] for format \"raw\" (headers are lost) and decodes the stream as\n// UTF-8, so its \"raw\" field is neither the original message nor base64url.\n// Gmail users.messages.import needs the RFC822 source, so the message is\n// rebuilt here from the headers, text/html body and binary attachments that\n// the \"resolved\" format provides.\nconst cfg = $('Config').first().json;\n\nconst STRUCTURAL = new Set([\n  'content-type',\n  'content-transfer-encoding',\n  'content-length',\n  'content-disposition',\n  'content-id',\n  'mime-version',\n]);\nconst BROKEN_AUTH = new Set([\n  'dkim-signature',\n  'arc-seal',\n  'arc-message-signature',\n  'arc-authentication-results',\n  'authentication-results',\n  'received-spf',\n]);\n\nconst CRLF = '\\r\\n';\n\nfunction base64Lines(buf) {\n  return Buffer.from(buf).toString('base64').replace(/(.{76})/g, '$1' + CRLF);\n}\n\nfunction contentParam(name, value) {\n  if (/^[\\x20-\\x7e]*$/.test(value)) {\n    return `${name}=\"${value.replace(/([\"\\\\])/g, '\\\\$1')}\"`;\n  }\n  const encoded = encodeURIComponent(value).replace(\n    /['()*!~]/g,\n    (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase(),\n  );\n  return `${name}*=UTF-8''${encoded}`;\n}\n\n// Stable, dependency-free content hash used only when a message has no\n// Message-ID (the Code node cannot require(\"crypto\")).\nfunction fnv1a64(str) {\n  let hash = 0xcbf29ce484222325n;\n  const prime = 0x100000001b3n;\n  const mask = 0xffffffffffffffffn;\n  for (let i = 0; i < str.length; i++) {\n    hash ^= BigInt(str.charCodeAt(i));\n    hash = (hash * prime) & mask;\n  }\n  return hash.toString(16).padStart(16, '0');\n}\n\nfunction newBoundary(tag, index) {\n  return `=_n8n_${tag}_${Date.now().toString(36)}_${index}`;\n}\n\nfunction textEntity(subtype, content) {\n  return {\n    headers: [\n      `Content-Type: text/${subtype}; charset=utf-8`,\n      'Content-Transfer-Encoding: base64',\n    ],\n    body: base64Lines(Buffer.from(content, 'utf8')) + CRLF,\n    children: null,\n  };\n}\n\nfunction attachmentEntity(attachment) {\n  const contentType = attachment.contentType || 'application/octet-stream';\n  return {\n    headers: [\n      `Content-Type: ${contentType}; ${contentParam('name', attachment.filename)}`,\n      `Content-Disposition: attachment; ${contentParam('filename', attachment.filename)}`,\n      'Content-Transfer-Encoding: base64',\n    ],\n    body: base64Lines(attachment.buffer) + CRLF,\n    children: null,\n  };\n}\n\nfunction multipartEntity(subtype, children, boundary) {\n  return {\n    headers: [\n      `Content-Type: multipart/${subtype}; boundary=\"${boundary}\"`,\n      'MIME-Version: 1.0',\n    ],\n    body: null,\n    children,\n    boundary,\n  };\n}\n\nfunction renderBody(entity) {\n  if (!entity.children) return entity.body;\n  let out = '';\n  for (const child of entity.children) {\n    out += `--${entity.boundary}${CRLF}`;\n    out += child.headers.join(CRLF) + CRLF + CRLF;\n    out += renderBody(child) + CRLF;\n  }\n  out += `--${entity.boundary}--${CRLF}`;\n  return out;\n}\n\nasync function build(itemIndex, item) {\n  const json = item.json || {};\n  const headerMap = json.headers || {};\n\n  // Preserve the original header lines and order; the map already collapses\n  // duplicate names (e.g. several Received lines), which cannot be recovered.\n  const headerLines = [];\n  let hasMimeVersion = false;\n  for (const [name, line] of Object.entries(headerMap)) {\n    const lower = String(name).toLowerCase();\n    if (lower === 'mime-version') hasMimeVersion = true;\n    if (STRUCTURAL.has(lower)) continue;\n    if (cfg.stripBrokenAuthHeaders && BROKEN_AUTH.has(lower)) continue;\n    if (typeof line === 'string' && line.trim() !== '') headerLines.push(line);\n  }\n\n  const messageIdRaw = json.messageId || headerMap['message-id'] || '';\n  const messageId = String(messageIdRaw).replace(/^message-id:\\s*/i, '').trim();\n  const subject = typeof json.subject === 'string' ? json.subject : '';\n  const sender =\n    json.from && json.from.text ? String(json.from.text) : String(headerMap.from || '');\n\n  const children = [];\n  const text = typeof json.text === 'string' ? json.text : '';\n  const html = typeof json.html === 'string' ? json.html : '';\n  const bodyParts = [];\n  if (text !== '') bodyParts.push(textEntity('plain', text));\n  if (html !== '') bodyParts.push(textEntity('html', html));\n  if (bodyParts.length === 0) bodyParts.push(textEntity('plain', ''));\n  if (bodyParts.length === 1) {\n    children.push(bodyParts[0]);\n  } else {\n    children.push(multipartEntity('alternative', bodyParts, newBoundary('alt', itemIndex)));\n  }\n\n  const binary = item.binary || {};\n  const attachmentSignature = [];\n  for (const key of Object.keys(binary)) {\n    const buffer = await this.helpers.getBinaryDataBuffer(itemIndex, key);\n    const meta = binary[key] || {};\n    const filename = meta.fileName || `${key}.bin`;\n    children.push(\n      attachmentEntity({\n        buffer,\n        filename,\n        contentType: meta.mimeType,\n      }),\n    );\n    attachmentSignature.push(`${filename}:${buffer.length}`);\n  }\n  const attachmentCount = attachmentSignature.length;\n\n  const top =\n    children.length === 1 && attachmentCount === 0\n      ? children[0]\n      : multipartEntity('mixed', children, newBoundary('mix', itemIndex));\n\n  const outHeaders = [...headerLines];\n  if (!hasMimeVersion) outHeaders.push('MIME-Version: 1.0');\n  outHeaders.push(...top.headers);\n\n  const message = outHeaders.join(CRLF) + CRLF + CRLF + renderBody(top);\n  const buffer = Buffer.from(message, 'utf8');\n\n  // The fallback hash must not depend on the random MIME boundaries, so it is\n  // built from the stable message content only.\n  const fallbackSeed = [\n    String(json.date || ''),\n    sender,\n    subject,\n    text,\n    html,\n    attachmentSignature.join('|'),\n  ].join('\\u0000');\n  const key = messageId !== '' ? messageId.toLowerCase() : `sha:${fnv1a64(fallbackSeed)}`;\n\n  return {\n    // The IMAP uid is needed downstream to delete the GMX copy after the\n    // import has been confirmed (the Gmail API works with its own ids).\n    sourceUid:\n      json.attributes && json.attributes.uid !== undefined\n        ? String(json.attributes.uid)\n        : '',\n    messageKey: key,\n    messageId,\n    subject,\n    sender,\n    mailDate: json.date instanceof Date ? json.date.toISOString() : String(json.date || ''),\n    sizeBytes: buffer.length,\n    attachmentCount,\n    headerCount: outHeaders.length,\n    importedFrom: `imap:${cfg.gmxMailbox || 'INBOX'}`,\n    rawB64: buffer\n      .toString('base64')\n      .replace(/\\+/g, '-')\n      .replace(/\\//g, '_')\n      .replace(/=+$/, ''),\n  };\n}\n\nconst items = $input.all();\nconst results = [];\nfor (let i = 0; i < items.length; i++) {\n  // pairedItem is set explicitly: downstream nodes read $('Build RFC822').item,\n  // which would otherwise depend on n8n's automatic pairing.\n  results.push({ json: await build.call(this, i, items[i]), pairedItem: { item: i } });\n}\nreturn results;\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -307,7 +307,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// One summary row per execution so a failed import becomes a red execution\n// instead of a green one with hidden errors.\nconst rows = $input.all().map((item) => item.json || {});\nconst imported = rows.filter((r) => r.status === 'imported').length;\nconst failed = rows.filter((r) => r.status === 'failed').length;\nconst failedKeys = rows\n  .filter((r) => r.status === 'failed')\n  .map((r) => r.messageKey || r.messageId || 'unknown');\n\nreturn [\n  {\n    json: {\n      total: rows.length,\n      imported,\n      failed,\n      failedKeys,\n    },\n  },\n];\n"
+        "jsCode": "// One summary row per execution so a failed import becomes a red execution\n// instead of a green one with hidden errors.\n// Status comes from the Data Table nodes, not from $input: the delete node in\n// between only carries {uid, deleted}.\nfunction rowsOf(name) {\n  try {\n    return $(name).all().map((item) => item.json || {});\n  } catch {\n    return [];\n  }\n}\nconst rows = [...rowsOf('Mark imported'), ...rowsOf('Mark failed')];\nconst imported = rows.filter((r) => r.status === 'imported').length;\nconst failed = rows.filter((r) => r.status === 'failed').length;\nconst failedKeys = rows\n  .filter((r) => r.status === 'failed')\n  .map((r) => r.messageKey || r.messageId || 'unknown');\n\nreturn [\n  {\n    json: {\n      total: rows.length,\n      imported,\n      failed,\n      failedKeys,\n    },\n  },\n];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -346,7 +346,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1504,
+        1744,
         160
       ],
       "id": "0b9ad47a-a048-4db6-a0d3-c7e1196ce55c",
@@ -359,7 +359,7 @@
       "type": "n8n-nodes-base.stopAndError",
       "typeVersion": 1,
       "position": [
-        1728,
+        1968,
         48
       ],
       "id": "fa9e1a6a-3342-4eb3-afcf-50892afc64c4",
@@ -370,11 +370,52 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        1728,
+        1968,
         272
       ],
       "id": "5167853e-2eb1-4674-9872-d8c4127f9a61",
       "name": "Done"
+    },
+    {
+      "id": "ecd113a0-5de3-44d9-a7a9-43bbc11e25ef",
+      "name": "Delete GMX copy",
+      "type": "n8n-nodes-imap.imap",
+      "typeVersion": 1,
+      "onError": "continueErrorOutput",
+      "position": [
+        1280,
+        48
+      ],
+      "parameters": {
+        "authentication": "coreImapAccount",
+        "resource": "email",
+        "operation": "deleteEmail",
+        "mailboxPath": {
+          "__rl": true,
+          "mode": "path",
+          "value": "={{ $('Config').first().json.gmxMailbox }}"
+        },
+        "emailUid": "={{ $('Build RFC822').item.json.sourceUid }}"
+      },
+      "credentials": {
+        "imap": {
+          "id": "XC2xE4IKyXtccj5f",
+          "name": "GMX IMAP"
+        }
+      }
+    },
+    {
+      "id": "47598812-7e36-4779-ab51-b366cf2fe6b0",
+      "name": "Fail delete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        48
+      ],
+      "parameters": {
+        "jsCode": "// GMX cleanup failed: the mail is already in Gmail, but the GMX copy stays.\n// Make it a red execution so the leftover is visible instead of silent.\nconst rows = [];\nfor (const item of $input.all()) {\n  const e = item.json?.error;\n  const msg =\n    typeof e === 'string'\n      ? e\n      : e?.message || e?.description || e?.error?.message || JSON.stringify(e ?? {});\n  const ref = item.json?.messageKey || item.json?.messageId || item.json?.uid || 'unknown';\n  rows.push(`${ref}: ${msg}`);\n}\nthrow new Error('GMX-Loeschung fehlgeschlagen: ' + rows.join(' | '));\n"
+      }
     }
   ],
   "pinData": {},
@@ -445,7 +486,7 @@
       "main": [
         [
           {
-            "node": "Collect results",
+            "node": "Delete GMX copy",
             "type": "main",
             "index": 0
           }
@@ -486,6 +527,24 @@
         [
           {
             "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete GMX copy": {
+      "main": [
+        [
+          {
+            "node": "Collect results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fail delete",
             "type": "main",
             "index": 0
           }
