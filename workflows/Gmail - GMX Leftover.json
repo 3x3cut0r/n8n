@@ -82,7 +82,7 @@
             {
               "id": "22a30b11-b8a6-4229-9f6f-5b644e910a5a",
               "name": "inboxNeverMarkSpam",
-              "value": true,
+              "value": false,
               "type": "boolean"
             },
             {
