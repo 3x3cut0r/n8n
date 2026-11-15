@@ -16,7 +16,7 @@
     },
     {
       "parameters": {
-        "url": "https://chat.3x3cut0r.de/api/v1/commands.preview",
+        "url": "={{ $json.previewUrl }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "rocketchatApi",
         "sendQuery": true,
@@ -24,15 +24,15 @@
           "parameters": [
             {
               "name": "command",
-              "value": "giphy"
+              "value": "={{ $json.command }}"
             },
             {
               "name": "roomId",
-              "value": "={{ $('Set roomId').item.json.roomId }}"
+              "value": "={{ $json.roomId }}"
             },
             {
               "name": "params",
-              "value": "={{ $('Get a keyword or phrase').item.json.choices[0].message.content }}"
+              "value": "={{ $json.params }}"
             }
           ]
         },
@@ -56,13 +56,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://chat.3x3cut0r.de/api/v1/commands.preview",
+        "url": "={{ $('Set roomId').first().json.previewUrl }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "rocketchatApi",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({\n  command: \"giphy\",\n  roomId: $node[\"Set roomId\"].json.roomId,\n  params: $node[\"Get a keyword or phrase\"].json.choices[0].message.content,\n  triggerId: \"auto-\" + Date.now(),\n  previewItem: {\n    id: $node[\"Pick random preview\"].json.id,\n    type: $node[\"Pick random preview\"].json.type,\n    value: $node[\"Pick random preview\"].json.value\n  }\n}) }}",
+        "body": "={{ JSON.stringify({\n  command: $('Set roomId').first().json.command,\n  roomId: $node[\"Set roomId\"].json.roomId,\n  params: $node[\"Get a keyword or phrase\"].json.choices[0].message.content,\n  triggerId: \"auto-\" + Date.now(),\n  previewItem: {\n    id: $node[\"Pick random preview\"].json.id,\n    type: $node[\"Pick random preview\"].json.type,\n    value: $node[\"Pick random preview\"].json.value\n  }\n}) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -89,6 +89,30 @@
               "id": "05fed64f-a3aa-4602-b044-20a10c5e79b3",
               "name": "roomId",
               "value": "eQTPRwGLAaPaCBkJz",
+              "type": "string"
+            },
+            {
+              "id": "1b1fcf66-2adb-4a0a-a143-140508737d5d",
+              "name": "command",
+              "value": "giphy",
+              "type": "string"
+            },
+            {
+              "id": "3063f4fc-afe3-44f5-8fa6-bdde45ac2012",
+              "name": "previewUrl",
+              "value": "https://chat.3x3cut0r.de/api/v1/commands.preview",
+              "type": "string"
+            },
+            {
+              "id": "196d0a3c-36f4-4322-b72b-7b2b0ccc0df2",
+              "name": "maxAttempts",
+              "value": 3,
+              "type": "number"
+            },
+            {
+              "id": "410e0719-e845-4825-a62f-b1f6c09fe0a1",
+              "name": "fallbackQuery",
+              "value": "trending",
               "type": "string"
             }
           ]
@@ -333,7 +357,7 @@
     },
     {
       "parameters": {
-        "jsCode": "throw new Error('No Giphy preview after 3 attempts');"
+        "jsCode": "let maxAttempts = 3;\nlet keywords = '';\ntry {\n  maxAttempts = Number($('Set roomId').first().json.maxAttempts) || 3;\n  keywords = String($('Get a keyword or phrase').first().json.choices?.[0]?.message?.content ?? '').trim();\n} catch (e) {}\nthrow new Error(`No Giphy preview after ${maxAttempts} attempts (keywords: \"${keywords}\")`);"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -346,7 +370,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// outputs 3 items: { try: 1 }, { try: 2 }, { try: 3 }\nreturn Array.from({ length: 3 }, (_, i) => ({ json: { try: i + 1 } }));"
+        "jsCode": "// Build progressive Giphy search attempts. A multi-word phrase is an AND search,\n// so retrying the identical query never helps: each retry narrows the query down\n// to a single word and finally to the configured fallback query.\nconst cfg = $('Set roomId').first().json;\nconst raw = String($('Get a keyword or phrase').first().json.choices?.[0]?.message?.content ?? '');\nconst keywords = raw.replace(/\\s+/g, ' ').trim();\n\nconst words = keywords ? keywords.split(' ') : [];\nconst candidates = [];\nconst add = (q) => {\n  const value = String(q || '').replace(/\\s+/g, ' ').trim();\n  if (value && !candidates.includes(value)) candidates.push(value);\n};\n\nadd(keywords);\nif (words.length > 2) add(words.slice(0, 2).join(' '));\nif (words.length > 1) add(words[0]);\nadd(cfg.fallbackQuery || 'trending');\n\nconst maxAttempts = Number(cfg.maxAttempts) > 0 ? Number(cfg.maxAttempts) : 3;\n\nreturn candidates.slice(0, maxAttempts).map((params, index) => ({\n  json: {\n    attempt: index + 1,\n    maxAttempts,\n    keywords,\n    params,\n    roomId: cfg.roomId,\n    command: cfg.command,\n    previewUrl: cfg.previewUrl,\n  },\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -355,7 +379,7 @@
         528
       ],
       "id": "6243d476-ec0f-4fd6-9f1d-e5ec5ea73d00",
-      "name": "Generate 3 json objects"
+      "name": "Build query attempts"
     },
     {
       "parameters": {},
@@ -389,7 +413,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const ctx = $input.first().json;\nconst weather = $('OpenWeatherMap').first().json;\n\nconst prompt = `You are **GifKeywordBot**.\nTask:\n1. Generate 1–3 short keywords (at least 1, but max 3 words total) for the \\`/giphy\\` command in Rocket.Chat. Try to use less than more words.\n2. Base your choice on:\n   • the current weekday,\n   • German public holidays (if today is one),\n   • moods at work, like: \"i need coffee\", \"boring meeting\", \"i am stressed\" ...\n   • moods at waking up, like: \"i am tired\", \"today i feel fit\"\n   • the current weather in Germany,\n3. Keep it workplace-safe.\n\nOutput format:\n• English keywords.\n• One single line, no bullet points.\n• Only the keyword phrase(s), separated by a single space if multiple.\n• No quotation marks, hashtags or other punctuation.\n\nExample outputs:\n• sunshine coffee\n• rainy monday\n• beach vibes\n• Merry Christmas\n\nContext variables:\n  • Weekday: ${ctx.weekday}\n  • Date-ISO: ${ctx.date_iso}\n  • Season: ${ctx.season}\n  • Weather: (${weather.weather[0].main}, Temp: ${weather.main.temp} °C, Feels lile: ${weather.main.feels_like} °C, Windspeed: ${weather.wind.speed} m/s, Windgust: ${weather.wind.gust} m/s)\n\nNow think briefly and return the keywords only.\n`;\n\nreturn [{ json: { prompt } }];\n"
+        "jsCode": "const ctx = $input.first().json;\nconst weather = $('OpenWeatherMap').first().json;\n\nconst prompt = `You are **GifKeywordBot**.\nTask:\n1. Generate 1–2 short keywords (at least 1, but max 2 words total) for the \\`/giphy\\` command in Rocket.Chat. Fewer words match more GIFs, so pick words that appear in many GIFs and avoid stacking three different concepts.\n2. Base your choice on:\n   • the current weekday,\n   • German public holidays (if today is one),\n   • moods at work, like: \"i need coffee\", \"boring meeting\", \"i am stressed\" ...\n   • moods at waking up, like: \"i am tired\", \"today i feel fit\"\n   • the current weather in Germany,\n3. Keep it workplace-safe.\n\nOutput format:\n• English keywords.\n• One single line, no bullet points.\n• Only the keyword phrase(s), separated by a single space if multiple.\n• No quotation marks, hashtags or other punctuation.\n\nExample outputs:\n• sunshine coffee\n• rainy monday\n• beach vibes\n• Merry Christmas\n• monday coffee\n\nContext variables:\n  • Weekday: ${ctx.weekday}\n  • Date-ISO: ${ctx.date_iso}\n  • Season: ${ctx.season}\n  • Weather: (${weather.weather[0].main}, Temp: ${weather.main.temp} °C, Feels lile: ${weather.main.feels_like} °C, Windspeed: ${weather.wind.speed} m/s, Windgust: ${weather.wind.gust} m/s)\n\nNow think briefly and return the keywords only.\n`;\n\nreturn [{ json: { prompt } }];\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -447,7 +471,7 @@
       "main": [
         [
           {
-            "node": "Generate 3 json objects",
+            "node": "Build query attempts",
             "type": "main",
             "index": 0
           }
@@ -556,7 +580,7 @@
         ]
       ]
     },
-    "Generate 3 json objects": {
+    "Build query attempts": {
       "main": [
         [
           {
